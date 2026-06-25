@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming - Maya Malavasi</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        body {
+            background: rgb(245, 158, 11);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <script src="../js/category-page.js"></script>
+    <script>
+        const pageData = {
+            categoryName: 'Programming',
+            color: 'rgb(245, 158, 11)',
+            subcategories: ['React', 'Python', 'JavaScript', 'TypeScript', 'Node.js', 'Django', 'APIs', 'Docker', 'Git']
+        };
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(React.createElement(CategoryPage, pageData));
+    </script>
+</body>
+</html>

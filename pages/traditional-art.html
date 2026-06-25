@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traditional Art - Maya Malavasi</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        body {
+            background: rgb(236, 72, 153);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <script src="../js/category-page.js"></script>
+    <script>
+        const pageData = {
+            categoryName: 'Traditional Art',
+            color: 'rgb(236, 72, 153)',
+            subcategories: ['Watercolor', 'Acrylics', 'Charcoal', 'Pencil', 'Ink', 'Pastels', 'Oil Paint', 'Gouache']
+        };
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(React.createElement(CategoryPage, pageData));
+    </script>
+</body>
+</html>
