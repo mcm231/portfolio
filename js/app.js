@@ -102,7 +102,7 @@ function Portfolio() {
         const wheelHandler = (e) => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? 0.9 : 1.1;
-            const newScale = Math.min(Math.max(scale * delta, 1), 5);
+            const newScale = Math.min(Math.max(scale * delta, 1), 8);
 
             if (newScale !== scale) {
                 const mouseX = e.clientX;
@@ -204,7 +204,7 @@ function Portfolio() {
     const vennOpacity = Math.max(0, Math.min(0.85, 0.85 - ((scale - 1) / 1.5) * 0.85));
 
     const MIN_ZOOM = 1;
-    const MAX_ZOOM = 5;
+    const MAX_ZOOM = 8;
     const zoomProgress = (scale - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM);
     const textAndBorderOpacity = Math.max(0, 1 - zoomProgress);
 
