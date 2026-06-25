@@ -1,0 +1,83 @@
+Remove the diamond in the middle of the venn diagram and all associated calculations for that diamond
+
+There's a lot of code here to custom-calculate the size and positioning of the venn diagram petals. I have decided I just want 4 petals. Please hard-code those 4 petals, with the same dimensions and shape they currently have, and remove the functions and files used purely to calculate the petal shapes. Once this is finished, I expect to see no difference visually in the site, but a significant change and increase in code clarity and cleanliness.
+3:53 PM
+
+When I zoom out, no matter where I zoom in from, the zoom-out center is always at the middle of the venn diagram, not in the middle of my viewport. I want to zoom out from the middle of my viewport.
+It is currently still zooming out from the center. Please make sure you set the right values and that it actually zooms IN AND OUT from the center of the current viewport, NOT the center of the site.
+
+Now the zoom center is stuck at the bottom left of the screen. It does not stay centered. Please remove your previous changes to the zoom and redo it.
+
+Still not centered. Still zooming in and out from bottom right corner.
+
+Undo that last change.
+
+Please make sure that your transform for the zoom is using the right scale. It seems that the scale is too large.
+
+Undo that last change
+
+When I am zooming in manually (i.e. I pan and scroll on the page), the zoom in and out is centered at the bottom right of the screen. I need the zoom to be centered at the middle of what my screen is currently displaying. This is not the center of the website, nor the center of the interact-able objects. It is the center of what my laptop screen is currently showing me. If I click on a petal and zoom in, the center is now the middle of that petal; when I zoom out without panning, it should stay at the center of that petal. If I pan, it should change the center of what my screen is showing me.
+
+I believe the viewport is currently calculated to be too big. Please check the scaling on the viewport calculations.
+
+Center-center seems to still be the right bottom corner of the viewport. Please give me a detailed explanation of the coordinate system this website is using to calculate the viewport center and whether the axes at 0, 0 are on the bottom right.
+
+Reset-view resets the viewport to a set scale, zoom, and pan. Please constrain pan limits to the edges of what is visible on the reset view.
+
+Please put a red line at the boundaries of this pan
+
+Uncaught SyntaxError: Unexpected identifier 'React'
+
+I can clearly pan beyond the line. I should not be able to see this line.
+
+No, the red boundary was correct -- it was where I SHOULD be stopped. Instead of moving the red boundary, please move the pan constraints to the red boundary.
+
+Please undo the last 2 changes.
+
+These red lines represent the maximum distance my viewport center can move. I should be blocked like a wall once I hit the location those red lines are indicating when I pan.
+
+Good. However, please ensure that this block is applied during the inertia/glide animation of the pan, instead of merely after. Currently, it "snaps back" once the glide has stopped, but I want it to be blocked and stop the horizontal/vertical vector of the movement immediately (depending on which edge is hit) regardless of the state of the glide.
+
+Reduce the width of the boundary box to 2/3. Update the red lines to match.
+
+The zoom in and out should be centered around the mouse pointer, wherever that may be on the page.
+
+When I zoom into the venn diagram, the text titles and the white borders of the diagram should gradually disappear. However, the colors of each individual petal should not disappear. Once I get more than 50% of the way to max zoom, the petals should no longer be clickable, so that I can pan around while zoomed in.
+
+Is this deployed? It doesn't look like it
+
+The fill values change as I zoom (which I don't want), the stroke values seem like they would change but aren't at the moment
+
+Text is not fading, it probably has the same issue. Please ensure stroke fades to 0 as well
+
+When I zoom in, the pan boundaries shrink alongside my viewport. I want the pan boundaries to be constant with respect to the diagram, not to my viewport.
+
+I think you did the opposite of what I wanted -- instead of changing the red rectangle to match the pan constraints it is visualizing, I wanted to make sure that the pan constraints are always kept at that red rectangle boundary (does not transform with scale)
+
+The reason I reverted those is because it was still scaling with zoom. Please make sure that the pan constraints are always kept at that red rectangle boundary (does not transform with scale)
+
+Please let me pan around the same area that the red rectangle covers. Since the red rectangle doesn't change, neither should the pan boundaries
+
+This sounds perfect.  I'm not seeing it implemented.
+
+Once again, the hard refresh isn't changing anything and there are no console errors. Please make sure all the code has been correctly deployed and that there are no trailing code snippets that might be impacting the pan.
+
+When I try to pan, it snaps back to the scaled pan constraints.
+
+Panning works smoothly. Go ahead to reimplement.
+
+We're back to the same scaling problem.
+
+The problem is not the clamping. The problem is that the pan constraints shrink as we zoom, and do not consistently match the red rectangle.
+
+Please remove the red rectangle
+
+When I click reset view, I want to remove any # slugs from the url
+
+When I zoom into each petal, alongside the main petal titles disappearing, I want the same title text to appear the top of my screen, similar to how Maya Malavasi is placed at the top of the screen as an immovable object. Once I zoom back past 70%, the title should reappear in the center of the petal and the overhead titles should fade out.
+
+Revert the previous changes. Instead of having an overhead title, I want the exisitng petal titles to shrink as you zoom in, giving the illusion that they are still the same size
+
+The titles shrink a bit too fast and a bit too small. Maybe around 60% speed and size would work
+
+The shrink speed is good, but I want text to appear around 60px (or the closest efficient equivalent) at max zoom
