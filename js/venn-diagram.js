@@ -1,6 +1,6 @@
 // Venn Diagram Component - Hardcoded 4 Petals
 
-function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorderOpacity, clickable, onRegionClick }) {
+function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorderOpacity, clickable, onRegionClick, scale = 1 }) {
     const width = size * 0.35;
     const length = size * 0.5;
     const ovalCenterDist = length * 0.3;
@@ -65,16 +65,14 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
             x: labelX,
             y: labelY,
             style: {
-                fill: `rgba(255, 255, 255, ${textAndBorderOpacity !== undefined ? textAndBorderOpacity : 1})`,
-                fontSize: '24px',
+                fill: 'rgba(255, 255, 255, 1)',
+                fontSize: `${17 / Math.pow(scale, 0.4)}px`,
                 fontWeight: 'bold',
                 textAnchor: 'middle',
                 dominantBaseline: 'middle',
                 pointerEvents: 'none',
                 userSelect: 'none',
-                textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
-                transition: 'fill 0.3s ease',
-                opacity: textAndBorderOpacity !== undefined ? textAndBorderOpacity : 1
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)'
             }
         }, petal.category.name));
     });

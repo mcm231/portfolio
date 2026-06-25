@@ -322,7 +322,8 @@ function Portfolio() {
                         opacity: vennOpacity,
                         textAndBorderOpacity: textAndBorderOpacity,
                         clickable: petalsClickable,
-                        onRegionClick: handleRegionClick
+                        onRegionClick: handleRegionClick,
+                        scale: scale
                     })
                 ])
             ])
