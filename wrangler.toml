@@ -1,0 +1,8 @@
+{
+  "name": "portfolio",
+  "pages_build_output_dir": ".",
+  "compatibility_date": "2025-01-01",
+  "kv_namespaces": [
+    { "binding": "IMAGE_METADATA", "id": "YOUR_KV_NAMESPACE_ID" }
+  ]
+}

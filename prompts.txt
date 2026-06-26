@@ -45,3 +45,11 @@ this is a test for the new rule
 The current background of my site is a black/navy gradient. The colors don't particularly matter at the moment (I will be changing the palette later) but I do want an elegant, dynamic background similar to the attached image where the circles gradually fade in and out in lighter shades of whatever the background color is
 The gradient in the background is too fuzzy. I would like the circles to be visible
 Excellent, now make the fade in/out slower, to about 70% speed
+This site is now hosted on Cloudflare. I have a cloudflare KV database that I want to be able to reference entries from. The keys are the IDs of photos stored in another Cloudflare-based file storage system. The values are json metadata for the images, which currently take the form {name: "", description: "", medium: "", tags: ["", "", ""], dateCreated: Date, galleries: ["", ""]}. Walk me through the process of connecting my KV and my file storage to this project.
+For step 4, I only see:
+Variables and secrets
+Trigger events
+Observability
+Runtime
+Build
+General
