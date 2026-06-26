@@ -1,6 +1,26 @@
+import { isValidTag } from "./_constants.js";
+
+async function getAllEntries(kv) {
+  const entries = [];
+  let cursor;
+  do {
+    const list = await kv.list({ cursor });
+    const batch = await Promise.all(
+      list.keys.map(async ({ name }) => {
+        const value = await kv.get(name);
+        return value ? { id: name, ...JSON.parse(value) } : null;
+      })
+    );
+    entries.push(...batch.filter(Boolean));
+    cursor = list.list_complete ? undefined : list.cursor;
+  } while (cursor);
+  return entries;
+}
+
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const imageId = url.searchParams.get("id");
+  const tag = url.searchParams.get("tag");
 
   if (imageId) {
     const value = await context.env.IMAGE_METADATA.get(imageId);
@@ -10,15 +30,20 @@ export async function onRequest(context) {
     });
   }
 
-  // list all keys (paginated — KV list returns up to 1000 at a time)
-  const list = await context.env.IMAGE_METADATA.list();
-  const entries = await Promise.all(
-    list.keys.map(async ({ name }) => {
-      const value = await context.env.IMAGE_METADATA.get(name);
-      return { id: name, ...JSON.parse(value) };
-    })
-  );
-  return new Response(JSON.stringify(entries), {
+  if (tag !== null && !isValidTag(tag)) {
+    return new Response(JSON.stringify({ error: `Unknown tag: "${tag}"` }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  const entries = await getAllEntries(context.env.IMAGE_METADATA);
+
+  const results = tag
+    ? entries.filter(e => Array.isArray(e.tags) && e.tags.includes(tag))
+    : entries;
+
+  return new Response(JSON.stringify(results), {
     headers: { "Content-Type": "application/json" }
   });
 }

@@ -54,3 +54,5 @@ Runtime
 Build
 General
 ✘ [ERROR] Invalid TOML document: incomplete key-value: cannot find end of key { on line 1
+It looks like I have my KV database connected. Please write backend functions to extract information from the KV by tag.
+My schema is currently: {name: "titlehere", description: "description", medium: "watercolor", tags: ["digital-art", "games", "programming"], dateCreated: Date, galleries: ["GalleryNamehere", "Galllery2"]} Note that I would prefer tags to be an enum.
