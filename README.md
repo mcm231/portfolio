@@ -1,5 +1,15 @@
 # portfolio
 
+## To test remote
+
+`npx wrangler pages dev .`
+
+Put a test entry into KV:
+```
+npx wrangler kv key put --namespace-id=<YOUR ID HERE> "test-image-1" \
+  '{"name":"Test Piece","description":"A test","medium":"watercolor","tags":["traditional-art","watercolor"],"dateCreated":"2025-01-01","galleries":["Gallery1"]}' --remote
+  ```
+
 ## To test locally
 With KV binding live:
 

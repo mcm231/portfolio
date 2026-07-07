@@ -52,3 +52,6 @@ It looks like I have my KV database connected. Please write backend functions to
 My schema is currently: {name: "titlehere", description: "description", medium: "watercolor", tags: ["digital-art", "games", "programming"], dateCreated: Date, galleries: ["GalleryNamehere", "Galllery2"]} Note that I would prefer tags to be an enum.
 How do I test the kv connection?
 Please clean up the file changes so I don't commit local instantiated KV test entries to main.
+If npx wrangler pages dev . --kv IMAGE_METADATA tests locally, how do I test remote?
+if npx wrangler pages dev . --kv IMAGE_METADATA tests locally, how do I test remote?
+✘ [ERROR] Unknown argument: remote
