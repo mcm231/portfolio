@@ -55,3 +55,6 @@ Please clean up the file changes so I don't commit local instantiated KV test en
 If npx wrangler pages dev . --kv IMAGE_METADATA tests locally, how do I test remote?
 if npx wrangler pages dev . --kv IMAGE_METADATA tests locally, how do I test remote?
 ✘ [ERROR] Unknown argument: remote
+In this project, I have a KV namespace connected in Cloudflare. Also in Cloudflare, I have an R2 storage bucket that I want to connect to this project. The "images.js" file should actually be image-metadata.js since that is what is stored in the KV. The images are stored in R2 storage. How do I connect to my Cloudflare R2 storage?
+Can I gitignore the wrangler dir?
+yes, please rm the tracked files in wrangler
