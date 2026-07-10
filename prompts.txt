@@ -59,3 +59,12 @@ In this project, I have a KV namespace connected in Cloudflare. Also in Cloudfla
 Can I gitignore the wrangler dir?
 yes, please rm the tracked files in wrangler
 In the README, you'll find instructions to run and test the KV local and remote. Please write the same instructions but for the "Images (R2 Object Storage)" section.
+I want to change how the venn diagram on my website behaves. Currently, it is 4 distinct petals. I want to hard-code those 4 petals, but have each individual overlap and venn section be a different clickable and zoom-able section. So I should be able to click and zoom into Writing n Traditional Art, or Writing n Programming n Digital Art (no union, just intersection). This means making the shapes separate, though the colors should still look like the petals are overlapping. This is a major change to venn-diagram and venn-geometry, and I expect a lot of refactoring changes. That is alright.
+The region ∩ region labels are great, but now there are 2 sets of labels. Please get rid of the labels that show up on click-to-zoom, and replace the always-shown region labels with the ∩ notation.
+To deal with overlapping text, please put a new line in between the region names and the ∩
+I don't want to see the labels on the smaller regions (i.e. any region with 2+ intersecting petals) until I zoom in past 70%
+instead of having it just appear, fade in starting at 50%zoom to full opacity at 75% zoom
+Make sure it also fades out starting at 75% zoom, to full transparency at 50% zoom
+Reduce the size of the font in the smaller regions (2+ overlap) by 30%
+Remove the new line in between the region names and ∩
+Error: Minified React error #130; visit https://reactjs.org/docs/error-decoder.html?invariant=130&args[]=undefined&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
