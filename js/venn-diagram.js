@@ -18,11 +18,13 @@ const PETAL_COLORS = [
 const MULTI_PETAL_LABEL_FADE_START = 0.5;
 const MULTI_PETAL_LABEL_FADE_END = 0.75;
 
-function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorderOpacity, clickable, onRegionClick, scale = 1, zoomProgress = 0 }) {
+function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorderOpacity, clickable, onRegionClick, onBubbleClick, scale = 1, zoomProgress = 0 }) {
     const regions = React.useMemo(
         () => window.VennGeometry.calculateVennRegions(centerX, centerY, size, categories.length),
         [centerX, centerY, size, categories.length]
     );
+
+    const placeholderImageUrl = window.VennBubbles.usePlaceholderImageUrl();
 
     const maxArea = regions.reduce((max, r) => Math.max(max, r.area), 1);
     const elements = [];
@@ -96,6 +98,18 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
                 transition: 'opacity 0.2s ease'
             }
         }, label));
+
+        const fallbackColor = PETAL_COLORS[included[included.length - 1]].replace('OPACITY', 0.5);
+        elements.push(...window.VennBubbles.renderRegionBubbles({
+            regionIdx,
+            region,
+            maxArea,
+            scale,
+            imageUrl: placeholderImageUrl,
+            zoomProgress,
+            fallbackColor,
+            onBubbleClick
+        }));
     });
 
     return React.createElement('g', { key: 'venn-diagram' }, elements);
