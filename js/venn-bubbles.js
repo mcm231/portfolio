@@ -9,8 +9,8 @@
 // per-region database query; hardcoded for now to focus on node construction.
 const NUM_SUBNODES = 5;
 
-const BUBBLE_FADE_START = 0.5;
-const BUBBLE_FADE_END = 0.75;
+const BUBBLE_FADE_START = 0.3;
+const BUBBLE_FADE_END = 0.5;
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
