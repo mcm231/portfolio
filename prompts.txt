@@ -55,3 +55,5 @@ Please clean up the file changes so I don't commit local instantiated KV test en
 If npx wrangler pages dev . --kv IMAGE_METADATA tests locally, how do I test remote?
 if npx wrangler pages dev . --kv IMAGE_METADATA tests locally, how do I test remote?
 ✘ [ERROR] Unknown argument: remote
+Please clean up that unparsable KV entry and make the parsing defensive. Feel free to delete the remote data as needed.
+remove the unnecessary sqlite metadata

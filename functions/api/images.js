@@ -8,7 +8,13 @@ async function getAllEntries(kv) {
     const batch = await Promise.all(
       list.keys.map(async ({ name }) => {
         const value = await kv.get(name);
-        return value ? { id: name, ...JSON.parse(value) } : null;
+        if (!value) return null;
+        try {
+          return { id: name, ...JSON.parse(value) };
+        } catch {
+          console.error(`Skipping unparseable IMAGE_METADATA entry: "${name}"`);
+          return null;
+        }
       })
     );
     entries.push(...batch.filter(Boolean));
