@@ -24,13 +24,17 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
         [centerX, centerY, size, categories.length]
     );
 
-    const placeholderImageUrl = window.VennBubbles.usePlaceholderImageUrl();
+    const imageEntries = window.VennBubbles.useImageEntries();
+    const regionImageMap = React.useMemo(
+        () => window.VennBubbles.buildRegionImageMap(imageEntries, categories),
+        [imageEntries, categories]
+    );
 
     const maxArea = regions.reduce((max, r) => Math.max(max, r.area), 1);
     const elements = [];
 
     regions.forEach((region, regionIdx) => {
-        const { included, pathD, centroid, area } = region;
+        const { mask, included, pathD, centroid, area } = region;
         const includedCategories = included.map(idx => categories[idx]);
         const label = includedCategories.map(c => c.name).join(' ∩ ');
 
@@ -105,7 +109,7 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
             region,
             maxArea,
             scale,
-            imageUrl: placeholderImageUrl,
+            images: regionImageMap.get(mask),
             zoomProgress,
             fallbackColor,
             onBubbleClick
