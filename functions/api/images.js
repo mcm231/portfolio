@@ -26,30 +26,20 @@ async function getAllEntries(kv) {
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const imageId = url.searchParams.get("id");
-  const tag = url.searchParams.get("tag");
 
-  if (imageId) {
-    const value = await context.env.IMAGE_METADATA.get(imageId);
-    if (!value) return new Response("Not found", { status: 404 });
-    return new Response(value, {
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  if (tag !== null && !isValidTag(tag)) {
-    return new Response(JSON.stringify({ error: `Unknown tag: "${tag}"` }), {
+  if (!imageId) {
+    return new Response(JSON.stringify({ error: "Missing required 'id' parameter" }), {
       status: 400,
       headers: { "Content-Type": "application/json" }
     });
   }
 
-  const entries = await getAllEntries(context.env.IMAGE_METADATA);
+  const object = await context.env.IMAGES.get(imageId);
+  if (!object) return new Response("Not found", { status: 404 });
 
-  const results = tag
-    ? entries.filter(e => Array.isArray(e.tags) && e.tags.includes(tag))
-    : entries;
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set("etag", object.httpEtag);
 
-  return new Response(JSON.stringify(results), {
-    headers: { "Content-Type": "application/json" }
-  });
+  return new Response(object.body, { headers });
 }

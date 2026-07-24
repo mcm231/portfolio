@@ -176,26 +176,25 @@ function Portfolio() {
         window.history.replaceState(null, '', window.location.pathname);
     };
 
-    const handleRegionClick = (region, labelPosition) => {
-        if (region.type === 'single' && labelPosition) {
-            const category = region.category;
+    const handleRegionClick = (regionInfo, centroid) => {
+        if (!centroid) return;
 
-            const newScale = 8;
+        const newScale = 8;
 
-            const viewportCenterX = windowSize.width / 2;
-            const viewportCenterY = windowSize.height / 2;
+        const viewportCenterX = windowSize.width / 2;
+        const viewportCenterY = windowSize.height / 2;
 
-            const dx = labelPosition.x - viewportCenterX;
-            const dy = labelPosition.y - viewportCenterY;
+        const dx = centroid.x - viewportCenterX;
+        const dy = centroid.y - viewportCenterY;
 
-            const targetX = -dx * newScale;
-            const targetY = -dy * newScale;
+        const targetX = -dx * newScale;
+        const targetY = -dy * newScale;
 
-            setOffset({ x: targetX, y: targetY });
-            setScale(newScale);
+        setOffset({ x: targetX, y: targetY });
+        setScale(newScale);
 
-            window.history.pushState(null, '', `#${category.id}`);
-        }
+        const hash = regionInfo.categories.map(c => c.id).join('+');
+        window.history.pushState(null, '', `#${hash}`);
     };
 
     const centerX = windowSize.width / 2;
@@ -322,6 +321,7 @@ function Portfolio() {
                         opacity: vennOpacity,
                         textAndBorderOpacity: textAndBorderOpacity,
                         clickable: petalsClickable,
+                        zoomProgress: zoomProgress,
                         onRegionClick: handleRegionClick,
                         scale: scale
                     })
