@@ -81,3 +81,4 @@ I want the bubbles not to overlap with the central text in each region, and stay
 Remove the labels on the regions with 3 overlapping sections, since those labels are too long. This change should also affect the annulus, refactor accordingly.
 All text should be above the rest of the elements on the site in the layer ordering.
 Please ensure any overlapping region with 3 or more overlap does not show the region label.
+Please remove any borders around the bubbles, and make sure the bubbles display at the same size

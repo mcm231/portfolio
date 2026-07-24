@@ -9,6 +9,12 @@
 const BUBBLE_FADE_START = 0.3;
 const BUBBLE_FADE_END = 0.5;
 
+// Fixed so every bubble displays at the same size, regardless of its
+// region's area. Still divided by scale^0.4 at render time (same
+// counter-scaling used for label text) to stay visually consistent as the
+// user zooms in and out.
+const BUBBLE_RADIUS = 10;
+
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
 // Vogel's model, adapted to an annulus: distributes `count` points evenly
@@ -111,7 +117,7 @@ function buildRegionImageMap(entries, categories) {
 // Renders the bubble cluster for a single region: one bubble per image in
 // `images`. Returns an array of React elements (clipPath defs + bubble
 // groups) to splice into the parent <g>, or [] if there's nothing to show.
-function renderRegionBubbles({ regionIdx, region, maxArea, scale = 1, images, zoomProgress, fallbackColor, onBubbleClick, labelRadius = 0, centerExclusion = null }) {
+function renderRegionBubbles({ regionIdx, region, scale = 1, images, zoomProgress, fallbackColor, onBubbleClick, labelRadius = 0, centerExclusion = null }) {
     if (!images || images.length === 0) return [];
 
     const opacity = Math.max(0, Math.min(1,
@@ -120,7 +126,7 @@ function renderRegionBubbles({ regionIdx, region, maxArea, scale = 1, images, zo
     if (opacity <= 0) return [];
 
     const { centroid, area } = region;
-    const bubbleRadius = Math.max(4, Math.min(16, 16 * Math.sqrt(area / maxArea))) / Math.pow(scale, 0.4);
+    const bubbleRadius = BUBBLE_RADIUS / Math.pow(scale, 0.4);
 
     // Inner edge keeps bubbles clear of the region's own centered label.
     // Outer edge normally tracks the region's own size, but if the label is
@@ -179,15 +185,6 @@ function renderRegionBubbles({ regionIdx, region, maxArea, scale = 1, images, zo
                 preserveAspectRatio: 'xMidYMid slice',
                 clipPath: `url(#${clipId})`,
                 onError: (e) => { e.currentTarget.style.display = 'none'; }
-            }),
-            React.createElement('circle', {
-                key: 'border',
-                cx: pos.x,
-                cy: pos.y,
-                r: bubbleRadius,
-                fill: 'none',
-                stroke: 'rgba(255, 255, 255, 0.7)',
-                strokeWidth: 1.5
             })
         ]));
     });

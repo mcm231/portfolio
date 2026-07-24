@@ -137,7 +137,6 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
         bubbleElements.push(...window.VennBubbles.renderRegionBubbles({
             regionIdx,
             region,
-            maxArea,
             scale,
             images: regionImageMap.get(mask),
             zoomProgress,
