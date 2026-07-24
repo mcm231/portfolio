@@ -14,7 +14,7 @@ npx wrangler kv namespace list
 To put a test entry into Remote KV:
 ```
 npx wrangler kv key put --namespace-id=<YOUR ID HERE> "test-image-1" \
-  '{"name":"Test Piece","description":"A test","medium":"watercolor","tags":["traditional-art","watercolor"],"dateCreated":"2025-01-01","galleries":["Gallery1"]}' --remote
+  '{"name":"Test Piece","filename":"test-image-1.jpg","description":"A test","medium":"watercolor","tags":["traditional-art","watercolor"],"dateCreated":"2025-01-01","galleries":["Gallery1"]}' --remote
   ```
 
 Head over to Cloudflare to watch the data being updated in real time.
@@ -31,8 +31,13 @@ npx wrangler kv namespace list
 Put a test entry into Local KV:
 ```
 npx wrangler kv key put --namespace-id=<YOUR ID HERE> "test-image-1" \
-  '{"name":"Test Piece","description":"A test","medium":"watercolor","tags":["traditional-art","watercolor"],"dateCreated":"2025-01-01","galleries":["Gallery1"]}'
+  '{"name":"Test Piece","filename":"test-image-1.jpg","description":"A test","medium":"watercolor","tags":["traditional-art","watercolor"],"dateCreated":"2025-01-01","galleries":["Gallery1"]}'
   ```
+
+`name` and `filename` are both required on every entry. `filename` is the key of the
+corresponding object in the `IMAGES` R2 bucket, used to fetch the actual image bytes.
+If an entry is missing `filename`, or `filename` doesn't match any object in R2, the
+API defensively skips that entry rather than failing the whole request.
 
 Run dev server with KV bound:
 ```
@@ -58,9 +63,10 @@ To get the R2 bucket name, run:
 npx wrangler r2 bucket list
 ```
 
-To put a test object into Remote R2:
+To put a test object into Remote R2 (the object key must match the `filename` field
+of a KV metadata entry):
 ```
-npx wrangler r2 object put portfolio/test-image-1 --file ./path/to/test-image.jpg --remote
+npx wrangler r2 object put portfolio/test-image-1.jpg --file ./path/to/test-image.jpg --remote
 ```
 
 Head over to Cloudflare to watch the object appear in the bucket.
@@ -85,5 +91,6 @@ npx wrangler pages dev . --r2 IMAGES
 ```
 This spins up a local server (usually at `http://localhost:8788`) with your real R2 bucket connected.
 
-Hit the endpoint to verify:
-- Fetch image bytes by ID: `curl "http://localhost:8788/api/images?id=[IMAGE NAME HERE]" --output [IMAGE NAME HERE].jpg`
+Hit the endpoint to verify (note: `id` here is the R2 object key, i.e. the metadata
+entry's `filename`, not the KV key):
+- Fetch image bytes: `curl "http://localhost:8788/api/images?id=[FILENAME HERE]" --output [FILENAME HERE]`

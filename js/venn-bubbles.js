@@ -40,7 +40,7 @@ function usePlaceholderImageUrl() {
             .then(res => res.ok ? res.json() : [])
             .then(entries => {
                 if (Array.isArray(entries) && entries.length > 0) {
-                    setUrl(`/api/images?id=${encodeURIComponent(entries[0].id)}`);
+                    setUrl(`/api/images?id=${encodeURIComponent(entries[0].filename)}`);
                 }
             })
             .catch(() => {});

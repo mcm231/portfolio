@@ -1,6 +1,5 @@
 Remove the diamond in the middle of the venn diagram and all associated calculations for that diamond
 There's a lot of code here to custom-calculate the size and positioning of the venn diagram petals. I have decided I just want 4 petals. Please hard-code those 4 petals, with the same dimensions and shape they currently have, and remove the functions and files used purely to calculate the petal shapes. Once this is finished, I expect to see no difference visually in the site, but a significant change and increase in code clarity and cleanliness.
-3:53 PM
 When I zoom out, no matter where I zoom in from, the zoom-out center is always at the middle of the venn diagram, not in the middle of my viewport. I want to zoom out from the middle of my viewport.
 It is currently still zooming out from the center. Please make sure you set the right values and that it actually zooms IN AND OUT from the center of the current viewport, NOT the center of the site.
 Now the zoom center is stuck at the bottom left of the screen. It does not stay centered. Please remove your previous changes to the zoom and redo it.
@@ -70,4 +69,8 @@ Remove the new line in between the region names and ∩
 Error: Minified React error #130; visit https://reactjs.org/docs/error-decoder.html?invariant=130&args[]=undefined&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
 In each region, there will be a number of bubbles, represented by the variable "numSubnodes". Later on, we will change this variable to be dynamic based on database queries per region, but for now we can just set it as a constant so we can focus on the node construction. Each bubble/node will be a circle with an image from the database (for now, placeholder using the first image from the R2 object storage). These bubbles should be invisible at full zoom out, and fade in just like the labels starting at 50% zoom, to full opacity at 75% zoom. Each bubble should be clickable only when visible.\
 Please clean up that unparsable KV entry and make the parsing defensive. Feel free to delete the remote data as needed.
-remove the unnecessary sqlite metadata
+remove the unnecessary sqlite metadatatry those changes again now that the merge from main is complete.
+I notice that the JSON in the KV does not have an entry for image filename, only the title. Please add another property to the standard KV data called "filename". Whenever an image is uploaded, the metadata should come with it, and sore the file name for easy r2 retrieval. Filename is a mandatory argument, much like Title. Metadata queries where the filename cannot be found in R2 object storage should be defensively skipped over.
+To sanity check the previous changes: does the R2 object storage look up by ID, or by filename? Some blob storages look up by filename, only, some by ID. If Cloudflare R2 object storage looks up by ID, I want to stick with ID, NOT filename, and revert those impacted changes. If not, stick with filename.
+Ok, remote r2 now has test-image-1.jpg, but I don't see it showing up in the bubbles.
+I've done npx wrangler pages dev . , walk me through how to test a live version of this branch with remote KV binding

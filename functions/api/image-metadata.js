@@ -1,6 +1,28 @@
 import { isValidTag } from "./_constants.js";
 
-async function getAllEntries(kv) {
+async function resolveEntry(name, value, r2) {
+  let parsed;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    console.error(`Skipping unparseable IMAGE_METADATA entry: "${name}"`);
+    return null;
+  }
+
+  if (!parsed.filename) {
+    console.error(`Skipping IMAGE_METADATA entry "${name}": missing required "filename"`);
+    return null;
+  }
+
+  if (!(await r2.head(parsed.filename))) {
+    console.error(`Skipping IMAGE_METADATA entry "${name}": filename "${parsed.filename}" not found in R2`);
+    return null;
+  }
+
+  return { id: name, ...parsed };
+}
+
+async function getAllEntries(kv, r2) {
   const entries = [];
   let cursor;
   do {
@@ -8,7 +30,7 @@ async function getAllEntries(kv) {
     const batch = await Promise.all(
       list.keys.map(async ({ name }) => {
         const value = await kv.get(name);
-        return value ? { id: name, ...JSON.parse(value) } : null;
+        return value ? resolveEntry(name, value, r2) : null;
       })
     );
     entries.push(...batch.filter(Boolean));
@@ -25,7 +47,11 @@ export async function onRequest(context) {
   if (imageId) {
     const value = await context.env.IMAGE_METADATA.get(imageId);
     if (!value) return new Response("Not found", { status: 404 });
-    return new Response(value, {
+
+    const entry = await resolveEntry(imageId, value, context.env.IMAGES);
+    if (!entry) return new Response("Not found", { status: 404 });
+
+    return new Response(JSON.stringify(entry), {
       headers: { "Content-Type": "application/json" }
     });
   }
@@ -37,7 +63,7 @@ export async function onRequest(context) {
     });
   }
 
-  const entries = await getAllEntries(context.env.IMAGE_METADATA);
+  const entries = await getAllEntries(context.env.IMAGE_METADATA, context.env.IMAGES);
 
   const results = tag
     ? entries.filter(e => Array.isArray(e.tags) && e.tags.includes(tag))
