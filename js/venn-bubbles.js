@@ -11,12 +11,15 @@ const BUBBLE_FADE_END = 0.5;
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
-// Vogel's model: distributes `count` points evenly across a disc without
-// randomness, so bubble layout stays stable across re-renders.
-function calculateBubblePositions(centroid, maxRadius, count) {
+// Vogel's model, adapted to an annulus: distributes `count` points evenly
+// across the ring between innerRadius and outerRadius (area-uniform, not
+// radius-uniform) without randomness, so bubble layout stays stable across
+// re-renders. innerRadius keeps points clear of the region's own label.
+function calculateBubblePositions(centroid, innerRadius, outerRadius, count) {
     const positions = [];
     for (let i = 0; i < count; i++) {
-        const r = maxRadius * Math.sqrt((i + 0.5) / count);
+        const t = (i + 0.5) / count;
+        const r = Math.sqrt(innerRadius * innerRadius + t * (outerRadius * outerRadius - innerRadius * innerRadius));
         const theta = i * GOLDEN_ANGLE;
         positions.push({
             x: centroid.x + Math.cos(theta) * r,
@@ -24,6 +27,25 @@ function calculateBubblePositions(centroid, maxRadius, count) {
         });
     }
     return positions;
+}
+
+// If `point` falls inside the exclusion disc (used to keep bubbles clear of
+// the central 4-way overlap region), pushes it radially outward from the
+// exclusion's own center until it just clears the boundary.
+function pushOutsideExclusion(point, exclusion) {
+    if (!exclusion) return point;
+
+    const dx = point.x - exclusion.x;
+    const dy = point.y - exclusion.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist >= exclusion.radius) return point;
+
+    const ux = dist > 1e-6 ? dx / dist : 1;
+    const uy = dist > 1e-6 ? dy / dist : 0;
+    return {
+        x: exclusion.x + ux * exclusion.radius,
+        y: exclusion.y + uy * exclusion.radius
+    };
 }
 
 // Module-level cache so the metadata list is fetched at most once per page
@@ -89,7 +111,7 @@ function buildRegionImageMap(entries, categories) {
 // Renders the bubble cluster for a single region: one bubble per image in
 // `images`. Returns an array of React elements (clipPath defs + bubble
 // groups) to splice into the parent <g>, or [] if there's nothing to show.
-function renderRegionBubbles({ regionIdx, region, maxArea, scale = 1, images, zoomProgress, fallbackColor, onBubbleClick }) {
+function renderRegionBubbles({ regionIdx, region, maxArea, scale = 1, images, zoomProgress, fallbackColor, onBubbleClick, labelRadius = 0, centerExclusion = null }) {
     if (!images || images.length === 0) return [];
 
     const opacity = Math.max(0, Math.min(1,
@@ -99,8 +121,19 @@ function renderRegionBubbles({ regionIdx, region, maxArea, scale = 1, images, zo
 
     const { centroid, area } = region;
     const bubbleRadius = Math.max(4, Math.min(16, 16 * Math.sqrt(area / maxArea))) / Math.pow(scale, 0.4);
-    const spiralMaxRadius = Math.max(bubbleRadius * 1.5, Math.sqrt(area / Math.PI) * 0.55 - bubbleRadius);
-    const positions = calculateBubblePositions(centroid, spiralMaxRadius, images.length);
+
+    // Inner edge keeps bubbles clear of the region's own centered label.
+    // Outer edge normally tracks the region's own size, but if the label is
+    // too big (or there are too many bubbles) to fit inside it, it's allowed
+    // to grow past the region's own border rather than overlap the text.
+    const innerRadius = labelRadius + bubbleRadius * 0.5;
+    const naturalOuterRadius = Math.max(bubbleRadius * 1.5, Math.sqrt(area / Math.PI) * 0.55 - bubbleRadius);
+    const ringsNeeded = Math.ceil(Math.sqrt(images.length));
+    const minSpreadOuterRadius = innerRadius + bubbleRadius * 2 * ringsNeeded;
+    const outerRadius = Math.max(naturalOuterRadius, minSpreadOuterRadius, innerRadius + bubbleRadius);
+
+    const positions = calculateBubblePositions(centroid, innerRadius, outerRadius, images.length)
+        .map(pos => pushOutsideExclusion(pos, centerExclusion));
 
     const elements = [];
 
@@ -115,6 +148,8 @@ function renderRegionBubbles({ regionIdx, region, maxArea, scale = 1, images, zo
 
         elements.push(React.createElement('g', {
             key: `bubble-${regionIdx}-${image.id || bubbleIdx}`,
+            'data-image-id': image.id,
+            'data-region-mask': region.mask,
             style: {
                 opacity,
                 transition: 'opacity 0.2s ease',

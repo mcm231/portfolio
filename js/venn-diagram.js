@@ -31,7 +31,21 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
     );
 
     const maxArea = regions.reduce((max, r) => Math.max(max, r.area), 1);
-    const elements = [];
+
+    const centerMask = (1 << categories.length) - 1;
+    const centerRegion = regions.find(r => r.mask === centerMask);
+    const centerExclusion = centerRegion ? {
+        x: centerRegion.centroid.x,
+        y: centerRegion.centroid.y,
+        radius: Math.sqrt(centerRegion.area / Math.PI) * 1.15
+    } : null;
+
+    // Kept as separate layers (rather than one interleaved array) so every
+    // label paints above every petal and bubble, regardless of which
+    // region's iteration produced it.
+    const petalElements = [];
+    const bubbleElements = [];
+    const labelElements = [];
 
     regions.forEach((region, regionIdx) => {
         const { mask, included, pathD, centroid, area } = region;
@@ -45,7 +59,7 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
             const isTopLayer = layerIdx === included.length - 1;
             const fillColor = PETAL_COLORS[petalIdx].replace('OPACITY', 0.65);
 
-            elements.push(React.createElement('path', {
+            petalElements.push(React.createElement('path', {
                 key: `region-${regionIdx}-layer-${layerIdx}`,
                 d: pathD,
                 fill: fillColor,
@@ -77,34 +91,50 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
         });
 
         const isMultiPetal = included.length >= 2;
-        const multiPetalLabelOpacity = Math.max(0, Math.min(1,
-            (zoomProgress - MULTI_PETAL_LABEL_FADE_START) / (MULTI_PETAL_LABEL_FADE_END - MULTI_PETAL_LABEL_FADE_START)
-        ));
-        if (isMultiPetal && multiPetalLabelOpacity <= 0) return;
+        // Labels for 3+ overlapping categories (e.g. "Writing ∩ Traditional
+        // Art ∩ Digital Art") run too long to display legibly, so those
+        // regions get no label at all — and correspondingly no
+        // label-avoidance radius carved out of their bubble annulus below.
+        const showLabel = included.length < 3;
 
         const baseFontSize = Math.max(8, Math.min(17, 17 * Math.sqrt(area / maxArea))) / Math.pow(scale, 0.4);
         const fontSize = isMultiPetal ? baseFontSize * 0.7 : baseFontSize;
 
-        elements.push(React.createElement('text', {
-            key: `label-${regionIdx}`,
-            x: centroid.x,
-            y: centroid.y,
-            style: {
-                fill: 'rgba(255, 255, 255, 1)',
-                fontSize: `${fontSize}px`,
-                fontWeight: 'bold',
-                textAnchor: 'middle',
-                dominantBaseline: 'middle',
-                pointerEvents: 'none',
-                userSelect: 'none',
-                textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
-                opacity: isMultiPetal ? multiPetalLabelOpacity : 1,
-                transition: 'opacity 0.2s ease'
-            }
-        }, label));
+        let labelRadius = 0;
+
+        if (showLabel) {
+            const multiPetalLabelOpacity = Math.max(0, Math.min(1,
+                (zoomProgress - MULTI_PETAL_LABEL_FADE_START) / (MULTI_PETAL_LABEL_FADE_END - MULTI_PETAL_LABEL_FADE_START)
+            ));
+            if (isMultiPetal && multiPetalLabelOpacity <= 0) return;
+
+            labelElements.push(React.createElement('text', {
+                key: `label-${regionIdx}`,
+                x: centroid.x,
+                y: centroid.y,
+                style: {
+                    fill: 'rgba(255, 255, 255, 1)',
+                    fontSize: `${fontSize}px`,
+                    fontWeight: 'bold',
+                    textAnchor: 'middle',
+                    dominantBaseline: 'middle',
+                    pointerEvents: 'none',
+                    userSelect: 'none',
+                    textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
+                    opacity: isMultiPetal ? multiPetalLabelOpacity : 1,
+                    transition: 'opacity 0.2s ease'
+                }
+            }, label));
+
+            // Rough bounding-circle estimate for the label text, so bubbles
+            // keep clear of it regardless of its current fade-in opacity.
+            const approxCharWidth = 0.6;
+            const labelHalfWidth = (label.length * fontSize * approxCharWidth) / 2;
+            labelRadius = Math.sqrt(labelHalfWidth * labelHalfWidth + (fontSize / 2) * (fontSize / 2));
+        }
 
         const fallbackColor = PETAL_COLORS[included[included.length - 1]].replace('OPACITY', 0.5);
-        elements.push(...window.VennBubbles.renderRegionBubbles({
+        bubbleElements.push(...window.VennBubbles.renderRegionBubbles({
             regionIdx,
             region,
             maxArea,
@@ -112,9 +142,13 @@ function VennDiagram({ categories, centerX, centerY, size, opacity, textAndBorde
             images: regionImageMap.get(mask),
             zoomProgress,
             fallbackColor,
-            onBubbleClick
+            onBubbleClick,
+            labelRadius,
+            centerExclusion: mask === centerMask ? null : centerExclusion
         }));
     });
+
+    const elements = [...petalElements, ...bubbleElements, ...labelElements];
 
     return React.createElement('g', { key: 'venn-diagram' }, elements);
 }

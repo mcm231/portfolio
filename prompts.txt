@@ -76,3 +76,8 @@ Ok, remote r2 now has test-image-1.jpg, but I don't see it showing up in the bub
 I've done npx wrangler pages dev . , walk me through how to test a live version of this branch with remote KV binding
 Perfect. Now for the actual dynamic bubble enumeration: each section/intersection will have a variable number of bubbles. The number of these bubbles will depend on the tags. If the tag contains "digital-art", it will be in the "Digital Art" section. If it contains "digital-art", "programming" the image bubble will be in the intersection zone of those 2 regions. If there are no bubbles with the tag for that section of the venn diagram, there should be no bubbles. There is no need to continuously fetch and update from the remote database, fetch only once on reload and use caching where necessary to minimize request load
 Delete test KV entries now, also delete the stray 0-byte test-image-1. Actually, delete any image that isn't test-image-1.jpg
+The computed petals of the venn diagram are currently ovals. Please make them perfect circles instead.
+I want the bubbles not to overlap with the central text in each region, and stay clear of the central 4-overlap region. If there isn't enough space, it's ok if they go entirely outside the borders of their region if need be, as long as they are close enough to the region
+Remove the labels on the regions with 3 overlapping sections, since those labels are too long. This change should also affect the annulus, refactor accordingly.
+All text should be above the rest of the elements on the site in the layer ordering.
+Please ensure any overlapping region with 3 or more overlap does not show the region label.

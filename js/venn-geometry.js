@@ -23,7 +23,7 @@ function generateOvalPath(centerX, centerY, angle, width, length) {
 }
 
 function calculateOvalShapes(centerX, centerY, baseSize) {
-    const width = baseSize * 0.35;
+    const width = baseSize * 0.5;
     const length = baseSize * 0.5;
 
     return [
