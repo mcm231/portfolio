@@ -280,6 +280,41 @@ function Portfolio() {
             }, 'Reset View')
         ]),
 
+        React.createElement('button', {
+            key: 'gallery-btn',
+            onClick: (e) => {
+                e.stopPropagation();
+                window.location.href = 'pages/gallery.html';
+            },
+            style: {
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                color: 'white',
+                padding: '16px 32px',
+                borderRadius: '999px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '700',
+                letterSpacing: '1px',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 8px 30px rgba(0, 0, 0, 0.3)',
+                zIndex: 900,
+                transition: 'all 0.2s ease'
+            },
+            onMouseEnter: (e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.05)';
+            },
+            onMouseLeave: (e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)';
+            }
+        }, 'Gallery'),
+
         React.createElement('div', {
             key: 'canvas',
             id: 'canvas',

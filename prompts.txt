@@ -82,3 +82,5 @@ Remove the labels on the regions with 3 overlapping sections, since those labels
 All text should be above the rest of the elements on the site in the layer ordering.
 Please ensure any overlapping region with 3 or more overlap does not show the region label.
 Please remove any borders around the bubbles, and make sure the bubbles display at the same size
+Create a brand new page on this website called "Gallery". Gallery will query every single image in the db and display them in a gallery format. It should have a large search bar at the top with a dropdown of things to filter by: Title, Tag, Date Created. An enter or a button press (Add) should add that filter to a list below the search bar, allowing you to further filter down images.
+For now, to access Gallery, add a button in the center of the ven diagram on the home page.
