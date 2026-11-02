@@ -7,18 +7,40 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="home">
-    <!-- Dot grid. Fixed to the screen, but its pattern shifts with the pan. -->
-    <div id="grid" aria-hidden="true"></div>
-
-    <!-- Drag surface. #world holds everything that pans. -->
+    <!-- Drag surface. Everything inside #plane pans together. -->
     <main id="viewport">
-        <div id="world">
-            <h1 class="name">Maya Malavasi</h1>
+        <div id="plane">
+            <div id="mosaic" aria-hidden="true"></div>
+
+            <div id="card" class="card">
+                <h1 class="card-name">Maya Malavasi</h1>
+                <a class="card-cta" href="pages/gallery.html">Gallery Search</a>
+            </div>
         </div>
     </main>
 
+    <!-- Fixed teal rail. The panel holds the page links. -->
+    <nav id="menu" class="menu">
+        <button id="menu-toggle" class="menu-toggle" type="button"
+                aria-expanded="false" aria-controls="menu-panel" aria-label="Open menu">
+            <span class="menu-bars" aria-hidden="true"></span>
+        </button>
+
+        <div id="menu-panel" class="menu-panel" hidden>
+            <ul>
+                <li><a href="pages/gallery.html">Gallery Search</a></li>
+                <li><a href="#">Placeholder One</a></li>
+                <li><a href="#">Placeholder Two</a></li>
+                <li><a href="#">Placeholder Three</a></li>
+                <li><a href="#">Placeholder Four</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
     <button id="recenter" class="is-hidden" type="button">Recenter</button>
 
-    <script src="js/home.js"></script>
+    <script type="module" src="js/home.js"></script>
 </body>
 </html>

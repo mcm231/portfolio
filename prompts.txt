@@ -89,3 +89,8 @@ The cool white should be blue tinged, not gray
 are you continuing to update prompts.txt
 fix the path
 and then append the missing prompts
+I want the homepage to look like the attached screenshot. Use uploaded photos and group them around the center title, from inner circle to outer edges. The blue sidebar is a menu that will show a list of page options to go to, use placeholder names for now. The colors aside from the teal of the menu are not final, use a palette that works for now. [Image #1]
+The images should be neatly aligned with a very small (3px?) gap between each image. The overall style is elegant and clean
+The central white rectangle should not be on top of the images, it should be as though the images left a rectangle gap in the center.
+too thin, and I want to keep the side gradient
+Update a universal style guide: use sharp corners unless explicitly stated. Use 1 unified color palette (use placeholder colors for now). Use a standard list of 1-2 fonts that work well together (use placeholders for now). Hamburger side menu should be standard.

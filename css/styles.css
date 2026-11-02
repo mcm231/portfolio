@@ -12,12 +12,19 @@ body {
     padding: 0;
 }
 
+/* Working palette. The teal rail is fixed; the rest is provisional. */
 :root {
-    --cool-white: #eef4fe;
+    --page: #eef4fe;
     --ink: #111a2b;
     --ink-soft: #5f7391;
+    --card: #ffffff;
+    --accent: #6c5ce7;
+    --accent-hover: #5a49d6;
+    --teal-deep: #17808f;
+    --teal-mid: #4ea8c9;
+    --teal-pale: #bedbf0;
     --hairline: rgba(17, 26, 43, 0.14);
-    --dot: rgba(42, 74, 125, 0.16);
+    --shadow: rgba(17, 26, 43, 0.18);
     --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
 }
 
@@ -30,24 +37,15 @@ body {
 body.home {
     height: 100vh;
     overflow: hidden;
-    background: var(--cool-white);
+    background: var(--page);
     color: var(--ink);
-}
-
-/* Dot grid. Fixed to the screen; home.js shifts its pattern with the pan. */
-#grid {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background-image: radial-gradient(var(--dot) 1px, transparent 1px);
-    background-size: 34px 34px;
 }
 
 #viewport {
     position: fixed;
     inset: 0;
     z-index: 1;
+    overflow: hidden;
     cursor: grab;
     touch-action: none;
 }
@@ -56,34 +54,235 @@ body.home {
     cursor: grabbing;
 }
 
-/* Everything that pans lives here. Centered on the viewport at the origin. */
-#world {
+/* Origin of the pannable plane. Children position against this point. */
+#plane {
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
     will-change: transform;
 }
 
-.name {
-    margin: 0;
-    font-size: clamp(2.5rem, 9vw, 7rem);
-    font-weight: 500;
-    letter-spacing: -0.035em;
-    white-space: nowrap;
+#mosaic {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
 }
+
+/* ---------- Mosaic tiles ---------- */
+
+/* --x and --y are the top-left corner, in plane coordinates. */
+.tile {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--w);
+    height: var(--h);
+    margin: 0;
+    overflow: hidden;
+    background: var(--card);
+    opacity: var(--o);
+    transform: translate(var(--x), var(--y));
+}
+
+.tile img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.tile.is-blank {
+    background: var(--blank);
+}
+
+/* ---------- Title card ---------- */
+
+/* The card is one more cell of the wall. Before the layout runs it centers on
+   its own size; afterwards mosaic.js snaps it to its reserved cells. */
+.card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: var(--w, min(630px, 84vw));
+    height: var(--h, auto);
+    padding: 54px 48px 58px;
+    transform: translate(var(--x, -50%), var(--y, -50%));
+    background: var(--card);
+    text-align: center;
+}
+
+.card-name {
+    margin: 0 0 32px;
+    font-size: clamp(1.9rem, 5.2vw, 3.9rem);
+    font-weight: 300;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.card-cta {
+    display: inline-block;
+    padding: 16px 34px;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.card-cta:hover {
+    background: var(--accent-hover);
+}
+
+/* The name sits on one line, so the card must shrink with the screen. */
+@media (max-width: 620px) {
+    .card {
+        padding: 34px 22px 38px;
+    }
+
+    .card-name {
+        margin-bottom: 26px;
+        font-size: clamp(1.45rem, 7vw, 2.4rem);
+        /* Too narrow for one line. Let the name break instead of clipping. */
+        white-space: normal;
+    }
+
+    .card-cta {
+        padding: 13px 24px;
+        font-size: 13px;
+    }
+}
+
+/* ---------- Side menu ---------- */
+
+.menu {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    width: 190px;
+    pointer-events: none;
+}
+
+/* The rail: a solid teal core 80px wide, then a fade out to the right. The
+   fade lives on this pseudo-element so it never touches the open panel. */
+.menu::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(165deg, var(--teal-deep) 0%, var(--teal-mid) 100%);
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 80px, transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 80px, transparent 100%);
+}
+
+/* 18px of rail shows on every side of the 44px button. */
+.menu-toggle {
+    position: absolute;
+    left: 18px;
+    top: 18px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+/* Three bars, drawn from one element plus its two pseudo-elements. */
+.menu-bars,
+.menu-bars::before,
+.menu-bars::after {
+    position: absolute;
+    left: 7px;
+    width: 30px;
+    height: 3px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.menu-bars {
+    top: 21px;
+}
+
+.menu-bars::before,
+.menu-bars::after {
+    content: '';
+    left: 0;
+}
+
+.menu-bars::before { top: -9px; }
+.menu-bars::after  { top: 9px; }
+
+.menu.is-open .menu-bars { background: transparent; }
+.menu.is-open .menu-bars::before { transform: translateY(9px) rotate(45deg); }
+.menu.is-open .menu-bars::after  { transform: translateY(-9px) rotate(-45deg); }
+
+.menu-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    width: min(270px, 80vw);
+    padding: 96px 0 40px;
+    background: linear-gradient(160deg, var(--teal-deep) 0%, var(--teal-mid) 100%);
+    box-shadow: 14px 0 40px rgba(17, 26, 43, 0.22);
+    pointer-events: auto;
+    overflow-y: auto;
+}
+
+.menu-panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.menu-panel a {
+    display: block;
+    padding: 14px 32px;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.menu-panel a:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+/* ---------- Recenter ---------- */
 
 #recenter {
     position: fixed;
     right: 24px;
     bottom: 24px;
-    z-index: 2;
+    z-index: 40;
     padding: 10px 18px;
     border: 1px solid var(--hairline);
     border-radius: 999px;
-    background: rgba(253, 254, 255, 0.76);
+    background: rgba(253, 254, 255, 0.82);
     backdrop-filter: blur(8px);
     color: var(--ink-soft);
     font-family: var(--font);

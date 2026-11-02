@@ -150,7 +150,7 @@ function GalleryPage() {
                     textShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
                     letterSpacing: '2px'
                 }
-            }, 'Gallery'),
+            }, 'Gallery Search'),
             React.createElement('p', {
                 key: 'subtitle',
                 style: {
