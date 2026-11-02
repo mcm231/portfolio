@@ -84,3 +84,8 @@ Please ensure any overlapping region with 3 or more overlap does not show the re
 Please remove any borders around the bubbles, and make sure the bubbles display at the same size
 Create a brand new page on this website called "Gallery". Gallery will query every single image in the db and display them in a gallery format. It should have a large search bar at the top with a dropdown of things to filter by: Title, Tag, Date Created. An enter or a button press (Add) should add that filter to a list below the search bar, allowing you to further filter down images.
 For now, to access Gallery, add a button in the center of the ven diagram on the home page.
+So I currently have the bare bones of a portfolio site. Unfortunately, I want to do a major overhaul of what the home page looks like. Get rid of all Front-end UI with the venn diagram stuff in this branch. I want a clean slate for the new homepage, no spaghetti code. The main homepage should be a cool white with the name front and center. I should still be able to pan all around (the title is now part of the diagram so it would pan as well) with a button to recenter. this is the starting point for the new site
+The cool white should be blue tinged, not gray
+are you continuing to update prompts.txt
+fix the path
+and then append the missing prompts

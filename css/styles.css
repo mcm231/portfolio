@@ -1,206 +1,111 @@
-* {
-    margin: 0;
-    padding: 0;
+/* ---------- Reset ---------- */
+
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
+html,
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-    overflow: hidden;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-    color: #ffffff;
+    margin: 0;
+    padding: 0;
 }
 
-#bg-canvas {
+:root {
+    --cool-white: #eef4fe;
+    --ink: #111a2b;
+    --ink-soft: #5f7391;
+    --hairline: rgba(17, 26, 43, 0.14);
+    --dot: rgba(42, 74, 125, 0.16);
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+body {
+    font-family: var(--font);
+}
+
+/* ---------- Home page ---------- */
+
+body.home {
+    height: 100vh;
+    overflow: hidden;
+    background: var(--cool-white);
+    color: var(--ink);
+}
+
+/* Dot grid. Fixed to the screen; home.js shifts its pattern with the pan. */
+#grid {
     position: fixed;
     inset: 0;
-    width: 100vw;
-    height: 100vh;
     z-index: 0;
     pointer-events: none;
+    background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+    background-size: 34px 34px;
 }
 
-#app {
-    position: relative;
+#viewport {
+    position: fixed;
+    inset: 0;
     z-index: 1;
-    width: 100vw;
-    height: 100vh;
-}
-
-/* Canvas Container */
-.canvas-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
     cursor: grab;
+    touch-action: none;
 }
 
-.canvas-container.dragging {
+#viewport.is-dragging {
     cursor: grabbing;
 }
 
-/* Canvas */
-.canvas {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transition: transform 0.3s ease-out;
-}
-
-/* Nodes */
-.node {
+/* Everything that pans lives here. Centered on the viewport at the origin. */
+#world {
     position: absolute;
-    border-radius: 50%;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    border: 3px solid yellow;
-    z-index: 100;
+    user-select: none;
+    will-change: transform;
 }
 
-.node:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
+.name {
+    margin: 0;
+    font-size: clamp(2.5rem, 9vw, 7rem);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    white-space: nowrap;
 }
 
-.node.level-1 {
-    width: 180px;
-    height: 180px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(139, 92, 246, 0.8));
-}
-
-.node.level-2 {
-    width: 140px;
-    height: 140px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.8));
-}
-
-.node.level-3 {
-    width: 100px;
-    height: 100px;
-    background: linear-gradient(135deg, rgba(14, 165, 233, 0.8), rgba(59, 130, 246, 0.8));
-}
-
-.node-content {
-    text-align: center;
-    padding: 10px;
+#recenter {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 2;
+    padding: 10px 18px;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    background: rgba(253, 254, 255, 0.76);
+    backdrop-filter: blur(8px);
+    color: var(--ink-soft);
+    font-family: var(--font);
+    font-size: 13px;
     font-weight: 600;
-    font-size: 14px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: opacity 0.25s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.node.level-1 .node-content {
-    font-size: 18px;
+#recenter:hover {
+    color: var(--ink);
+    border-color: rgba(17, 26, 43, 0.3);
 }
 
-.node.level-2 .node-content {
-    font-size: 16px;
-}
-
-.node.level-3 .node-content {
-    font-size: 12px;
-}
-
-/* Connections */
-.connection {
-    position: absolute;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    height: 2px;
-    transform-origin: left center;
+#recenter.is-hidden {
+    opacity: 0;
     pointer-events: none;
-    opacity: 0.3;
 }
 
-/* Controls */
-.controls {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 1000;
-}
+/* ---------- Shared: loading ---------- */
 
-.control-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    backdrop-filter: blur(10px);
-    transition: all 0.2s ease;
-}
-
-.control-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-2px);
-}
-
-/* Header */
-.header {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-}
-
-.header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 2px 10px rgba(167, 139, 250, 0.3);
-}
-
-.header p {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-top: 5px;
-}
-
-/* Breadcrumb */
-.breadcrumb {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.breadcrumb-item {
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.breadcrumb-item:hover {
-    color: white;
-}
-
-.breadcrumb-separator {
-    color: rgba(255, 255, 255, 0.3);
-}
-
-/* Loading */
 .loading {
     position: fixed;
     top: 50%;
@@ -222,17 +127,15 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* Image Modal */
+/* ---------- Shared: image modal ---------- */
+
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(0, 0, 0, 0.9);
     z-index: 2000;
     cursor: pointer;
 }
@@ -254,12 +157,12 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
     padding: 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
-    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
     font-size: 18px;
+    cursor: pointer;
     backdrop-filter: blur(10px);
 }

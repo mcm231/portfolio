@@ -3,30 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maya Malavasi - Interactive Portfolio</title>
+    <title>Maya Malavasi</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-    <canvas id="bg-canvas"></canvas>
-    <div id="app"></div>
+<body class="home">
+    <!-- Dot grid. Fixed to the screen, but its pattern shifts with the pan. -->
+    <div id="grid" aria-hidden="true"></div>
 
-    <!-- React and ReactDOM from CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-router-dom@6.8.0/dist/umd/react-router-dom.production.min.js"></script>
+    <!-- Drag surface. #world holds everything that pans. -->
+    <main id="viewport">
+        <div id="world">
+            <h1 class="name">Maya Malavasi</h1>
+        </div>
+    </main>
 
-    <!-- Animated background -->
-    <script src="js/background.js"></script>
+    <button id="recenter" class="is-hidden" type="button">Recenter</button>
 
-    <!-- Polygon boolean ops, used to compute Venn intersection/difference regions -->
-    <script crossorigin src="https://unpkg.com/polybooljs@1.2.2/dist/polybool.js"></script>
-
-    <!-- Venn diagram geometry and component -->
-    <script src="js/venn-geometry.js"></script>
-    <script src="js/venn-bubbles.js"></script>
-    <script src="js/venn-diagram.js"></script>
-
-    <!-- Main application -->
-    <script src="js/app.js"></script>
+    <script src="js/home.js"></script>
 </body>
 </html>

@@ -6,7 +6,11 @@
     <title>Gallery - Maya Malavasi</title>
     <link rel="stylesheet" href="../css/styles.css">
     <style>
+        /* The gallery keeps its own dark theme. The home page owns the light one. */
         body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
             animation: fadeIn 0.5s ease-out;
         }
         @keyframes fadeIn {
