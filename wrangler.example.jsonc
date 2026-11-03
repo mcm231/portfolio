@@ -1,15 +1,21 @@
 {
   "name": "portfolio",
-  "pages_build_output_dir": ".",
+  "main": "src/index.js",
+  "workers_dev": true,
   "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
   "kv_namespaces": [
     { "binding": "IMAGE_METADATA", "id": "YOUR_KV_NAMESPACE_ID" }
   ],
   "r2_buckets": [
     { "binding": "IMAGES", "bucket_name": "YOUR_R2_BUCKET_NAME" }
   ],
-  // The /upload gate. Set the real values in the Cloudflare dashboard, under
-  // Settings, Variables and Secrets. See the Upload page section of README.md.
+  // The /upload gate. See the Upload page section of README.md.
   "vars": {
     "ACCESS_TEAM_DOMAIN": "YOUR_TEAM.cloudflareaccess.com",
     "ACCESS_AUD": "YOUR_ACCESS_APPLICATION_AUD",

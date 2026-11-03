@@ -30,14 +30,13 @@ globalThis.fetch = async (url) => {
   throw new Error(`unexpected fetch: ${url}`);
 };
 
-const { onRequest } = await import(`${ROOT}/functions/_middleware.js`);
+const { guard } = await import(`${ROOT}/src/gate.js`);
 
-const NEXT = Symbol('next');
-async function run(path, { token, env = {}, host = 'site.pages.dev' } = {}) {
+async function run(path, { token, env = {}, host = 'portfolio.workers.dev' } = {}) {
   const headers = token ? { 'Cf-Access-Jwt-Assertion': token } : {};
   const request = new Request(`https://${host}${path}`, { headers });
-  const res = await onRequest({ request, env, next: async () => NEXT });
-  if (res === NEXT) return { outcome: 'served' };
+  const res = await guard(request, env);
+  if (res === null) return { outcome: 'served' };
   return { outcome: res.status, location: res.headers.get('location') };
 }
 

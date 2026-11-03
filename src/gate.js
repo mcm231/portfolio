@@ -1,14 +1,16 @@
 // Gate for the private routes. Every other request passes straight through.
 //
 // Cloudflare Access protects /upload at the edge, so an anonymous visitor sees
-// the Access login page before this code runs. This middleware is the second
-// check: it proves the token is real, and it allows only the listed emails.
+// the Access login page before this code runs. This gate is the second check:
+// it proves the token is real, and it allows only the listed emails.
+//
+// It returns a Response to stop the request, or null to let it continue.
 import { verifyAccessToken } from './api/_access.js';
 
 const PROTECTED_PATHS = ['/upload', '/api/upload'];
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
-function isProtected(pathname) {
+export function isProtected(pathname) {
   return PROTECTED_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`));
 }
 
@@ -29,16 +31,15 @@ function toAccessLogin(url, teamDomain) {
   return Response.redirect(target, 302);
 }
 
-export async function onRequest(context) {
-  const { request, env, next } = context;
+export async function guard(request, env) {
   const url = new URL(request.url);
 
-  if (!isProtected(url.pathname)) return next();
+  if (!isProtected(url.pathname)) return null;
 
   // Local development only. Both conditions must hold, so the flag alone
   // cannot open the route on a deployed site.
   if (LOCAL_HOSTS.has(url.hostname) && env.ACCESS_LOCAL_BYPASS === 'true') {
-    return next();
+    return null;
   }
 
   const teamDomain = env.ACCESS_TEAM_DOMAIN;
@@ -73,5 +74,5 @@ export async function onRequest(context) {
     return toHomepage(url);
   }
 
-  return next();
+  return null;
 }

@@ -1,0 +1,52 @@
+// Routes the real Worker with stub bindings. No network, no Cloudflare login.
+const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const worker = (await import(`${ROOT}/src/index.js`)).default;
+
+const kv = new Map([['piece-one', JSON.stringify({
+  name: 'Piece One', filename: 'piece-one.jpg', tags: ['watercolor'], dateCreated: '2026-01-01'
+})]]);
+
+const env = {
+  IMAGE_METADATA: {
+    async get(k) { return kv.get(k) ?? null; },
+    async list() { return { keys: [...kv.keys()].map(name => ({ name })), list_complete: true }; },
+    async put(k, v) { kv.set(k, v); }
+  },
+  IMAGES: {
+    async head() { return {}; },
+    async get() { return { body: 'bytes', httpEtag: '"e"', writeHttpMetadata() {} }; },
+    async put() {},
+    async delete() {}
+  },
+  ASSETS: { async fetch(req) { return new Response(`asset:${new URL(req.url).pathname}`, { status: 200 }); } }
+};
+
+const ctx = { waitUntil() {} };
+const HOST = 'https://portfolio.mayacollege2020.workers.dev';
+
+async function hit(path, init) {
+  const res = await worker.fetch(new Request(HOST + path, init), env, ctx);
+  const text = await res.clone().text();
+  return { status: res.status, body: text.slice(0, 48), full: text, location: res.headers.get('location') };
+}
+
+const cases = [
+  ['home page serves an asset',  await hit('/'),                      r => r.status === 200 && r.body.startsWith('asset:/')],
+  ['css serves an asset',        await hit('/css/styles.css'),        r => r.body === 'asset:/css/styles.css'],
+  ['tags returns json',          await hit('/api/tags'),              r => r.status === 200 && r.body.includes('watercolor')],
+  ['tags all returns the enum',  await hit('/api/tags?all=true'),     r => r.full.includes('programming') && r.full.includes('gouache')],
+  ['metadata returns json',      await hit('/api/image-metadata'),    r => r.status === 200 && r.body.includes('Piece One')],
+  ['images needs an id',         await hit('/api/images'),            r => r.status === 400],
+  ['unknown api is 404',         await hit('/api/nope'),              r => r.status === 404],
+  ['upload page is gated',       await hit('/upload'),                r => r.status === 503],
+  ['upload post is gated',       await hit('/api/upload', { method: 'POST' }), r => r.status === 503],
+];
+
+let failed = 0;
+for (const [label, result, check] of cases) {
+  const pass = check(result);
+  if (!pass) failed++;
+  console.log(`${pass ? 'PASS' : 'FAIL'}  ${label.padEnd(28)} ${String(result.status).padEnd(4)} ${result.body}`);
+}
+console.log(failed === 0 ? '\nall cases pass' : `\n${failed} case(s) failed`);
+process.exit(failed === 0 ? 0 : 1);

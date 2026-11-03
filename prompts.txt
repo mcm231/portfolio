@@ -95,3 +95,18 @@ The central white rectangle should not be on top of the images, it should be as 
 too thin, and I want to keep the side gradient
 Update a universal style guide: use sharp corners unless explicitly stated. Use 1 unified color palette (use placeholder colors for now). Use a standard list of 1-2 fonts that work well together (use placeholders for now). Hamburger side menu should be standard.
 I want a  page to upload an image, and include the information that gets stored in the database. However, I ONLY want to be able to access this page if I am logged in (Cloudflare account, Cloudflare permissions, etc.), or else get a login page (and be kicked back to the homepage if I'm not the right user). This page should be at a url like /upload, no links to anywhere in the site.
+"variables cannot be added to a woerk that only has static assets"
+"variables cannot be added to a worker that only has static assets"
+okay, it's live locally at https://310d52f5.portfolio-6vq.pages.dev, but I want it to work at https://portfolio.mayacollege2020.workers.dev/
+untrack wrangler.jsonc
+[wrangler:info] Ready on http://localhost:8788
+[wrangler:info] GET /upload 404 Not Found (9ms)
+[wrangler:info] GET /upload 404 Not Found (7ms)
+[wrangler:info] GET / 404 Not Found (5ms)
+✘ [ERROR] The Workers runtime failed to start. There was likely a problem with the workerd binary or your configuration.
+  Runtime stderr:
+  *** Fatal uncaught kj::Exception: workerd/util/sqlite.c++:844: failed: SENTRY_DO SQLite failed;
+  dbErrorMessage(prepareResult, db) = table _cf_ALARM has 3 columns but 2 values were supplied:
+  SQLITE_ERROR
+  stack: 101fc67cf 101fcaa7b 10107daf3 101046f0b 101046943 10100b443 1010785bf 10107b0e3 100fe7ec3
+  103b3660f 103b36937 103b351a3 103b34f63 100fd48f3 19777eb97
