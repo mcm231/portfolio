@@ -7,5 +7,12 @@
   ],
   "r2_buckets": [
     { "binding": "IMAGES", "bucket_name": "YOUR_R2_BUCKET_NAME" }
-  ]
+  ],
+  // The /upload gate. Set the real values in the Cloudflare dashboard, under
+  // Settings, Variables and Secrets. See the Upload page section of README.md.
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "YOUR_TEAM.cloudflareaccess.com",
+    "ACCESS_AUD": "YOUR_ACCESS_APPLICATION_AUD",
+    "ACCESS_ALLOWED_EMAILS": "you@example.com"
+  }
 }

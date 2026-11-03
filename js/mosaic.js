@@ -23,10 +23,8 @@ const SHAPES = [
     [3, 3]
 ];
 
-const BLANK_COLORS = [
-    '#bcd2ea', '#a9c4e4', '#cdd9ec', '#9fb8dc',
-    '#d6e2f2', '#b4cde8', '#c3d4ea', '#aec6e2'
-];
+// Placeholder tile colors live in css/styles.css as --blank-1 .. --blank-N.
+const BLANK_COUNT = 8;
 
 // Deterministic PRNG, so the wall stays put between renders.
 function mulberry32(seed) {
@@ -167,7 +165,7 @@ function buildTile(tile, entry, maxDistance, random) {
         figure.appendChild(img);
     } else {
         figure.classList.add('is-blank');
-        figure.style.setProperty('--blank', BLANK_COLORS[Math.floor(random() * BLANK_COLORS.length)]);
+        figure.style.setProperty('--blank', `var(--blank-${Math.floor(random() * BLANK_COUNT) + 1})`);
     }
 
     return figure;

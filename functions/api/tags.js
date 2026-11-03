@@ -1,7 +1,14 @@
-import { TAGS_SET } from "./_constants.js";
+import { TAGS, TAGS_SET } from "./_constants.js";
 
 export async function onRequest(context) {
+  const url = new URL(context.request.url);
+
+  // ?all=true lists every tag in the enum, including the unused ones. The
+  // upload form needs the full list.
+  const includeUnused = url.searchParams.get("all") === "true";
+
   const tagCounts = {};
+  if (includeUnused) for (const tag of TAGS) tagCounts[tag] = 0;
   let cursor;
 
   do {

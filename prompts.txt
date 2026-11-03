@@ -94,3 +94,4 @@ The images should be neatly aligned with a very small (3px?) gap between each im
 The central white rectangle should not be on top of the images, it should be as though the images left a rectangle gap in the center.
 too thin, and I want to keep the side gradient
 Update a universal style guide: use sharp corners unless explicitly stated. Use 1 unified color palette (use placeholder colors for now). Use a standard list of 1-2 fonts that work well together (use placeholders for now). Hamburger side menu should be standard.
+I want a  page to upload an image, and include the information that gets stored in the database. However, I ONLY want to be able to access this page if I am logged in (Cloudflare account, Cloudflare permissions, etc.), or else get a login page (and be kicked back to the homepage if I'm not the right user). This page should be at a url like /upload, no links to anywhere in the site.

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Upload - Maya Malavasi</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="admin">
+    <main class="page page-narrow">
+        <div class="page-header">
+            <h1 class="page-title">Upload an image</h1>
+            <p class="page-count">The fields below are the whole database entry.</p>
+        </div>
+
+        <form id="upload-form" class="form" novalidate>
+            <div class="form-row">
+                <label class="form-label" for="file">Image file</label>
+                <input class="field" id="file" name="file" type="file" accept="image/*" required>
+                <p class="form-hint">25MB limit. The bytes go to the R2 bucket.</p>
+            </div>
+
+            <img id="preview" class="form-preview" alt="" hidden>
+
+            <div class="form-row">
+                <label class="form-label" for="id">Id</label>
+                <input class="field" id="id" name="id" type="text" placeholder="auto from the name">
+                <p class="form-hint">The KV key. Lower case, dashes only.</p>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label" for="name">Name</label>
+                <input class="field" id="name" name="name" type="text" required>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="field" id="description" name="description" rows="3"></textarea>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label" for="medium">Medium</label>
+                <input class="field" id="medium" name="medium" type="text" placeholder="watercolor">
+            </div>
+
+            <div class="form-row">
+                <label class="form-label" for="dateCreated">Date created</label>
+                <input class="field" id="dateCreated" name="dateCreated" type="date">
+            </div>
+
+            <div class="form-row">
+                <span class="form-label">Tags</span>
+                <div id="tag-list" class="tag-list">Loading the tag list…</div>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label" for="galleries">Galleries</label>
+                <input class="field" id="galleries" name="galleries" type="text"
+                       placeholder="Gallery1, Gallery2">
+                <p class="form-hint">Separate the names with a comma.</p>
+            </div>
+
+            <div class="form-row form-row-inline">
+                <input id="overwrite" name="overwrite" type="checkbox">
+                <label class="form-label" for="overwrite">Replace the entry if the id exists</label>
+            </div>
+
+            <div class="form-row">
+                <span class="form-label">Database entry</span>
+                <pre id="entry-preview" class="code-block"></pre>
+            </div>
+
+            <button id="submit" class="button" type="submit">Upload</button>
+            <p id="status" class="form-status" role="status"></p>
+        </form>
+    </main>
+
+    <script type="module" src="js/upload.js"></script>
+</body>
+</html>

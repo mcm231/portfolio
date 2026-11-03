@@ -1,4 +1,4 @@
-// Home page wiring: the pannable plane, the photo mosaic, and the side menu.
+// Home page wiring: the pannable plane, the photo wall, and the side drawer.
 import { createPan } from './pan.js';
 import { renderMosaic } from './mosaic.js';
 
@@ -12,6 +12,7 @@ const recenterButton = document.getElementById('recenter');
 const menu = document.getElementById('menu');
 const menuToggle = document.getElementById('menu-toggle');
 const menuPanel = document.getElementById('menu-panel');
+const menuScrim = document.getElementById('menu-scrim');
 
 /* ---------- Pan ---------- */
 
@@ -33,26 +34,33 @@ plane.addEventListener('click', event => {
     event.stopPropagation();
 }, true);
 
-/* ---------- Menu ---------- */
+/* ---------- Drawer ---------- */
 
-function setMenuOpen(open) {
-    menu.classList.toggle('is-open', open);
-    menuPanel.hidden = !open;
-    menuToggle.setAttribute('aria-expanded', String(open));
-    menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+function isMenuOpen() {
+    return menu.classList.contains('is-open');
 }
 
-menuToggle.addEventListener('click', () => setMenuOpen(menuPanel.hidden));
+function setMenuOpen(open) {
+    if (open === isMenuOpen()) return;
+
+    menu.classList.toggle('is-open', open);
+    menuScrim.classList.toggle('is-visible', open);
+    menuToggle.setAttribute('aria-expanded', String(open));
+    menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+
+    const firstLink = menuPanel.querySelector('a');
+    if (open && firstLink) firstLink.focus();
+    else if (!open) menuToggle.focus();
+}
+
+menuToggle.addEventListener('click', () => setMenuOpen(!isMenuOpen()));
+menuScrim.addEventListener('click', () => setMenuOpen(false));
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') setMenuOpen(false);
 });
 
-document.addEventListener('pointerdown', event => {
-    if (!menuPanel.hidden && !menu.contains(event.target)) setMenuOpen(false);
-});
-
-/* ---------- Mosaic ---------- */
+/* ---------- Photo wall ---------- */
 
 applyPan({ x: 0, y: 0 });
 renderMosaic({ container: mosaic, card });

@@ -1,3 +1,4 @@
 .claude/settings.local.json
 wrangler.jsonc
 .wrangler/
+.dev.vars
