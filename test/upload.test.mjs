@@ -1,0 +1,85 @@
+// The upload endpoint, end to end, against stub KV and R2. No network, no
+// Cloudflare login, and nothing written to the real database.
+const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const worker = (await import(`${ROOT}/src/index.js`)).default;
+
+const kv = new Map();
+const r2 = new Map();
+
+const env = {
+  ACCESS_LOCAL_BYPASS: 'true',           // host below is localhost
+  IMAGE_METADATA: {
+    async get(k) { return kv.get(k) ?? null; },
+    async put(k, v) { kv.set(k, v); },
+    async list() { return { keys: [...kv.keys()].map(name => ({ name })), list_complete: true }; }
+  },
+  IMAGES: {
+    async head(k) { return r2.has(k) ? {} : null; },
+    async put(k, v) { r2.set(k, v); },
+    async delete(k) { r2.delete(k); }
+  },
+  ASSETS: { async fetch() { return new Response('asset'); } }
+};
+
+const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+
+async function upload(fields = {}) {
+  const body = new FormData();
+  body.set('file', new File([PNG], fields.fileName ?? 'shot.png', { type: 'image/png' }));
+  const defaults = { name: 'Piece', medium: 'ink', dateCreated: '2026-01-01' };
+  for (const [k, v] of Object.entries({ ...defaults, ...fields })) {
+    if (k === 'fileName' || k === 'tags') continue;
+    if (v !== undefined) body.set(k, String(v));
+  }
+  for (const tag of fields.tags ?? ['watercolor']) body.append('tags', tag);
+
+  const res = await worker.fetch(
+    new Request('http://localhost/api/upload', { method: 'POST', body }),
+    env, { waitUntil() {} }
+  );
+  return { status: res.status, json: await res.json() };
+}
+
+const results = [];
+const check = (label, got, want) => results.push([label, JSON.stringify(got), JSON.stringify(want)]);
+
+const first = await upload();
+check('first upload keeps the id', first.json.id, 'piece');
+check('first upload is 201', first.status, 201);
+check('filename follows the id', first.json.entry.filename, 'piece.png');
+
+const second = await upload();
+check('a clash adds 2', second.json.id, 'piece-2');
+check('it reports the old id', second.json.renamedFrom, 'piece');
+
+const third = await upload();
+check('the next clash adds 3', third.json.id, 'piece-3');
+check('filename follows again', third.json.entry.filename, 'piece-3.png');
+
+const typed = await upload({ id: 'piece-2' });
+check('a typed clash climbs', typed.json.id, 'piece-4');
+
+const replaced = await upload({ overwrite: 'true', description: 'new text' });
+check('overwrite keeps the id', replaced.json.id, 'piece');
+check('overwrite returns 200', replaced.status, 200);
+check('overwrite says replaced', replaced.json.replaced, true);
+check('overwrite wrote the entry', JSON.parse(kv.get('piece')).description, 'new text');
+
+const fresh = await upload({ name: 'Other Work', id: '' });
+check('a new name is untouched', fresh.json.id, 'other-work');
+
+check('four ids exist', [...kv.keys()].sort(), ['other-work', 'piece', 'piece-2', 'piece-3', 'piece-4']);
+check('r2 holds one object each', r2.size, 5);
+
+const missingTag = await upload({ tags: [] });
+check('no tag is rejected', missingTag.json.error, 'Pick at least one tag.');
+check('a rejected upload adds nothing', r2.size, 5);
+
+let failed = 0;
+for (const [label, got, want] of results) {
+  const pass = got === want;
+  if (!pass) failed++;
+  console.log(`${pass ? 'PASS' : 'FAIL'}  ${label.padEnd(30)} ${got}${pass ? '' : `  want ${want}`}`);
+}
+console.log(failed === 0 ? '\nall cases pass' : `\n${failed} case(s) failed`);
+process.exit(failed === 0 ? 0 : 1);

@@ -110,3 +110,4 @@ untrack wrangler.jsonc
   SQLITE_ERROR
   stack: 101fc67cf 101fcaa7b 10107daf3 101046f0b 101046943 10100b443 1010785bf 10107b0e3 100fe7ec3
   103b3660f 103b36937 103b351a3 103b34f63 100fd48f3 19777eb97
+double check the team domain

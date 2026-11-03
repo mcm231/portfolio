@@ -4,6 +4,8 @@
 // It writes the image bytes to R2, then writes the metadata entry to KV. The
 // KV key is the image id. The R2 object key is the entry's filename.
 import { isValidTag } from './_constants.js';
+// The browser loads the same file over HTTP, so the rules cannot drift.
+import { slugify, freeId } from '../../public/js/id-rules.js';
 
 const MAX_BYTES = 25 * 1024 * 1024;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -13,14 +15,6 @@ function json(body, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json' }
   });
-}
-
-function slugify(value) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
 }
 
 function extensionOf(filename, contentType) {
@@ -65,27 +59,43 @@ export async function onRequestPost(context) {
   const id = slugify(String(form.get('id') || '').trim() || name);
   if (!id) return json({ error: 'The id is empty after cleanup. Type one.' }, 400);
 
+  const medium = String(form.get('medium') || '').trim();
+  if (!medium) return json({ error: 'Name the medium.' }, 400);
+
   const tags = form.getAll('tags').map(tag => String(tag).trim()).filter(Boolean);
+  if (tags.length === 0) return json({ error: 'Pick at least one tag.' }, 400);
+
   const unknownTag = tags.find(tag => !isValidTag(tag));
   if (unknownTag) return json({ error: `Unknown tag: "${unknownTag}"` }, 400);
 
   const dateCreated = String(form.get('dateCreated') || '').trim();
-  if (dateCreated && !DATE_PATTERN.test(dateCreated)) {
+  if (!dateCreated) return json({ error: 'Give the date created.' }, 400);
+  if (!DATE_PATTERN.test(dateCreated)) {
     return json({ error: 'Write the date as YYYY-MM-DD.' }, 400);
   }
 
   const overwrite = String(form.get('overwrite')) === 'true';
-  const existing = await env.IMAGE_METADATA.get(id);
-  if (existing && !overwrite) {
-    return json({ error: `"${id}" already exists. Tick overwrite to replace it.` }, 409);
+  const taken = async key => Boolean(await env.IMAGE_METADATA.get(key));
+  const clash = await taken(id);
+
+  // A clash adds a number, or raises the number already there. Overwrite is
+  // the one case that keeps the id and replaces the entry.
+  let finalId = id;
+  if (clash && !overwrite) {
+    try {
+      finalId = await freeId(id, taken);
+    } catch (error) {
+      console.error(error);
+      return json({ error: 'Every numbered id is taken. Type a different one.' }, 409);
+    }
   }
 
-  const filename = `${id}.${extensionOf(file.name || '', file.type)}`;
+  const filename = `${finalId}.${extensionOf(file.name || '', file.type)}`;
   const entry = {
     name,
     filename,
     description: String(form.get('description') || '').trim(),
-    medium: String(form.get('medium') || '').trim(),
+    medium,
     tags,
     dateCreated,
     galleries: splitList(String(form.get('galleries') || ''))
@@ -96,7 +106,7 @@ export async function onRequestPost(context) {
   });
 
   try {
-    await env.IMAGE_METADATA.put(id, JSON.stringify(entry));
+    await env.IMAGE_METADATA.put(finalId, JSON.stringify(entry));
   } catch (error) {
     // Drop the object, so a failed write leaves nothing behind in R2.
     await env.IMAGES.delete(filename);
@@ -104,7 +114,9 @@ export async function onRequestPost(context) {
     return json({ error: 'The image upload worked, but the metadata write failed.' }, 500);
   }
 
-  return json({ id, replaced: Boolean(existing), entry }, existing ? 200 : 201);
+  const replaced = clash && overwrite;
+  return json({ id: finalId, replaced, renamedFrom: finalId === id ? null : id, entry },
+    replaced ? 200 : 201);
 }
 
 export async function onRequest(context) {

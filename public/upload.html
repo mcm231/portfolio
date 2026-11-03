@@ -12,11 +12,12 @@
         <div class="page-header">
             <h1 class="page-title">Upload an image</h1>
             <p class="page-count">The fields below are the whole database entry.</p>
+            <p class="page-count"><span class="required">*</span> marks a required field.</p>
         </div>
 
         <form id="upload-form" class="form" novalidate>
             <div class="form-row">
-                <label class="form-label" for="file">Image file</label>
+                <label class="form-label" for="file">Image file <span class="required" aria-hidden="true">*</span></label>
                 <input class="field" id="file" name="file" type="file" accept="image/*" required>
                 <p class="form-hint">25MB limit. The bytes go to the R2 bucket.</p>
             </div>
@@ -26,11 +27,11 @@
             <div class="form-row">
                 <label class="form-label" for="id">Id</label>
                 <input class="field" id="id" name="id" type="text" placeholder="auto from the name">
-                <p class="form-hint">The KV key. Lower case, dashes only.</p>
+                <p class="form-hint" id="id-hint">The KV key. Lower case, dashes only. It fills itself from the name.</p>
             </div>
 
             <div class="form-row">
-                <label class="form-label" for="name">Name</label>
+                <label class="form-label" for="name">Name <span class="required" aria-hidden="true">*</span></label>
                 <input class="field" id="name" name="name" type="text" required>
             </div>
 
@@ -40,18 +41,18 @@
             </div>
 
             <div class="form-row">
-                <label class="form-label" for="medium">Medium</label>
-                <input class="field" id="medium" name="medium" type="text" placeholder="watercolor">
+                <label class="form-label" for="medium">Medium <span class="required" aria-hidden="true">*</span></label>
+                <input class="field" id="medium" name="medium" type="text" placeholder="watercolor" required>
             </div>
 
             <div class="form-row">
-                <label class="form-label" for="dateCreated">Date created</label>
-                <input class="field" id="dateCreated" name="dateCreated" type="date">
+                <label class="form-label" for="dateCreated">Date created <span class="required" aria-hidden="true">*</span></label>
+                <input class="field" id="dateCreated" name="dateCreated" type="date" required>
             </div>
 
             <div class="form-row">
-                <span class="form-label">Tags</span>
-                <div id="tag-list" class="tag-list">Loading the tag list…</div>
+                <span class="form-label">Tags <span class="required" aria-hidden="true">*</span></span>
+                <div id="tag-list" class="tag-list" role="group" aria-label="Tags">Loading the tag list…</div>
             </div>
 
             <div class="form-row">
@@ -63,7 +64,7 @@
 
             <div class="form-row form-row-inline">
                 <input id="overwrite" name="overwrite" type="checkbox">
-                <label class="form-label" for="overwrite">Replace the entry if the id exists</label>
+                <label class="form-label" for="overwrite">Replace the entry if the id exists. Leave it clear to add a number.</label>
             </div>
 
             <div class="form-row">

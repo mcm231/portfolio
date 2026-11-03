@@ -14,6 +14,7 @@
     --color-accent-hover: #5a49d6;
     --color-brand: #17808f;
     --color-brand-light: #4ea8c9;
+    --color-error: #c1121f;
     --color-overlay: rgba(17, 26, 43, 0.55);
 
     /* Placeholder tiles, shown only when the image API is unavailable. */
@@ -609,8 +610,24 @@ body.admin {
     font-size: var(--text-sm);
 }
 
+.form-hint.is-warning {
+    color: var(--color-error);
+    font-weight: 600;
+}
+
+.required {
+    color: var(--color-error);
+    font-weight: 700;
+}
+
+.field.is-invalid,
+.tag-list.is-invalid {
+    border-color: var(--color-error);
+    outline: 1px solid var(--color-error);
+}
+
 .form-status.is-error {
-    color: var(--color-accent);
+    color: var(--color-error);
     font-weight: 600;
 }
 

@@ -38,6 +38,7 @@ One palette serves every page. There is no second theme.
 | `--color-accent-hover` | `#5a49d6` | That action, hovered |
 | `--color-brand` | `#17808f` | The menu rail, dark end |
 | `--color-brand-light` | `#4ea8c9` | The menu rail, light end |
+| `--color-error` | `#c1121f` | A required marker, an invalid field, an error line |
 | `--color-overlay` | `rgba(17, 26, 43, 0.55)` | A scrim behind a drawer or a modal |
 | `--blank-1` .. `--blank-8` | blue tints | A placeholder tile, when the image API is down |
 
@@ -93,6 +94,23 @@ behavior:
 Focus moves to the first link when the drawer opens. Focus returns to the
 button when the drawer closes. The button carries `aria-expanded` and
 `aria-controls`.
+
+## Forms
+
+A required field carries a red asterisk after its label text:
+
+```html
+<label class="form-label" for="name">Name <span class="required" aria-hidden="true">*</span></label>
+```
+
+The control also carries the `required` attribute, for a screen reader. A page
+with a required field states the rule once, above the form.
+
+A submit that fails validation does three things: it marks the first bad
+control with `is-invalid`, it moves focus there, and it writes one sentence to
+the status line. It never clears what the person typed.
+
+The server repeats every required check. A direct POST must not skip one.
 
 ## JavaScript
 
