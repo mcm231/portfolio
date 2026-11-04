@@ -15,7 +15,7 @@ const submitButton = document.getElementById('submit');
 const status = document.getElementById('status');
 const idHint = document.getElementById('id-hint');
 const pageTitle = document.getElementById('page-title');
-const backLink = document.getElementById('back-link');
+const editLink = document.getElementById('edit-link');
 const fileRequired = document.getElementById('file-required');
 const fileHint = document.getElementById('file-hint');
 const overwriteRow = document.getElementById('overwrite-row');
@@ -256,7 +256,7 @@ form.addEventListener('submit', async event => {
 async function enterEditMode(id) {
     pageTitle.textContent = 'Edit an image';
     submitButton.textContent = 'Save changes';
-    backLink.hidden = false;
+    editLink.textContent = '← Edit list';
 
     fileRequired.hidden = true;
     fileInput.required = false;

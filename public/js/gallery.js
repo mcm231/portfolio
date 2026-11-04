@@ -16,7 +16,8 @@ const h = React.createElement;
 // Props:
 //   title     heading text, default "Gallery Search"
 //   onSelect  what a click on a tile does, default: open the modal
-function GalleryPage({ title = 'Gallery Search', onSelect } = {}) {
+//   action    an optional top right link, { label, href }
+function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
     const { useState, useEffect, useMemo } = React;
 
     const [entries, setEntries] = useState([]);
@@ -173,7 +174,15 @@ function GalleryPage({ title = 'Gallery Search', onSelect } = {}) {
     }
 
     return h('div', { className: 'page' }, [
-        h('a', { key: 'back', className: 'button button-quiet back-link', href: '../' }, '← Home'),
+        h('a', { key: 'back', className: 'button button-quiet back-link', href: '/' }, '← Home'),
+
+        action
+            ? h('a', {
+                key: 'action',
+                className: 'button button-quiet forward-link',
+                href: action.href
+            }, action.label)
+            : null,
 
         h('div', { key: 'header', className: 'page-header' }, [
             h('h1', { key: 'title', className: 'page-title' }, title),
@@ -194,7 +203,7 @@ function GalleryPage({ title = 'Gallery Search', onSelect } = {}) {
 
             renderValueField(),
 
-            h('button', { key: 'add', className: 'button', onClick: addFilter }, 'Add')
+            h('button', { key: 'add', className: 'button button-mark', onClick: addFilter }, 'Add')
         ]),
 
         activeFilters.length > 0

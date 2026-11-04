@@ -23,30 +23,58 @@ To add an exception, add the element to this table first.
 
 ## Color
 
-One palette serves every page. There is no second theme.
+Four colors carry the site. Every other value is one of them, lightened or
+darkened. There is no second theme.
 
-| Token | Value | Use |
+| Palette token | Value | Name |
 |---|---|---|
-| `--color-bg` | `#eef4fe` | The page behind everything |
-| `--color-surface` | `#ffffff` | A card, a tile, a panel |
-| `--color-surface-alt` | `#dde7f5` | An input, a hover state, a chip |
-| `--color-ink` | `#111a2b` | Body text and headings |
-| `--color-ink-muted` | `#5f7391` | A caption, a date, a count |
-| `--color-ink-invert` | `#ffffff` | Text on brand or accent |
-| `--color-line` | `#c3d2e6` | A border or a divider |
-| `--color-accent` | `#6c5ce7` | The primary action |
-| `--color-accent-hover` | `#5a49d6` | That action, hovered |
-| `--color-brand` | `#17808f` | The menu rail, dark end |
-| `--color-brand-light` | `#4ea8c9` | The menu rail, light end |
-| `--color-error` | `#c1121f` | A required marker, an invalid field, an error line |
-| `--color-overlay` | `rgba(17, 26, 43, 0.55)` | A scrim behind a drawer or a modal |
-| `--blank-1` .. `--blank-8` | blue tints | A placeholder tile, when the image API is down |
+| `--teal` | `#17808f` | Teal |
+| `--space-indigo` | `#192a51` | Space Indigo |
+| `--alice-blue` | `#e2eefa` | Alice Blue |
+| `--amethyst-smoke` | `#aa78a6` | Amethyst Smoke |
+
+Teal is the main color. It fills the primary button, the menu rail, the drawer,
+and the closing band.
+
+Amethyst Smoke is a mark, not a surface. It colors the home page tagline, an
+eyebrow, a section number, the rule under a section heading, a chip border, a
+focus ring, and a hover edge. It never fills a button, a rail, or a band.
+
+Never read a palette token in a component. Read a role token:
+
+| Role token | Comes from | Use |
+|---|---|---|
+| `--color-bg` | Alice Blue | The page behind everything |
+| `--color-surface` | Alice Blue, lightened | A card, a tile, a panel, an input |
+| `--color-surface-alt` | Alice Blue, darkened | A quiet block |
+| `--color-ink` | Space Indigo | Body text and headings |
+| `--color-ink-muted` | Space Indigo, lightened | A caption, a date, a count |
+| `--color-line` | Alice Blue, darkened | A border or a divider |
+| `--color-brand` | Teal | The rail, the drawer, the band, dark end |
+| `--color-brand-light` | Teal, lightened | Those gradients, light end |
+| `--color-brand-dark` | Teal, darkened | A hover on teal |
+| `--color-brand-soft` | Teal over Alice Blue | A quiet hover fill |
+| `--color-on-brand` | Alice Blue, lightened | Text on teal or on the error red |
+| `--veil-on-brand` | Alice Blue, see through | A hover fill on teal |
+| `--color-accent` | Teal | The primary action |
+| `--color-accent-hover` | Teal, darkened | That action, hovered |
+| `--color-on-accent` | Alice Blue, lightened | Text on the primary action |
+| `--color-mark` | Amethyst Smoke | A tagline, an eyebrow, a section number, a rule, a focus ring, a hover edge, the About accent block, the gallery Add button |
+| `--color-mark-dark` | Amethyst, darkened | That Add button, hovered |
+| `--color-mark-soft` | Amethyst over Alice Blue | A chip fill |
+| `--color-error` | A brick red | A required marker, an invalid field |
+| `--color-overlay` | Space Indigo, see through | A scrim behind a drawer or a modal |
+| `--blank-1` .. `--blank-8` | Tints of the four | A placeholder tile, when the image API is down |
 
 Rules:
 
 1. Text on `--color-bg` or `--color-surface` uses `--color-ink`.
-2. Text on `--color-brand` or `--color-accent` uses `--color-ink-invert`.
-3. A border uses `--color-line`. Do not use a transparent white border.
+2. Text on teal uses `--color-on-brand`. Teal is dark.
+3. Amethyst colors text, rules and borders. One button carries it: Add, on the
+   gallery search page. A filter that takes focus shows the same color, so the
+   control and its action match. Nothing else fills with amethyst.
+4. A border uses `--color-line`, or `--color-mark` on a chip.
+5. To change the look, edit the four palette values. Nothing else.
 
 ## Type
 

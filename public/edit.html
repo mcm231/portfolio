@@ -19,6 +19,7 @@
         const root = ReactDOM.createRoot(document.getElementById('app'));
         root.render(React.createElement(GalleryPage, {
             title: 'Edit an image',
+            action: { label: 'Upload new', href: '/upload' },
             onSelect: entry => {
                 window.location.href = `/upload?id=${encodeURIComponent(entry.id)}`;
             }

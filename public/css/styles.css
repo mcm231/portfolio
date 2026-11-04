@@ -2,30 +2,56 @@
    Never write a raw hex value or a raw font name outside this block. */
 
 :root {
-    /* Color. Placeholder palette, one set for every page. */
-    --color-bg: #eef4fe;
-    --color-surface: #ffffff;
-    --color-surface-alt: #dde7f5;
-    --color-ink: #111a2b;
-    --color-ink-muted: #5f7391;
-    --color-ink-invert: #ffffff;
-    --color-line: #c3d2e6;
-    --color-accent: #6c5ce7;
-    --color-accent-hover: #5a49d6;
-    --color-brand: #17808f;
-    --color-brand-light: #4ea8c9;
-    --color-error: #c1121f;
-    --color-overlay: rgba(17, 26, 43, 0.55);
+    /* The four palette colors. Every other value derives from one of them. */
+    --teal: #17808f;
+    --space-indigo: #192a51;
+    --alice-blue: #e2eefa;
+    --amethyst-smoke: #aa78a6;
+
+    /* Roles. Teal carries the site. Amethyst appears in small marks only. */
+    --color-bg: var(--alice-blue);
+    --color-surface: #f6fafe;          /* alice blue, lightened */
+    --color-surface-alt: #d4e5f5;      /* alice blue, darkened */
+    --color-ink: var(--space-indigo);
+    --color-ink-muted: #5d6b8a;        /* space indigo, lightened */
+    --color-line: #c2d6ea;             /* alice blue, darkened further */
+
+    /* Teal. The two light shades are decoration. Anything that carries text
+       sits on --color-brand-dark or darker, so the contrast rule holds. */
+    --color-brand: var(--teal);        /* a decorative fill */
+    --color-brand-light: #45a7b3;      /* teal, lightened, decorative only */
+    --color-brand-dark: #126a76;       /* teal, darkened, carries text */
+    --color-brand-deep: #0e545e;       /* teal, darkest, a hover */
+    --color-brand-soft: #d3e9ec;       /* teal over alice blue */
+    --color-on-brand: #f6fafe;         /* text on a dark teal or on the error red */
+    --veil-on-brand: rgba(246, 250, 254, 0.16);
+    --veil-on-brand-strong: rgba(246, 250, 254, 0.38);
+
+    /* The primary action is teal, because teal is the main color. */
+    --color-accent: var(--color-brand-dark);
+    --color-accent-hover: var(--color-brand-deep);
+    --color-on-accent: var(--color-on-brand);
+
+    /* Amethyst never fills a wide surface behind text. Each shade has one job. */
+    --color-mark: var(--amethyst-smoke);   /* a decorative block */
+    --color-mark-line: #9a6696;        /* a border, a focus ring, a rule */
+    --color-mark-text: #80507c;        /* a tagline, an eyebrow, a number */
+    --color-mark-fill: #8e5c8a;        /* the gallery Add button */
+    --color-mark-fill-hover: #74486f;  /* that button, hovered */
+    --color-mark-soft: #e7d9e6;        /* a chip fill, with ink text */
+
+    --color-error: #b23a48;            /* a brick red, cool enough for alice blue */
+    --color-overlay: rgba(25, 42, 81, 0.6);   /* space indigo, see through */
 
     /* Placeholder tiles, shown only when the image API is unavailable. */
-    --blank-1: #bcd2ea;
-    --blank-2: #a9c4e4;
-    --blank-3: #cdd9ec;
-    --blank-4: #9fb8dc;
-    --blank-5: #d6e2f2;
-    --blank-6: #b4cde8;
-    --blank-7: #c3d4ea;
-    --blank-8: #aec6e2;
+    --blank-1: #cfe0e3;
+    --blank-2: #d8e6f4;
+    --blank-3: #e0d3e0;
+    --blank-4: #bfd6da;
+    --blank-5: #c9dcf0;
+    --blank-6: #d8e4e6;
+    --blank-7: #e7eef7;
+    --blank-8: #cdd9e8;
 
     /* Type. Placeholder stacks. */
     --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -97,7 +123,7 @@ h1, h2, h3, button, select, input, .menu-panel a {
     padding: var(--space-4) var(--space-6);
     border: none;
     background: var(--color-accent);
-    color: var(--color-ink-invert);
+    color: var(--color-on-accent);
     font-family: var(--font-display);
     font-size: var(--text-sm);
     font-weight: 500;
@@ -112,6 +138,16 @@ h1, h2, h3, button, select, input, .menu-panel a {
     background: var(--color-accent-hover);
 }
 
+/* The one filled use of amethyst. The filter focus ring matches it. */
+.button-mark {
+    background: var(--color-mark-fill);
+    color: var(--color-on-brand);
+}
+
+.button-mark:hover {
+    background: var(--color-mark-fill-hover);
+}
+
 .button-quiet {
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-line);
@@ -121,15 +157,19 @@ h1, h2, h3, button, select, input, .menu-panel a {
 }
 
 .button-quiet:hover {
-    background: var(--color-surface-alt);
+    background: var(--color-brand-soft);
+    border-color: var(--color-brand);
     color: var(--color-ink);
 }
 
 /* ---------- Home page ---------- */
 
+/* The home page runs on the card color, so the wall gutters read as white.
+   Every other page keeps the alice blue page color. */
 body.home {
     height: 100vh;
     overflow: hidden;
+    background: var(--color-surface);
 }
 
 #viewport {
@@ -210,7 +250,7 @@ body.home {
 }
 
 .card-name {
-    margin: 0 0 var(--space-6);
+    margin: 0 0 var(--space-3);
     font-size: var(--text-display);
     font-weight: 300;
     letter-spacing: 0.045em;
@@ -235,6 +275,17 @@ body.home {
     height: 38px;
     font-size: var(--text-lg);
     line-height: 1;
+}
+
+.card-tagline {
+    margin: 0 0 var(--space-6);
+    color: var(--color-mark-text);
+    font-family: var(--font-display);
+    font-size: clamp(0.7rem, 1.25vw, 0.88rem);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    user-select: none;
 }
 
 #recenter {
@@ -265,6 +316,7 @@ body.home {
     position: absolute;
     inset: 0;
     background: linear-gradient(165deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+    /* The mask reads alpha only. Black here means keep, not a color. */
     -webkit-mask-image: linear-gradient(to right, #000 0, #000 var(--menu-rail), transparent 100%);
     mask-image: linear-gradient(to right, #000 0, #000 var(--menu-rail), transparent 100%);
 }
@@ -292,7 +344,7 @@ body.home {
     left: 11px;
     width: 26px;
     height: 3px;
-    background: var(--color-ink-invert);
+    background: var(--color-on-brand);
     transition: transform 0.24s ease, background 0.2s ease;
 }
 
@@ -322,7 +374,7 @@ body.home {
     z-index: 2;
     width: min(var(--menu-drawer), 80vw);
     padding: calc(var(--menu-rail) + var(--space-5)) 0 var(--space-6);
-    background: linear-gradient(165deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+    background: linear-gradient(165deg, var(--color-brand-deep) 0%, var(--color-brand-dark) 100%);
     pointer-events: auto;
     overflow-y: auto;
     visibility: hidden;
@@ -344,7 +396,7 @@ body.home {
 .menu-panel a {
     display: block;
     padding: var(--space-3) var(--space-6);
-    color: var(--color-ink-invert);
+    color: var(--color-on-brand);
     font-size: var(--text-sm);
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -354,7 +406,7 @@ body.home {
 }
 
 .menu-panel a:hover {
-    background: rgba(255, 255, 255, 0.14);
+    background: var(--veil-on-brand);
     opacity: 1;
 }
 
@@ -413,6 +465,14 @@ body.gallery {
     z-index: 10;
 }
 
+/* The mirror of .back-link, for the next step rather than the previous one. */
+.forward-link {
+    position: fixed;
+    right: var(--space-5);
+    top: var(--space-5);
+    z-index: 10;
+}
+
 .search-bar {
     display: flex;
     gap: var(--space-2);
@@ -432,7 +492,8 @@ body.gallery {
 }
 
 .field:focus {
-    border-color: var(--color-accent);
+    border-color: var(--color-mark-line);
+    outline: 1px solid var(--color-mark-line);
 }
 
 .field-grow {
@@ -453,8 +514,8 @@ body.gallery {
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
-    border: 1px solid var(--color-line);
-    background: var(--color-surface-alt);
+    border: 1px solid var(--color-mark-line);
+    background: var(--color-mark-soft);
     font-family: var(--font-display);
     font-size: var(--text-sm);
 }
@@ -471,8 +532,8 @@ body.gallery {
 }
 
 .chip-remove:hover {
-    background: var(--color-accent);
-    color: var(--color-ink-invert);
+    background: var(--color-mark-fill);
+    color: var(--color-on-brand);
 }
 
 .message {
@@ -497,7 +558,7 @@ body.gallery {
 }
 
 .grid-item:hover {
-    border-color: var(--color-accent);
+    border-color: var(--color-mark-line);
 }
 
 .grid-item img {
@@ -638,7 +699,7 @@ body.admin {
 .button-danger:hover,
 .button-danger.is-armed {
     background: var(--color-error);
-    color: var(--color-ink-invert);
+    color: var(--color-on-brand);
 }
 
 .form-status {
@@ -673,6 +734,272 @@ body.admin {
     font-weight: 600;
 }
 
+/* ---------- About page ---------- */
+
+body.about {
+    min-height: 100vh;
+}
+
+.about-page {
+    max-width: 1080px;
+    margin: 0 auto;
+    /* The top clears the fixed Home link. */
+    padding: calc(var(--space-8) + var(--space-6)) var(--space-7) var(--space-8);
+}
+
+/* Hero */
+
+.hero {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: var(--space-8);
+    align-items: center;
+    padding-bottom: var(--space-8);
+    border-bottom: 1px solid var(--color-line);
+}
+
+.eyebrow {
+    margin: 0 0 var(--space-3);
+    color: var(--color-mark-text);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.hero-heading {
+    margin: 0 0 var(--space-5);
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+}
+
+.hero-text .button {
+    margin-top: var(--space-6);
+}
+
+.hero-media {
+    margin: 0;
+    position: relative;
+}
+
+/* A teal square behind the portrait, offset. The one playful note. */
+.hero-media::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--space-5) * -1);
+    top: calc(var(--space-5) * -1);
+    width: 60%;
+    height: 60%;
+    background: var(--color-mark);
+}
+
+.hero-media .placeholder,
+.hero-media .caption {
+    position: relative;
+}
+
+/* Placeholders */
+
+.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--color-line);
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.placeholder-portrait { aspect-ratio: 4 / 5; }
+.placeholder-wide     { aspect-ratio: 4 / 3; }
+.placeholder-square   { aspect-ratio: 1 / 1; }
+
+.caption {
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+}
+
+/* Grey bars that stand in for a paragraph, until the words arrive. */
+.text-placeholder {
+    position: relative;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        var(--color-surface-alt) 0 12px,
+        transparent 12px 28px
+    );
+}
+
+.text-placeholder[data-lines="2"] { height: 40px; }
+.text-placeholder[data-lines="3"] { height: 68px; }
+.text-placeholder[data-lines="6"] { height: 152px; }
+
+/* Shorten the last bar, the way a real paragraph ends. */
+.text-placeholder::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 38%;
+    height: 12px;
+    background: var(--color-bg);
+}
+
+.text-placeholder-invert {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        var(--veil-on-brand-strong) 0 12px,
+        transparent 12px 28px
+    );
+}
+
+/* The band runs a gradient, so a flat patch would show. Keep the full line. */
+.text-placeholder-invert::after {
+    display: none;
+}
+
+/* Sections */
+
+.section {
+    padding: var(--space-8) 0;
+    border-bottom: 1px solid var(--color-line);
+}
+
+.section-number {
+    margin: 0 0 var(--space-2);
+    color: var(--color-mark-text);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+}
+
+.section-heading {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+/* A short amethyst rule, to mark the start of a section. */
+.section-heading::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 3px;
+    margin-top: var(--space-4);
+    background: var(--color-mark-line);
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-7);
+}
+
+.strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+}
+
+.strip figure {
+    margin: 0;
+}
+
+/* The middle frame sits lower, so the row is not a flat line. */
+.strip figure:nth-child(2) {
+    margin-top: var(--space-6);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+}
+
+.card-tile {
+    padding: var(--space-5);
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.card-tile:hover {
+    border-color: var(--color-mark-line);
+    transform: translateY(-4px);
+}
+
+.card-tile-heading {
+    margin: var(--space-4) 0 var(--space-3);
+    font-size: var(--text-lg);
+    font-weight: 500;
+}
+
+.card-tile .text-placeholder::after {
+    background: var(--color-surface);
+}
+
+/* Closing band */
+
+.band {
+    margin-top: var(--space-8);
+    padding: var(--space-8) var(--space-7);
+    background: linear-gradient(165deg, var(--color-brand-dark) 0%, var(--color-brand) 100%);
+    color: var(--color-on-brand);
+    text-align: center;
+}
+
+.band-heading {
+    margin: 0 0 var(--space-5);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.band .text-placeholder {
+    max-width: 440px;
+    margin: 0 auto var(--space-6);
+}
+
+.button-on-brand {
+    background: var(--color-on-brand);
+    color: var(--color-brand-dark);
+}
+
+.button-on-brand:hover {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-dark);
+}
+
+@media (max-width: 760px) {
+    .hero,
+    .columns,
+    .strip,
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .strip figure:nth-child(2) {
+        margin-top: 0;
+    }
+
+    .about-page {
+        padding: calc(var(--space-8) + var(--space-6)) var(--space-5) var(--space-8);
+    }
+
+    /* The offset accent would bleed off a narrow screen. */
+    .hero-media::before {
+        display: none;
+    }
+}
+
 /* ---------- Loading ---------- */
 
 .loading {
@@ -683,7 +1010,7 @@ body.admin {
     width: 44px;
     height: 44px;
     border: 3px solid var(--color-line);
-    border-top-color: var(--color-accent);
+    border-top-color: var(--color-brand);
     border-radius: var(--radius-circle);   /* named exception */
     animation: spin 1s linear infinite;
 }
