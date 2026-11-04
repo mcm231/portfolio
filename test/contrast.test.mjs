@@ -55,37 +55,46 @@ function ratio(aToken, bToken) {
 // Every pair the stylesheet paints. "large" covers text at 24px or more, and
 // text at 19px or more when bold. "ui" covers a border, a rule or a focus ring.
 const PAIRS = [
-  ['body text on the page',        '--color-ink',        '--color-bg',           'normal'],
-  ['body text on a card',          '--color-ink',        '--color-surface',      'normal'],
-  ['body text on a quiet block',   '--color-ink',        '--color-surface-alt',  'normal'],
-  ['a caption on the page',        '--color-ink-muted',  '--color-bg',           'normal'],
-  ['a caption on a card',          '--color-ink-muted',  '--color-surface',      'normal'],
-  ['button text on teal',          '--color-on-accent',  '--color-accent',       'normal'],
-  ['button text on dark teal',     '--color-on-brand',   '--color-accent-hover', 'normal'],
-  ['menu text on the rail',        '--color-on-brand',   '--color-brand',        'normal'],
-  ['menu text on the light rail',  '--color-on-brand',   '--color-brand-light',  'normal'],
-  ['band text on teal',            '--color-on-brand',   '--color-brand',        'large'],
-  ['the band button on teal',      '--color-brand',      '--color-on-brand',     'normal'],
-  ['that button, hovered',         '--color-brand-dark', '--color-brand-soft',   'normal'],
-  ['the quiet hover text',         '--color-ink',        '--color-brand-soft',   'normal'],
-  ['the Add button text',          '--color-on-brand',   '--color-mark',         'normal'],
-  ['the Add button, hovered',      '--color-on-brand',   '--color-mark-dark',    'normal'],
-  ['the tagline on a card',        '--color-mark-text',  '--color-surface',      'normal'],
-  ['the eyebrow on the page',      '--color-mark-text',  '--color-bg',           'normal'],
-  ['a section number on the page', '--color-mark-text',  '--color-bg',           'normal'],
-  ['chip text on a chip',          '--color-ink',        '--color-mark-soft',    'normal'],
-  ['error text on the page',       '--color-error',      '--color-bg',           'normal'],
-  ['error text on a card',         '--color-error',      '--color-surface',      'normal'],
-  ['danger button text',           '--color-on-brand',   '--color-error',        'normal'],
-  ['a border on the page',         '--color-line',       '--color-bg',           'ui'],
-  ['a border on a card',           '--color-line',       '--color-surface',      'ui'],
-  ['a focus ring on a card',       '--color-mark',       '--color-surface',      'ui'],
-  ['a hover edge on a card',       '--color-mark',       '--color-surface',      'ui'],
-  ['the section rule on the page', '--color-mark',       '--color-bg',           'ui'],
-  ['the About block on the page',  '--color-mark',       '--color-bg',           'ui']
+  ['body text on the page',        '--color-ink',          '--color-bg',               'normal'],
+  ['body text on a card',          '--color-ink',          '--color-surface',          'normal'],
+  ['body text on a quiet block',   '--color-ink',          '--color-surface-alt',      'normal'],
+  ['a caption on the page',        '--color-ink-muted',    '--color-bg',               'normal'],
+  ['a caption on a card',          '--color-ink-muted',    '--color-surface',          'normal'],
+
+  ['button text on teal',          '--color-on-accent',    '--color-accent',           'normal'],
+  ['button text, hovered',         '--color-on-brand',     '--color-accent-hover',     'normal'],
+  ['menu text, drawer top',        '--color-on-brand',     '--color-brand-deep',       'normal'],
+  ['menu text, drawer base',       '--color-on-brand',     '--color-brand-dark',       'normal'],
+  ['the hamburger on the rail',    '--color-on-brand',     '--color-brand',            'ui'],
+  ['band text, dark end',          '--color-on-brand',     '--color-brand-dark',       'large'],
+  ['band text, light end',         '--color-on-brand',     '--color-brand',            'large'],
+  ['the band button text',         '--color-brand-dark',   '--color-on-brand',         'normal'],
+  ['that button, hovered',         '--color-brand-dark',   '--color-brand-soft',       'normal'],
+  ['the quiet hover text',         '--color-ink',          '--color-brand-soft',       'normal'],
+
+  ['the Add button text',          '--color-on-brand',     '--color-mark-fill',        'normal'],
+  ['the Add button, hovered',      '--color-on-brand',     '--color-mark-fill-hover',  'normal'],
+  ['the tagline on a card',        '--color-mark-text',    '--color-surface',          'normal'],
+  ['the eyebrow on the page',      '--color-mark-text',    '--color-bg',               'normal'],
+  ['a section number, page',       '--color-mark-text',    '--color-bg',               'normal'],
+  ['chip text on a chip',          '--color-ink',          '--color-mark-soft',        'normal'],
+
+  ['error text on the page',       '--color-error',        '--color-bg',               'normal'],
+  ['error text on a card',         '--color-error',        '--color-surface',          'normal'],
+  ['danger button text',           '--color-on-brand',     '--color-error',            'normal'],
+
+  ['a control border, page',       '--color-line-strong',  '--color-bg',               'ui'],
+  ['a control border, card',       '--color-line-strong',  '--color-surface',          'ui'],
+  ['a divider, decoration only',   '--color-line',         '--color-bg',               'decor'],
+  ['a focus ring on a card',       '--color-mark-line',    '--color-surface',          'ui'],
+  ['a focus ring on the page',     '--color-mark-line',    '--color-bg',               'ui'],
+  ['a hover edge on a card',       '--color-mark-line',    '--color-surface',          'ui'],
+  ['the section rule, page',       '--color-mark-line',    '--color-bg',               'ui'],
+  ['a chip border on the page',    '--color-mark-line',    '--color-bg',               'ui']
 ];
 
-const FLOOR = { normal: 4.5, large: 3, ui: 3 };
+// A divider carries no meaning on its own, so WCAG sets no floor for it.
+const FLOOR = { normal: 4.5, large: 3, ui: 3, decor: 0 };
 
 let failed = 0;
 for (const [label, fg, bg, kind] of PAIRS) {

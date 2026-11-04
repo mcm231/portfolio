@@ -33,35 +33,48 @@ darkened. There is no second theme.
 | `--alice-blue` | `#e2eefa` | Alice Blue |
 | `--amethyst-smoke` | `#aa78a6` | Amethyst Smoke |
 
-Teal is the main color. It fills the primary button, the menu rail, the drawer,
-and the closing band.
+Teal is the main color. Amethyst is a mark. Space Indigo is the text. Alice
+Blue is the page.
 
-Amethyst Smoke is a mark, not a surface. It colors the home page tagline, an
-eyebrow, a section number, the rule under a section heading, a chip border, a
-focus ring, and a hover edge. It never fills a button, a rail, or a band.
+Teal and amethyst each come in several shades, because the palette value alone
+is too light to carry text. Pick the shade by the job, never by the look:
+
+| Job | Teal | Amethyst |
+|---|---|---|
+| A decorative fill, nothing on top | `--color-brand` | `--color-mark` |
+| A fill that carries text | `--color-brand-dark` | `--color-mark-fill` |
+| That fill, hovered | `--color-brand-deep` | `--color-mark-fill-hover` |
+| Text on the page or a card | `--color-brand-dark` | `--color-mark-text` |
+| A border, a rule, a focus ring | `--color-line-strong` | `--color-mark-line` |
+| A soft fill, with ink text | `--color-brand-soft` | `--color-mark-soft` |
 
 Never read a palette token in a component. Read a role token:
 
-| Role token | Comes from | Use |
+| Role token | Value | Use |
 |---|---|---|
 | `--color-bg` | Alice Blue | The page behind everything |
 | `--color-surface` | Alice Blue, lightened | A card, a tile, a panel, an input |
 | `--color-surface-alt` | Alice Blue, darkened | A quiet block |
 | `--color-ink` | Space Indigo | Body text and headings |
 | `--color-ink-muted` | Space Indigo, lightened | A caption, a date, a count |
-| `--color-line` | Alice Blue, darkened | A border or a divider |
-| `--color-brand` | Teal | The rail, the drawer, the band, dark end |
-| `--color-brand-light` | Teal, lightened | Those gradients, light end |
-| `--color-brand-dark` | Teal, darkened | A hover on teal |
+| `--color-line` | Alice Blue, darkened | A divider. Decoration only |
+| `--color-line-strong` | Space Indigo, lightened | A control boundary |
+| `--color-brand` | Teal | The rail gradient, dark end |
+| `--color-brand-light` | Teal, lightened | The rail gradient, light end |
+| `--color-brand-dark` | Teal, darkened | The drawer, the band, text on light |
+| `--color-brand-deep` | Teal, darkest | A hover |
 | `--color-brand-soft` | Teal over Alice Blue | A quiet hover fill |
-| `--color-on-brand` | Alice Blue, lightened | Text on teal or on the error red |
+| `--color-on-brand` | Alice Blue, lightened | Text on a dark teal or on the error red |
 | `--veil-on-brand` | Alice Blue, see through | A hover fill on teal |
-| `--color-accent` | Teal | The primary action |
-| `--color-accent-hover` | Teal, darkened | That action, hovered |
-| `--color-on-accent` | Alice Blue, lightened | Text on the primary action |
-| `--color-mark` | Amethyst Smoke | A tagline, an eyebrow, a section number, a rule, a focus ring, a hover edge, the About accent block, the gallery Add button |
-| `--color-mark-dark` | Amethyst, darkened | That Add button, hovered |
-| `--color-mark-soft` | Amethyst over Alice Blue | A chip fill |
+| `--color-accent` | `--color-brand-dark` | The primary action |
+| `--color-accent-hover` | `--color-brand-deep` | That action, hovered |
+| `--color-on-accent` | `--color-on-brand` | Text on the primary action |
+| `--color-mark` | Amethyst Smoke | The About accent block |
+| `--color-mark-line` | Amethyst, darkened | A border, a rule, a focus ring |
+| `--color-mark-text` | Amethyst, darker | A tagline, an eyebrow, a number |
+| `--color-mark-fill` | Amethyst, darker | The gallery Add button |
+| `--color-mark-fill-hover` | Amethyst, darkest | That button, hovered |
+| `--color-mark-soft` | Amethyst over Alice Blue | A chip fill, with ink text |
 | `--color-error` | A brick red | A required marker, an invalid field |
 | `--color-overlay` | Space Indigo, see through | A scrim behind a drawer or a modal |
 | `--blank-1` .. `--blank-8` | Tints of the four | A placeholder tile, when the image API is down |
@@ -69,12 +82,20 @@ Never read a palette token in a component. Read a role token:
 Rules:
 
 1. Text on `--color-bg` or `--color-surface` uses `--color-ink`.
-2. Text on teal uses `--color-on-brand`. Teal is dark.
-3. Amethyst colors text, rules and borders. One button carries it: Add, on the
-   gallery search page. A filter that takes focus shows the same color, so the
-   control and its action match. Nothing else fills with amethyst.
-4. A border uses `--color-line`, or `--color-mark` on a chip.
-5. To change the look, edit the four palette values. Nothing else.
+2. Text on teal uses `--color-on-brand`, and the teal must be `-dark` or darker.
+3. One button carries amethyst: Add, on the gallery search page. A filter that
+   takes focus shows the same family, so the control and its action match.
+4. A control boundary uses `--color-line-strong`. A plain divider may use
+   `--color-line`.
+5. To change the look, edit the four palette values, then run `npm test`.
+
+### Contrast
+
+Every pair above meets WCAG 2.1 AA: 4.5 to 1 for normal text, 3 to 1 for large
+text and for a control boundary.
+
+`test/contrast.test.mjs` reads the tokens out of the stylesheet and checks all
+31 pairs. It runs as part of `npm test`. A new color pair belongs in that list.
 
 ## Type
 

@@ -6,7 +6,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "check": "wrangler deploy --dry-run --outdir .wrangler/tmp/dry-run",
-    "test": "node test/id-rules.test.mjs && node test/pan.test.mjs && node test/access.test.mjs && node test/router.test.mjs && node test/upload.test.mjs"
+    "test": "node test/contrast.test.mjs && node test/id-rules.test.mjs && node test/pan.test.mjs && node test/access.test.mjs && node test/router.test.mjs && node test/upload.test.mjs"
   },
   "devDependencies": {
     "wrangler": "4.157.0"

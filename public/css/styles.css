@@ -14,7 +14,10 @@
     --color-surface-alt: #d4e5f5;      /* alice blue, darkened */
     --color-ink: var(--space-indigo);
     --color-ink-muted: #5d6b8a;        /* space indigo, lightened */
-    --color-line: #c2d6ea;             /* alice blue, darkened further */
+    /* A divider is decoration, so it may stay soft. A control boundary must
+       meet 3 to 1, so it uses the stronger line. */
+    --color-line: #c2d6ea;             /* alice blue, darkened, a divider */
+    --color-line-strong: #6f87a8;      /* space indigo, lightened, a control */
 
     /* Teal. The two light shades are decoration. Anything that carries text
        sits on --color-brand-dark or darker, so the contrast rule holds. */
@@ -150,7 +153,7 @@ h1, h2, h3, button, select, input, .menu-panel a {
 
 .button-quiet {
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--color-line-strong);
     background: var(--color-surface);
     color: var(--color-ink-muted);
     font-size: var(--text-sm);
@@ -483,7 +486,7 @@ body.gallery {
 
 .field {
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--color-line-strong);
     background: var(--color-surface);
     color: var(--color-ink);
     font-family: var(--font-display);
@@ -550,7 +553,7 @@ body.gallery {
 }
 
 .grid-item {
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--color-line-strong);
     background: var(--color-surface);
     overflow: hidden;
     cursor: pointer;
@@ -654,7 +657,7 @@ body.admin {
     flex-wrap: wrap;
     gap: var(--space-2);
     padding: var(--space-3);
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--color-line-strong);
     background: var(--color-surface);
     color: var(--color-ink-muted);
     font-size: var(--text-sm);
@@ -675,7 +678,7 @@ body.admin {
 .code-block {
     margin: 0;
     padding: var(--space-4);
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--color-line-strong);
     background: var(--color-surface);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: var(--text-xs);
@@ -926,7 +929,7 @@ body.about {
 
 .card-tile {
     padding: var(--space-5);
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--color-line-strong);
     background: var(--color-surface);
     transition: border-color 0.2s ease, transform 0.2s ease;
 }
