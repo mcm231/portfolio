@@ -120,3 +120,4 @@ go ahead
 Add an "Upload" link to the sidebar menu that is ONLY visible with the established permissions.
 continue
 In gallery search, default to search by tag
+Get rid of menu placeholders 1 through 4
