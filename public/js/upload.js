@@ -29,6 +29,8 @@ let idEdited = false;
 let takenIds = new Set();
 // Set when /upload?id=KEY opens the page on an existing row.
 let editingId = new URLSearchParams(window.location.search).get('id');
+// The object key the edited row already points at.
+let editingFilename = '';
 
 function splitList(value) {
     return value.split(',').map(item => item.trim()).filter(Boolean);
@@ -69,7 +71,7 @@ function currentEntry() {
         renamed: Boolean(wanted) && id !== wanted,
         value: {
             name,
-            filename: id && file ? `${id}.${extensionOf(file)}` : '',
+            filename: file ? `${id}.${extensionOf(file)}` : editingFilename,
             description: document.getElementById('description').value.trim(),
             medium: document.getElementById('medium').value.trim(),
             tags: checkedTags(),
@@ -82,6 +84,10 @@ function currentEntry() {
 function refreshPreview() {
     const { key, value, renamed, wanted } = currentEntry();
     entryPreview.textContent = `${key}\n${JSON.stringify(value, null, 2)}`;
+
+    // Edit mode owns the hint, because the id is fixed there.
+    if (editingId) return;
+
     idHint.textContent = renamed
         ? `"${wanted}" is taken, so this entry becomes "${key}".`
         : 'The KV key. Lower case, dashes only. It fills itself from the name.';
@@ -283,8 +289,9 @@ async function enterEditMode(id) {
         dateInput.value = entry.dateCreated || '';
         document.getElementById('galleries').value = (entry.galleries || []).join(', ');
 
-        if (entry.filename) {
-            preview.src = `/api/images?id=${encodeURIComponent(entry.filename)}`;
+        editingFilename = entry.filename || '';
+        if (editingFilename) {
+            preview.src = `/api/images?id=${encodeURIComponent(editingFilename)}`;
             preview.hidden = false;
         }
 

@@ -74,6 +74,11 @@ body {
     padding: 0;
 }
 
+/* A display rule must never beat the hidden attribute. */
+[hidden] {
+    display: none !important;
+}
+
 body {
     background: var(--color-bg);
     color: var(--color-ink);
