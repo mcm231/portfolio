@@ -9,19 +9,57 @@ const GAP = 3;             // px of page showing between two tiles
 const FIELD_SCALE_X = 2.4; // field width, in screens
 const FIELD_SCALE_Y = 2.8; // field height, in screens
 const MAX_TILES = 900;
+const BLANK_TILES = 90;    // only when the image API is unreachable
 const EDGE_OPACITY = 0.72; // opacity of the outermost tiles
+const LARGE_FIRST = 3;     // tiles nearest the card that prefer a big shape
 
-// Tile footprints in cells, [cols, rows]. Repeats act as weights: the 1x1 and
-// 2x2 shapes are the most common, the 3x3 is rare.
-const SHAPES = [
-    [1, 1], [1, 1], [1, 1],
-    [2, 2], [2, 2], [2, 2],
-    [2, 1], [2, 1],
-    [1, 2], [1, 2],
-    [3, 2],
-    [2, 3],
-    [3, 3]
-];
+// Tile footprints in cells, [cols, rows], grouped by the shape of the image
+// they can hold. A photo only ever lands in a tile of its own orientation, so
+// object-fit crops the edges rather than cutting the subject in half.
+//
+// Repeats act as weights, so the middle sizes are common.
+const SHAPES = {
+    landscape: [
+        [2, 1], [2, 1],
+        [3, 2], [3, 2], [3, 2],
+        [4, 3], [4, 3],
+        [3, 1],
+        [4, 2]
+    ],
+    portrait: [
+        [1, 2], [1, 2],
+        [2, 3], [2, 3], [2, 3],
+        [3, 4], [3, 4],
+        [1, 3],
+        [2, 4]
+    ],
+    square: [
+        [1, 1], [1, 1], [1, 1],
+        [2, 2], [2, 2], [2, 2],
+        [3, 3]
+    ]
+};
+
+// An image inside these ratios reads as square, so a square tile suits it.
+const SQUARE_LOW = 0.9;
+const SQUARE_HIGH = 1.1;
+
+// Biggest first, for the few tiles closest to the card.
+const LARGE_SHAPES = Object.fromEntries(
+    Object.entries(SHAPES).map(([kind, list]) =>
+        [kind, [...list].sort((a, b) => b[0] * b[1] - a[0] * a[1])])
+);
+
+// The orientation of one database row. A row with no size reads as square,
+// which crops either orientation the least.
+function shapeKind(entry) {
+    if (!entry || !entry.width || !entry.height) return 'square';
+
+    const ratio = entry.width / entry.height;
+    if (ratio <= SQUARE_LOW) return 'portrait';
+    if (ratio >= SQUARE_HIGH) return 'landscape';
+    return 'square';
+}
 
 // Placeholder tile colors live in css/styles.css as --blank-1 .. --blank-N.
 const BLANK_COUNT = 8;
@@ -105,29 +143,38 @@ function cellsByDistance(cols, rows) {
     return cells.sort((a, b) => a.distance - b.distance);
 }
 
-// Pick a shape at random among those that fit this cell.
-function chooseShape(grid, col, row, random) {
-    const start = Math.floor(random() * SHAPES.length);
+// Pick a shape of the right orientation that fits this cell. The first few
+// tiles take the largest one, so a small collection still has a focal point.
+//
+// Returns null when no shape of that orientation fits. The caller then leaves
+// the cell empty, because a wrong shape would crop the photo badly.
+function chooseShape(grid, col, row, random, placed, kind) {
+    if (placed < LARGE_FIRST) {
+        for (const [w, h] of LARGE_SHAPES[kind]) {
+            if (grid.fits(col, row, w, h)) return [w, h];
+        }
+    }
 
-    for (let i = 0; i < SHAPES.length; i++) {
-        const [w, h] = SHAPES[(start + i) % SHAPES.length];
+    const list = SHAPES[kind];
+    const start = Math.floor(random() * list.length);
+
+    for (let i = 0; i < list.length; i++) {
+        const [w, h] = list[(start + i) % list.length];
         if (grid.fits(col, row, w, h)) return [w, h];
     }
 
-    return [1, 1];
+    return null;
 }
 
-function layOutTiles(grid, random) {
+// `kinds` holds the orientation wanted by each tile, in placement order. A
+// cell that cannot hold the next tile's orientation stays empty, and the tile
+// waits for a cell that can.
+function layOutTiles(grid, random, kinds) {
     const { cols, rows } = grid;
     const tiles = [];
 
-    for (const cell of cellsByDistance(cols, rows)) {
-        if (tiles.length >= MAX_TILES) break;
-        if (!grid.isFree(cell.col, cell.row)) continue;
-
-        const [w, h] = chooseShape(grid, cell.col, cell.row, random);
+    const place = (cell, w, h) => {
         grid.occupy(cell.col, cell.row, w, h);
-
         tiles.push({
             x: (cell.col - cols / 2) * CELL,
             y: (cell.row - rows / 2) * CELL,
@@ -136,6 +183,34 @@ function layOutTiles(grid, random) {
             distance: Math.hypot((cell.col + w / 2 - cols / 2) * CELL,
                                  (cell.row + h / 2 - rows / 2) * CELL)
         });
+    };
+
+    const cells = cellsByDistance(cols, rows);
+
+    for (const cell of cells) {
+        if (tiles.length >= kinds.length) break;
+        if (!grid.isFree(cell.col, cell.row)) continue;
+
+        const shape = chooseShape(grid, cell.col, cell.row, random,
+            tiles.length, kinds[tiles.length]);
+        if (shape) place(cell, shape[0], shape[1]);
+    }
+
+    // A second sweep for anything the first pass could not seat. It uses the
+    // smallest shape of the right orientation, so the crop stays honest.
+    for (const cell of cells) {
+        if (tiles.length >= kinds.length) break;
+        if (!grid.isFree(cell.col, cell.row)) continue;
+
+        const kind = kinds[tiles.length];
+        const smallest = [...SHAPES[kind]].sort((a, b) => a[0] * a[1] - b[0] * b[1])[0];
+        if (grid.fits(cell.col, cell.row, smallest[0], smallest[1])) {
+            place(cell, smallest[0], smallest[1]);
+        }
+    }
+
+    if (tiles.length < kinds.length) {
+        console.warn(`The wall seated ${tiles.length} of ${kinds.length} tiles.`);
     }
 
     return tiles;
@@ -198,15 +273,27 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
 
     const grid = createGrid(cols, rows);
     const cardRect = placeCard(grid, span);
-    const maxDistance = Math.hypot(cols * CELL, rows * CELL) / 2;
 
-    const tiles = layOutTiles(grid, random);
+    // One tile per row in the database. No image repeats. Blanks appear only
+    // when the API is unreachable, because then the real count is unknown.
     const entries = await loadEntries();
+    const shown = entries.slice(0, MAX_TILES);
+
+    // One orientation per tile. A blank wall has no images, so it uses the
+    // full shape mix instead.
+    const kinds = shown.length
+        ? shown.map(shapeKind)
+        : Array.from({ length: BLANK_TILES },
+            () => ['landscape', 'portrait', 'square'][Math.floor(random() * 3)]);
+
+    const tiles = layOutTiles(grid, random, kinds);
+
+    // Fade against the filled area, not the whole grid.
+    const maxDistance = tiles.reduce((far, tile) => Math.max(far, tile.distance), 1);
 
     const fragment = document.createDocumentFragment();
     tiles.forEach((tile, index) => {
-        const entry = entries.length ? entries[index % entries.length] : null;
-        fragment.appendChild(buildTile(tile, entry, maxDistance, random));
+        fragment.appendChild(buildTile(tile, shown[index] ?? null, maxDistance, random));
     });
 
     container.replaceChildren(fragment);
@@ -216,5 +303,5 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
     card.style.setProperty('--w', `${cardRect.w}px`);
     card.style.setProperty('--h', `${cardRect.h}px`);
 
-    return { tiles: tiles.length, images: entries.length, card: cardRect };
+    return { tiles: tiles.length, images: shown.length, card: cardRect };
 }

@@ -6,6 +6,10 @@
 import { isValidTag } from './_constants.js';
 // The browser loads the same file over HTTP, so the rules cannot drift.
 import { slugify, freeId } from '../../public/js/id-rules.js';
+import { readImageSize } from './_image-size.js';
+
+const HEADER_BYTES = 262144;   // reaches past the Exif block of a phone photo
+const SIZE_VERSION = 2;        // matches src/api/image-metadata.js
 
 const MAX_BYTES = 25 * 1024 * 1024;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -102,6 +106,19 @@ export async function onRequestPost(context) {
   const filename = hasFile
     ? `${finalId}.${extensionOf(file.name || '', file.type)}`
     : JSON.parse(existingRaw).filename;
+  // The wall picks a tile shape from the pixel size, so a portrait never
+  // lands in a wide band. Read it from the header, not from the browser.
+  let size = null;
+  if (hasFile) {
+    size = readImageSize(await file.slice(0, HEADER_BYTES).arrayBuffer());
+    if (!size) console.warn(`Could not read the size of "${filename}".`);
+  } else {
+    const previous = JSON.parse(existingRaw);
+    if (previous.width && previous.height && previous.sizeVersion === SIZE_VERSION) {
+      size = { width: previous.width, height: previous.height };
+    }
+  }
+
   const entry = {
     name,
     filename,
@@ -109,7 +126,10 @@ export async function onRequestPost(context) {
     medium,
     tags,
     dateCreated,
-    galleries: splitList(String(form.get('galleries') || ''))
+    galleries: splitList(String(form.get('galleries') || '')),
+    width: size ? size.width : null,
+    height: size ? size.height : null,
+    sizeVersion: size ? SIZE_VERSION : null
   };
 
   if (hasFile) {

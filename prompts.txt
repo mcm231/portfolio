@@ -129,3 +129,6 @@ You can use amethyst a bit more. Also, try adding a subheading under the name "m
 make the accent under the about portrait amethyst. Also it's ok for the add button in gallery search to be that color, as long as the highlight for the search filter components to be the same color as the add button
 make the accent under the about portrait amethyst. Also it's ok for the add button in gallery search to be that color, as long as the highlight for the search filter components is the same color as the add button
 yes, make sure it passes accessibility standards
+the blob gallery on the homepage should only ever show as many items as are in the dabatase. Also, add more variety in the size of the images in the gallery to make it more fun, while still looking elegant and professional.
+However, make sure that if an image is a portrait image, the mosaic gallery only ever reduces it to at most 1/3 of its height, and a landscape to 1/3 of its width. I don't want unevenly or awkwardly chopped images
+However, make sure that if an image is a portrait image, it does not get reduced to a wide band, and a landscape does not get reduced to a tall column. I don't want unevenly or awkwardly chopped images

@@ -14,12 +14,26 @@ const env = {
   },
   IMAGES: {
     async head() { return {}; },
-    async get() { return { body: 'bytes', httpEtag: '"e"', writeHttpMetadata() {} }; },
+    async get() {
+      return {
+        body: 'bytes', httpEtag: '"e"', writeHttpMetadata() {},
+        // A one pixel PNG header, so the size backfill has something to read.
+        async arrayBuffer() { return PNG_HEADER.buffer; }
+      };
+    },
     async put() {},
     async delete() {}
   },
   ASSETS: { async fetch(req) { return new Response(`asset:${new URL(req.url).pathname}`, { status: 200 }); } }
 };
+
+// 8 byte signature, then an IHDR chunk that says 4 by 3 pixels.
+const PNG_HEADER = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52,
+  0, 0, 0, 4, 0, 0, 0, 3,
+  8, 2, 0, 0, 0, 0, 0, 0
+]);
 
 const ctx = { waitUntil() {} };
 const HOST = 'https://portfolio.mayacollege2020.workers.dev';
