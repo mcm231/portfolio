@@ -111,3 +111,9 @@ untrack wrangler.jsonc
   stack: 101fc67cf 101fcaa7b 10107daf3 101046f0b 101046943 10100b443 1010785bf 10107b0e3 100fe7ec3
   103b3660f 103b36937 103b351a3 103b34f63 100fd48f3 19777eb97
 double check the team domain
+Make sure the upload page puts a red asterisk beside required fields, and doesn't let a user submit without them. The only non-required fields are Description, galleries
+id is also not required since it automatically fills.
+if the id from the name already exists, or the user enters an id that already exists, add a number after it (or increment the existing number)
+in the upload page, default the date to today
+why are there so many staged changes on main?
+go ahead
