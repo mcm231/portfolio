@@ -117,3 +117,5 @@ if the id from the name already exists, or the user enters an id that already ex
 in the upload page, default the date to today
 why are there so many staged changes on main?
 go ahead
+Add an "Upload" link to the sidebar menu that is ONLY visible with the established permissions.
+continue

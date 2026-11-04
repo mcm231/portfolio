@@ -5,6 +5,7 @@ import { onRequest as imageMetadata } from './api/image-metadata.js';
 import { onRequest as images } from './api/images.js';
 import { onRequest as tags } from './api/tags.js';
 import { onRequest as upload } from './api/upload.js';
+import { onRequest as session } from './api/session.js';
 
 // Each handler keeps the Pages Functions signature, so it reads context.request
 // and context.env and nothing else.
@@ -12,7 +13,8 @@ const API_ROUTES = {
   '/api/image-metadata': imageMetadata,
   '/api/images': images,
   '/api/tags': tags,
-  '/api/upload': upload
+  '/api/upload': upload,
+  '/api/session': session
 };
 
 export default {

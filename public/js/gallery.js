@@ -10,7 +10,10 @@ const FILTER_TYPES = [
 
 const h = React.createElement;
 
-function GalleryPage() {
+// Props:
+//   title     heading text, default "Gallery Search"
+//   onSelect  what a click on a tile does, default: open the modal
+function GalleryPage({ title = 'Gallery Search', onSelect } = {}) {
     const { useState, useEffect, useMemo } = React;
 
     const [entries, setEntries] = useState([]);
@@ -115,7 +118,7 @@ function GalleryPage() {
             h('div', {
                 key: entry.id,
                 className: 'grid-item',
-                onClick: () => setSelectedImage(entry)
+                onClick: () => (onSelect ? onSelect(entry) : setSelectedImage(entry))
             }, [
                 h('img', {
                     key: 'thumb',
@@ -170,7 +173,7 @@ function GalleryPage() {
         h('a', { key: 'back', className: 'button button-quiet back-link', href: '../' }, '← Home'),
 
         h('div', { key: 'header', className: 'page-header' }, [
-            h('h1', { key: 'title', className: 'page-title' }, 'Gallery Search'),
+            h('h1', { key: 'title', className: 'page-title' }, title),
             h('p', { key: 'count', className: 'page-count' },
                 `${filteredEntries.length} of ${entries.length} pieces`)
         ]),

@@ -11,6 +11,7 @@ const env = {
   IMAGE_METADATA: {
     async get(k) { return kv.get(k) ?? null; },
     async put(k, v) { kv.set(k, v); },
+    async delete(k) { kv.delete(k); },
     async list() { return { keys: [...kv.keys()].map(name => ({ name })), list_complete: true }; }
   },
   IMAGES: {
@@ -25,10 +26,12 @@ const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2
 
 async function upload(fields = {}) {
   const body = new FormData();
-  body.set('file', new File([PNG], fields.fileName ?? 'shot.png', { type: 'image/png' }));
+  if (!fields.noFile) {
+    body.set('file', new File([PNG], fields.fileName ?? 'shot.png', { type: 'image/png' }));
+  }
   const defaults = { name: 'Piece', medium: 'ink', dateCreated: '2026-01-01' };
   for (const [k, v] of Object.entries({ ...defaults, ...fields })) {
-    if (k === 'fileName' || k === 'tags') continue;
+    if (k === 'fileName' || k === 'tags' || k === 'noFile') continue;
     if (v !== undefined) body.set(k, String(v));
   }
   for (const tag of fields.tags ?? ['watercolor']) body.append('tags', tag);
@@ -74,6 +77,54 @@ check('r2 holds one object each', r2.size, 5);
 const missingTag = await upload({ tags: [] });
 check('no tag is rejected', missingTag.json.error, 'Pick at least one tag.');
 check('a rejected upload adds nothing', r2.size, 5);
+
+// ---------- Edit mode: a save with no new file ----------
+
+const before = JSON.parse(kv.get('piece'));
+const edited = await upload({
+  noFile: true, id: 'piece', overwrite: 'true',
+  name: 'Renamed Piece', medium: 'charcoal', tags: ['charcoal']
+});
+const after = JSON.parse(kv.get('piece'));
+
+check('a fileless edit works', edited.status, 200);
+check('the edit keeps the id', edited.json.id, 'piece');
+check('the edit keeps the image', after.filename, before.filename);
+check('the edit saves the name', after.name, 'Renamed Piece');
+check('the edit saves the tags', after.tags, ['charcoal']);
+check('the edit adds no object', r2.size, 5);
+
+const orphan = await upload({ noFile: true, id: 'nothing-here', overwrite: 'true' });
+check('no file and no row fails', orphan.json.error, 'Choose an image file.');
+
+const noFileNoOverwrite = await upload({ noFile: true, id: 'piece' });
+check('no file needs overwrite', noFileNoOverwrite.json.error, 'Choose an image file.');
+
+// ---------- Delete ----------
+
+async function remove(id) {
+  const res = await worker.fetch(
+    new Request(`http://localhost/api/upload?id=${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    env, { waitUntil() {} }
+  );
+  return { status: res.status, json: await res.json() };
+}
+
+const gone = await remove('piece');
+check('delete returns 200', gone.status, 200);
+check('delete reports the id', gone.json.id, 'piece');
+check('delete clears the row', kv.has('piece'), false);
+check('delete clears the object', r2.has(before.filename), false);
+
+const missing = await remove('never-existed');
+check('delete of nothing is 404', missing.status, 404);
+
+const noId = await remove('');
+check('delete needs an id', noId.status, 400);
+
+const methodCheck = await worker.fetch(
+  new Request('http://localhost/api/upload', { method: 'PUT' }), env, { waitUntil() {} });
+check('PUT is rejected', methodCheck.status, 405);
 
 let failed = 0;
 for (const [label, got, want] of results) {

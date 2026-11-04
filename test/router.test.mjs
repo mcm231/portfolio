@@ -27,11 +27,28 @@ const HOST = 'https://portfolio.mayacollege2020.workers.dev';
 async function hit(path, init) {
   const res = await worker.fetch(new Request(HOST + path, init), env, ctx);
   const text = await res.clone().text();
-  return { status: res.status, body: text.slice(0, 48), full: text, location: res.headers.get('location') };
+  return { status: res.status, body: text.slice(0, 48), full: text, location: res.headers.get('location'), cacheControl: res.headers.get('cache-control') };
 }
+
+// The session route answers on a public path, so the home page can ask.
+const allowedEnv = { ...env, ACCESS_LOCAL_BYPASS: 'true' };
+async function hitLocal(path, overrideEnv) {
+  const res = await worker.fetch(new Request('http://localhost' + path), overrideEnv ?? env, ctx);
+  return { status: res.status, body: await res.text(), cacheControl: res.headers.get('cache-control') };
+}
+
+const sessionOpen = await hitLocal('/api/session', allowedEnv);
+const sessionShut = await hitLocal('/api/session');
+const sessionPublic = await hit('/api/session');
 
 const cases = [
   ['home page serves an asset',  await hit('/'),                      r => r.status === 200 && r.body.startsWith('asset:/')],
+  ['session says yes to owner',  sessionOpen,                         r => r.status === 200 && JSON.parse(r.body).allowed === true],
+  ['session says no by default', sessionShut,                         r => r.status === 200 && JSON.parse(r.body).allowed === false],
+  ['session says no to public',  sessionPublic,                       r => r.status === 200 && JSON.parse(r.body).allowed === false],
+  ['session leaks no email',     sessionPublic,                       r => !r.body.includes('@')],
+  ['session is never cached',    sessionPublic,                       r => r.cacheControl === 'no-store'],
+  ['session never gates itself', sessionPublic,                       r => r.status !== 302 && r.status !== 503],
   ['css serves an asset',        await hit('/css/styles.css'),        r => r.body === 'asset:/css/styles.css'],
   ['tags returns json',          await hit('/api/tags'),              r => r.status === 200 && r.body.includes('watercolor')],
   ['tags all returns the enum',  await hit('/api/tags?all=true'),     r => r.full.includes('programming') && r.full.includes('gouache')],
@@ -40,6 +57,8 @@ const cases = [
   ['unknown api is 404',         await hit('/api/nope'),              r => r.status === 404],
   ['upload page is gated',       await hit('/upload'),                r => r.status === 503],
   ['upload post is gated',       await hit('/api/upload', { method: 'POST' }), r => r.status === 503],
+  ['upload delete is gated',     await hit('/api/upload?id=x', { method: 'DELETE' }), r => r.status === 503],
+  ['edit page is gated',         await hit('/edit'),                  r => r.status === 503],
 ];
 
 let failed = 0;

@@ -14,12 +14,21 @@ const entryPreview = document.getElementById('entry-preview');
 const submitButton = document.getElementById('submit');
 const status = document.getElementById('status');
 const idHint = document.getElementById('id-hint');
+const pageTitle = document.getElementById('page-title');
+const backLink = document.getElementById('back-link');
+const fileRequired = document.getElementById('file-required');
+const fileHint = document.getElementById('file-hint');
+const overwriteRow = document.getElementById('overwrite-row');
+const overwriteInput = document.getElementById('overwrite');
+const deleteButton = document.getElementById('delete');
 const dateInput = document.getElementById('dateCreated');
 
 let previewUrl = null;
 let idEdited = false;
 // Ids already in the database. The page shows the free id before you submit.
 let takenIds = new Set();
+// Set when /upload?id=KEY opens the page on an existing row.
+let editingId = new URLSearchParams(window.location.search).get('id');
 
 function splitList(value) {
     return value.split(',').map(item => item.trim()).filter(Boolean);
@@ -46,7 +55,7 @@ function currentEntry() {
 
     // freeId resolves at once here, because the id set is already in memory.
     let id = wanted;
-    if (wanted && !overwrite && takenIds.has(wanted)) {
+    if (!editingId && wanted && !overwrite && takenIds.has(wanted)) {
         try {
             id = freeIdSync(wanted, key => takenIds.has(key));
         } catch {
@@ -101,7 +110,7 @@ function setStatus(message, kind) {
 // itself from the name. The server checks the same list, so a direct POST
 // cannot skip one.
 function firstProblem() {
-    if (!fileInput.files[0]) return [fileInput, 'Choose an image file.'];
+    if (!fileInput.files[0] && !editingId) return [fileInput, 'Choose an image file.'];
     if (!nameInput.value.trim()) return [nameInput, 'Give the piece a name.'];
 
     const medium = document.getElementById('medium');
@@ -197,8 +206,11 @@ form.addEventListener('submit', async event => {
     // Send the typed id. The server owns the final choice.
     const { wanted } = currentEntry();
     const body = new FormData(form);
-    body.set('id', wanted);
-    body.set('overwrite', String(document.getElementById('overwrite').checked));
+    body.set('id', editingId || wanted);
+    body.set('overwrite', String(Boolean(editingId) || overwriteInput.checked));
+
+    // An edit with no new file keeps the image already in the bucket.
+    if (editingId && !fileInput.files[0]) body.delete('file');
 
     submitButton.disabled = true;
     setStatus('Uploading…');
@@ -212,7 +224,9 @@ form.addEventListener('submit', async event => {
             return;
         }
 
-        const note = result.replaced
+        const note = editingId
+            ? `Saved "${result.id}".`
+            : result.replaced
             ? `Replaced "${result.id}".`
             : result.renamedFrom
                 ? `"${result.renamedFrom}" was taken. Stored as "${result.id}".`
@@ -228,6 +242,121 @@ form.addEventListener('submit', async event => {
     }
 });
 
+// ---------- Edit mode ----------
+//
+// /upload?id=KEY turns the same page into an editor for that row. The id is
+// fixed, the file becomes optional, and the submit replaces the entry instead
+// of adding one.
+async function enterEditMode(id) {
+    pageTitle.textContent = 'Edit an image';
+    submitButton.textContent = 'Save changes';
+    backLink.hidden = false;
+
+    fileRequired.hidden = true;
+    fileInput.required = false;
+    fileHint.textContent = 'Leave this empty to keep the current image.';
+
+    idInput.readOnly = true;
+    idInput.value = id;
+    idEdited = true;
+    idHint.textContent = 'The row being edited. The key never changes here.';
+
+    overwriteRow.hidden = true;
+    overwriteInput.checked = true;
+    deleteButton.hidden = false;
+
+    setStatus('Loading the entry…');
+
+    try {
+        const response = await fetch(`/api/image-metadata?id=${encodeURIComponent(id)}`);
+        if (!response.ok) {
+            setStatus(`No entry with the id "${id}".`, 'error');
+            submitButton.disabled = true;
+            deleteButton.hidden = true;
+            return;
+        }
+
+        const entry = await response.json();
+        nameInput.value = entry.name || '';
+        document.getElementById('description').value = entry.description || '';
+        document.getElementById('medium').value = entry.medium || '';
+        dateInput.value = entry.dateCreated || '';
+        document.getElementById('galleries').value = (entry.galleries || []).join(', ');
+
+        if (entry.filename) {
+            preview.src = `/api/images?id=${encodeURIComponent(entry.filename)}`;
+            preview.hidden = false;
+        }
+
+        checkTags(entry.tags || []);
+        setStatus('');
+        refreshPreview();
+    } catch {
+        setStatus('The entry did not load. Reload the page.', 'error');
+        submitButton.disabled = true;
+    }
+}
+
+// Delete takes two clicks. The first one arms the button, so a stray click
+// never removes a row. Any other click on the page disarms it again.
+let deleteArmed = false;
+
+function disarmDelete() {
+    if (!deleteArmed) return;
+    deleteArmed = false;
+    deleteButton.classList.remove('is-armed');
+    deleteButton.textContent = 'Delete this image';
+}
+
+async function runDelete() {
+    if (!deleteArmed) {
+        deleteArmed = true;
+        deleteButton.classList.add('is-armed');
+        deleteButton.textContent = 'Click again to delete';
+        setStatus(`This removes "${editingId}" and its image. The step cannot be undone.`, 'error');
+        return;
+    }
+
+    deleteArmed = false;
+    deleteButton.disabled = true;
+    submitButton.disabled = true;
+    setStatus('Deleting…');
+
+    try {
+        const response = await fetch(`/api/upload?id=${encodeURIComponent(editingId)}`, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+            setStatus(result.error || `The delete failed with status ${response.status}.`, 'error');
+            deleteButton.disabled = false;
+            submitButton.disabled = false;
+            return;
+        }
+
+        setStatus(`Deleted "${result.id}". Going back to the edit list…`, 'ok');
+        window.setTimeout(() => { window.location.href = '/edit'; }, 900);
+    } catch {
+        setStatus('The delete failed. Check the network and try again.', 'error');
+        deleteButton.disabled = false;
+        submitButton.disabled = false;
+    }
+}
+
+deleteButton.addEventListener('click', runDelete);
+form.addEventListener('pointerdown', event => {
+    if (event.target !== deleteButton) disarmDelete();
+});
+
+// Ticks the boxes for an entry's tags, once the tag list exists.
+function checkTags(tags) {
+    const wanted = new Set(tags);
+    tagList.querySelectorAll('input').forEach(input => {
+        input.checked = wanted.has(input.value);
+    });
+}
+
 document.getElementById('overwrite').addEventListener('change', refreshPreview);
 
 // Default the date to today, in the browser's own time zone.
@@ -235,6 +364,14 @@ const today = new Date();
 const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
 dateInput.value = localDate.toISOString().slice(0, 10);
 
-loadTags();
-loadTakenIds();
-refreshPreview();
+(async function start() {
+    await loadTags();
+
+    if (editingId) {
+        await enterEditMode(editingId);
+        return;
+    }
+
+    loadTakenIds();
+    refreshPreview();
+})();

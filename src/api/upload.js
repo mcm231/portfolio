@@ -43,14 +43,15 @@ export async function onRequestPost(context) {
   }
 
   const file = form.get('file');
-  if (!file || typeof file === 'string' || file.size === 0) {
-    return json({ error: 'Choose an image file.' }, 400);
-  }
-  if (file.size > MAX_BYTES) {
-    return json({ error: `The file is over the ${MAX_BYTES / 1024 / 1024}MB limit.` }, 413);
-  }
-  if (!String(file.type).startsWith('image/')) {
-    return json({ error: 'The file must be an image.' }, 415);
+  const hasFile = Boolean(file) && typeof file !== 'string' && file.size > 0;
+
+  if (hasFile) {
+    if (file.size > MAX_BYTES) {
+      return json({ error: `The file is over the ${MAX_BYTES / 1024 / 1024}MB limit.` }, 413);
+    }
+    if (!String(file.type).startsWith('image/')) {
+      return json({ error: 'The file must be an image.' }, 415);
+    }
   }
 
   const name = String(form.get('name') || '').trim();
@@ -75,8 +76,15 @@ export async function onRequestPost(context) {
   }
 
   const overwrite = String(form.get('overwrite')) === 'true';
+  const existingRaw = await env.IMAGE_METADATA.get(id);
+  const clash = Boolean(existingRaw);
+
+  // No file is only valid for an edit, where the entry keeps its own image.
+  if (!hasFile && !(overwrite && clash)) {
+    return json({ error: 'Choose an image file.' }, 400);
+  }
+
   const taken = async key => Boolean(await env.IMAGE_METADATA.get(key));
-  const clash = await taken(id);
 
   // A clash adds a number, or raises the number already there. Overwrite is
   // the one case that keeps the id and replaces the entry.
@@ -90,7 +98,10 @@ export async function onRequestPost(context) {
     }
   }
 
-  const filename = `${finalId}.${extensionOf(file.name || '', file.type)}`;
+  // An edit with no new file keeps the object already in the bucket.
+  const filename = hasFile
+    ? `${finalId}.${extensionOf(file.name || '', file.type)}`
+    : JSON.parse(existingRaw).filename;
   const entry = {
     name,
     filename,
@@ -101,15 +112,18 @@ export async function onRequestPost(context) {
     galleries: splitList(String(form.get('galleries') || ''))
   };
 
-  await env.IMAGES.put(filename, file.stream(), {
-    httpMetadata: { contentType: file.type }
-  });
+  if (hasFile) {
+    await env.IMAGES.put(filename, file.stream(), {
+      httpMetadata: { contentType: file.type }
+    });
+  }
 
   try {
     await env.IMAGE_METADATA.put(finalId, JSON.stringify(entry));
   } catch (error) {
-    // Drop the object, so a failed write leaves nothing behind in R2.
-    await env.IMAGES.delete(filename);
+    // Drop the new object, so a failed write leaves nothing behind in R2. An
+    // edit that reused the old object must keep it.
+    if (hasFile) await env.IMAGES.delete(filename);
     console.error('KV write failed:', error);
     return json({ error: 'The image upload worked, but the metadata write failed.' }, 500);
   }
@@ -119,7 +133,32 @@ export async function onRequestPost(context) {
     replaced ? 200 : 201);
 }
 
+// Removes the metadata entry, then the image object. KV goes first, so a
+// half-finished delete leaves an unused object rather than a broken entry.
+export async function onRequestDelete(context) {
+  const { request, env } = context;
+  const id = new URL(request.url).searchParams.get('id');
+
+  if (!id) return json({ error: "Missing the 'id' parameter." }, 400);
+
+  const raw = await env.IMAGE_METADATA.get(id);
+  if (!raw) return json({ error: `No entry with the id "${id}".` }, 404);
+
+  let filename = null;
+  try {
+    filename = JSON.parse(raw).filename || null;
+  } catch {
+    console.error(`Unparseable entry "${id}". Deleting the key anyway.`);
+  }
+
+  await env.IMAGE_METADATA.delete(id);
+  if (filename) await env.IMAGES.delete(filename);
+
+  return json({ id, deleted: true, filename });
+}
+
 export async function onRequest(context) {
   if (context.request.method === 'POST') return onRequestPost(context);
-  return new Response('Use POST.', { status: 405, headers: { Allow: 'POST' } });
+  if (context.request.method === 'DELETE') return onRequestDelete(context);
+  return new Response('Use POST or DELETE.', { status: 405, headers: { Allow: 'POST, DELETE' } });
 }

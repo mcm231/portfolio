@@ -10,16 +10,19 @@
 <body class="admin">
     <main class="page page-narrow">
         <div class="page-header">
-            <h1 class="page-title">Upload an image</h1>
+            <h1 class="page-title" id="page-title">Upload an image</h1>
             <p class="page-count">The fields below are the whole database entry.</p>
             <p class="page-count"><span class="required">*</span> marks a required field.</p>
         </div>
 
+        <!-- Shown only in edit mode, which /upload?id=KEY turns on. -->
+        <a class="button button-quiet back-link" id="back-link" href="/edit" hidden>← Edit list</a>
+
         <form id="upload-form" class="form" novalidate>
             <div class="form-row">
-                <label class="form-label" for="file">Image file <span class="required" aria-hidden="true">*</span></label>
+                <label class="form-label" for="file">Image file <span class="required" id="file-required" aria-hidden="true">*</span></label>
                 <input class="field" id="file" name="file" type="file" accept="image/*" required>
-                <p class="form-hint">25MB limit. The bytes go to the R2 bucket.</p>
+                <p class="form-hint" id="file-hint">25MB limit. The bytes go to the R2 bucket.</p>
             </div>
 
             <img id="preview" class="form-preview" alt="" hidden>
@@ -62,7 +65,7 @@
                 <p class="form-hint">Separate the names with a comma.</p>
             </div>
 
-            <div class="form-row form-row-inline">
+            <div class="form-row form-row-inline" id="overwrite-row">
                 <input id="overwrite" name="overwrite" type="checkbox">
                 <label class="form-label" for="overwrite">Replace the entry if the id exists. Leave it clear to add a number.</label>
             </div>
@@ -72,7 +75,11 @@
                 <pre id="entry-preview" class="code-block"></pre>
             </div>
 
-            <button id="submit" class="button" type="submit">Upload</button>
+            <div class="form-actions">
+                <button id="submit" class="button" type="submit">Upload</button>
+                <!-- Edit mode only. The first click arms it, the second deletes. -->
+                <button id="delete" class="button button-danger" type="button" hidden>Delete this image</button>
+            </div>
             <p id="status" class="form-status" role="status"></p>
         </form>
     </main>

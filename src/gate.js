@@ -7,7 +7,7 @@
 // It returns a Response to stop the request, or null to let it continue.
 import { verifyAccessToken } from './api/_access.js';
 
-const PROTECTED_PATHS = ['/upload', '/api/upload'];
+const PROTECTED_PATHS = ['/upload', '/edit', '/api/upload'];
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export function isProtected(pathname) {
@@ -31,48 +31,69 @@ function toAccessLogin(url, teamDomain) {
   return Response.redirect(target, 302);
 }
 
-export async function guard(request, env) {
+// Who is asking, without deciding what to do about it. Any route may call
+// this, including a public one, because the Access cookie travels with every
+// request to the host once the person signs in.
+//
+// Returns { allowed, reason, email }.
+export async function identify(request, env) {
   const url = new URL(request.url);
 
-  if (!isProtected(url.pathname)) return null;
-
   // Local development only. Both conditions must hold, so the flag alone
-  // cannot open the route on a deployed site.
+  // cannot open a route on a deployed site.
   if (LOCAL_HOSTS.has(url.hostname) && env.ACCESS_LOCAL_BYPASS === 'true') {
-    return null;
+    return { allowed: true, reason: 'local-bypass' };
   }
 
   const teamDomain = env.ACCESS_TEAM_DOMAIN;
   const audience = env.ACCESS_AUD;
 
-  // Fail closed. An unconfigured gate must never serve the page.
-  if (!teamDomain || !audience) {
-    return new Response(
-      'This route needs ACCESS_TEAM_DOMAIN and ACCESS_AUD. See README.md.',
-      { status: 503, headers: { 'Content-Type': 'text/plain' } }
-    );
-  }
+  // Fail closed. An unconfigured gate must never open a route.
+  if (!teamDomain || !audience) return { allowed: false, reason: 'not-configured' };
 
   let result;
   try {
     result = await verifyAccessToken(request, teamDomain, audience);
   } catch (error) {
     console.error('Access check failed:', error);
-    return new Response('Access check failed.', { status: 503 });
+    return { allowed: false, reason: 'check-failed' };
   }
 
-  if (!result.ok) {
-    if (result.reason === 'no-token' || result.reason === 'expired') {
-      return toAccessLogin(url, teamDomain);
-    }
-    return toHomepage(url);
-  }
+  if (!result.ok) return { allowed: false, reason: result.reason };
 
   const allowed = allowedEmails(env);
   if (allowed.length === 0 || !allowed.includes(result.email)) {
-    console.warn(`Rejected ${url.pathname} for ${result.email}`);
-    return toHomepage(url);
+    return { allowed: false, reason: 'not-listed', email: result.email };
   }
 
-  return null;
+  return { allowed: true, reason: 'ok', email: result.email };
+}
+
+export async function guard(request, env) {
+  const url = new URL(request.url);
+
+  if (!isProtected(url.pathname)) return null;
+
+  const who = await identify(request, env);
+  if (who.allowed) return null;
+
+  switch (who.reason) {
+    case 'not-configured':
+      return new Response(
+        'This route needs ACCESS_TEAM_DOMAIN and ACCESS_AUD. See README.md.',
+        { status: 503, headers: { 'Content-Type': 'text/plain' } }
+      );
+
+    case 'check-failed':
+      return new Response('Access check failed.', { status: 503 });
+
+    // No token yet, or an old one. Send the person to sign in.
+    case 'no-token':
+    case 'expired':
+      return toAccessLogin(url, env.ACCESS_TEAM_DOMAIN);
+
+    default:
+      console.warn(`Rejected ${url.pathname}: ${who.reason} ${who.email || ''}`);
+      return toHomepage(url);
+  }
 }

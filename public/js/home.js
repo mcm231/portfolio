@@ -13,6 +13,7 @@ const menu = document.getElementById('menu');
 const menuToggle = document.getElementById('menu-toggle');
 const menuPanel = document.getElementById('menu-panel');
 const menuScrim = document.getElementById('menu-scrim');
+const menuPrivateItems = document.querySelectorAll('.menu-private');
 
 /* ---------- Pan ---------- */
 
@@ -60,7 +61,24 @@ document.addEventListener('keydown', event => {
     if (event.key === 'Escape') setMenuOpen(false);
 });
 
+/* ---------- Private links ---------- */
+
+// These links are a courtesy, not a lock. src/gate.js blocks the routes, so a
+// visitor who unhides an item still lands on the Access login page.
+async function showPrivateLinksIfAllowed() {
+    try {
+        const response = await fetch('/api/session', { cache: 'no-store' });
+        if (!response.ok) return;
+
+        const { allowed } = await response.json();
+        menuPrivateItems.forEach(item => { item.hidden = !allowed; });
+    } catch {
+        // Leave the link hidden.
+    }
+}
+
 /* ---------- Photo wall ---------- */
 
 applyPan({ x: 0, y: 0 });
 renderMosaic({ container: mosaic, card });
+showPrivateLinksIfAllowed();
