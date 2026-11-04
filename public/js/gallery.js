@@ -2,11 +2,14 @@
 // (Title / Tag / Date Created). Styling lives in css/styles.css per
 // STYLE_GUIDE.md. This file sets class names only.
 
+// The first entry is the default filter type.
 const FILTER_TYPES = [
-    { value: 'title', label: 'Title' },
     { value: 'tag', label: 'Tag' },
+    { value: 'title', label: 'Title' },
     { value: 'dateCreated', label: 'Date Created' }
 ];
+
+const DEFAULT_FILTER_TYPE = FILTER_TYPES[0].value;
 
 const h = React.createElement;
 
@@ -21,7 +24,7 @@ function GalleryPage({ title = 'Gallery Search', onSelect } = {}) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [filterType, setFilterType] = useState('title');
+    const [filterType, setFilterType] = useState(DEFAULT_FILTER_TYPE);
     const [inputValue, setInputValue] = useState('');
     const [activeFilters, setActiveFilters] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);

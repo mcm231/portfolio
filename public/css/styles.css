@@ -219,11 +219,25 @@ body.home {
     user-select: none;
 }
 
-#recenter {
+.view-controls {
     position: fixed;
     right: var(--space-5);
     bottom: var(--space-5);
     z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.button-icon {
+    width: 38px;
+    padding: 0;
+    height: 38px;
+    font-size: var(--text-lg);
+    line-height: 1;
+}
+
+#recenter {
     transition: opacity 0.25s ease, background 0.2s ease, color 0.2s ease;
 }
 

@@ -2,13 +2,17 @@
 import { createPan } from './pan.js';
 import { renderMosaic } from './mosaic.js';
 
-const CENTERED_PX = 0.5;   // distance from origin still counted as centered
+const CENTERED_PX = 0.5;      // distance from origin still counted as centered
+const CENTERED_SCALE = 0.005; // zoom gap still counted as 100 percent
+const BUTTON_ZOOM_STEP = 1.25;
 
 const viewport = document.getElementById('viewport');
 const plane = document.getElementById('plane');
 const mosaic = document.getElementById('mosaic');
 const card = document.getElementById('card');
 const recenterButton = document.getElementById('recenter');
+const zoomInButton = document.getElementById('zoom-in');
+const zoomOutButton = document.getElementById('zoom-out');
 const menu = document.getElementById('menu');
 const menuToggle = document.getElementById('menu-toggle');
 const menuPanel = document.getElementById('menu-panel');
@@ -19,14 +23,21 @@ const menuPrivateItems = document.querySelectorAll('.menu-private');
 
 const pan = createPan({ surface: viewport, onChange: applyPan });
 
-function applyPan(offset) {
-    plane.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0)`;
+function applyPan(view) {
+    plane.style.transform =
+        `translate3d(${view.x}px, ${view.y}px, 0) scale(${view.scale})`;
 
-    const centered = Math.abs(offset.x) < CENTERED_PX && Math.abs(offset.y) < CENTERED_PX;
-    recenterButton.classList.toggle('is-hidden', centered);
+    // Recenter shows once the view sits away from the origin, or off 100%.
+    const atRest = Math.abs(view.x) < CENTERED_PX
+        && Math.abs(view.y) < CENTERED_PX
+        && Math.abs(view.scale - 1) < CENTERED_SCALE;
+
+    recenterButton.classList.toggle('is-hidden', atRest);
 }
 
 recenterButton.addEventListener('click', () => pan.recenter());
+zoomInButton.addEventListener('click', () => pan.zoomBy(BUTTON_ZOOM_STEP));
+zoomOutButton.addEventListener('click', () => pan.zoomBy(1 / BUTTON_ZOOM_STEP));
 
 // A drag that happens to end on the gallery link must not follow it.
 plane.addEventListener('click', event => {
@@ -79,6 +90,6 @@ async function showPrivateLinksIfAllowed() {
 
 /* ---------- Photo wall ---------- */
 
-applyPan({ x: 0, y: 0 });
+applyPan({ x: 0, y: 0, scale: 1 });
 renderMosaic({ container: mosaic, card });
 showPrivateLinksIfAllowed();
