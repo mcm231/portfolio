@@ -2,9 +2,11 @@
 // (Title / Tag / Date Created). Styling lives in css/styles.css per
 // STYLE_GUIDE.md. This file sets class names only.
 
-// The first entry is the default filter type.
+// The first entry is the default filter type. A `vocabulary` key names the
+// list of used terms that suggests values for that type.
 const FILTER_TYPES = [
-    { value: 'tag', label: 'Tag' },
+    { value: 'tag', label: 'Tag', vocabulary: 'tags' },
+    { value: 'medium', label: 'Medium', vocabulary: 'mediums' },
     { value: 'title', label: 'Title' },
     { value: 'dateCreated', label: 'Date Created' }
 ];
@@ -12,6 +14,19 @@ const FILTER_TYPES = [
 const DEFAULT_FILTER_TYPE = FILTER_TYPES[0].value;
 
 const h = React.createElement;
+
+const PANEL_COLORS = 8;
+
+// A steady color for a row with no picture, from the id. The same row keeps
+// the same color on every visit.
+function panelColor(entry) {
+    const named = Number(entry.panelColor);
+    if (Number.isInteger(named) && named >= 1 && named <= PANEL_COLORS) return named;
+
+    let hash = 0;
+    for (const char of String(entry.id)) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+    return (hash % PANEL_COLORS) + 1;
+}
 
 // Props:
 //   title     heading text, default "Gallery Search"
@@ -21,7 +36,7 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
     const { useState, useEffect, useMemo } = React;
 
     const [entries, setEntries] = useState([]);
-    const [tags, setTags] = useState([]);
+    const [vocabulary, setVocabulary] = useState({ tags: [], mediums: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -33,11 +48,14 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
     useEffect(() => {
         Promise.all([
             fetch('/api/image-metadata').then(res => res.json()),
-            fetch('/api/tags').then(res => res.json())
+            fetch('/api/vocabulary').then(res => res.json())
         ])
-            .then(([imageEntries, tagEntries]) => {
+            .then(([imageEntries, words]) => {
                 setEntries(Array.isArray(imageEntries) ? imageEntries : []);
-                setTags(Array.isArray(tagEntries) ? tagEntries : []);
+                setVocabulary({
+                    tags: Array.isArray(words.tags) ? words.tags : [],
+                    mediums: Array.isArray(words.mediums) ? words.mediums : []
+                });
             })
             .catch(() => setError('Failed to load gallery images.'))
             .finally(() => setLoading(false));
@@ -74,6 +92,9 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
             if (filter.type === 'tag') {
                 return Array.isArray(entry.tags) && entry.tags.includes(filter.value);
             }
+            if (filter.type === 'medium') {
+                return Array.isArray(entry.mediums) && entry.mediums.includes(filter.value);
+            }
             if (filter.type === 'dateCreated') {
                 return entry.dateCreated === filter.value;
             }
@@ -82,28 +103,33 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
     ), [entries, activeFilters]);
 
     function renderValueField() {
-        if (filterType === 'tag') {
-            return h('select', {
-                key: 'value',
-                className: 'field field-grow',
-                value: inputValue,
-                onChange: (e) => setInputValue(e.target.value),
-                onKeyDown: handleInputKeyDown
-            }, [
-                h('option', { key: 'placeholder', value: '' }, 'Select a tag…'),
-                ...tags.map(t => h('option', { key: t.tag, value: t.tag }, `${t.tag} (${t.count})`))
-            ]);
-        }
+        const type = FILTER_TYPES.find(f => f.value === filterType);
+        const words = type.vocabulary ? vocabulary[type.vocabulary] : null;
 
-        return h('input', {
+        // A typed value with a suggestion list. Typing narrows the list, and
+        // a term that is not on it still filters.
+        const input = h('input', {
             key: 'value',
             className: 'field field-grow',
             type: filterType === 'dateCreated' ? 'date' : 'text',
+            list: words ? `${filterType}-options` : undefined,
+            autoComplete: 'off',
             value: inputValue,
-            placeholder: filterType === 'title' ? 'Search by title…' : '',
+            placeholder: words
+                ? `Type or pick a ${type.label.toLowerCase()}…`
+                : filterType === 'title' ? 'Search by title…' : '',
             onChange: (e) => setInputValue(e.target.value),
             onKeyDown: handleInputKeyDown
         });
+
+        if (!words) return input;
+
+        return h(React.Fragment, { key: 'value-field' }, [
+            input,
+            h('datalist', { key: 'options', id: `${filterType}-options` },
+                words.map(({ value, count }) =>
+                    h('option', { key: value, value, label: count > 1 ? `${value} (${count})` : value })))
+        ]);
     }
 
     function renderResults() {
@@ -124,17 +150,26 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
                 className: 'grid-item',
                 onClick: () => (onSelect ? onSelect(entry) : setSelectedImage(entry))
             }, [
-                h('img', {
-                    key: 'thumb',
-                    src: `/api/images?id=${encodeURIComponent(entry.filename)}`,
-                    alt: entry.name,
-                    loading: 'lazy'
-                }),
+                // A row with no filename is a piece with no picture. It shows
+                // a color panel, the same component the home page wall uses.
+                entry.filename
+                    ? h('img', {
+                        key: 'thumb',
+                        src: `/api/images?id=${encodeURIComponent(entry.filename)}`,
+                        alt: entry.name,
+                        loading: 'lazy'
+                    })
+                    : h('div', {
+                        key: 'panel',
+                        className: 'grid-item-panel',
+                        style: { '--panel': `var(--blank-${panelColor(entry)})` },
+                        'aria-hidden': 'true'
+                    }),
                 h('div', { key: 'info', className: 'grid-item-info' }, [
                     h('h3', { key: 'name', className: 'grid-item-name' }, entry.name),
-                    entry.dateCreated
-                        ? h('p', { key: 'date', className: 'grid-item-date' }, entry.dateCreated)
-                        : null
+                    h('p', { key: 'meta', className: 'grid-item-date' },
+                        [entry.dateCreated, (entry.mediums || []).join(', ')]
+                            .filter(Boolean).join(' · '))
                 ])
             ])
         ));
@@ -151,17 +186,28 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
             className: 'modal-content',
             onClick: (e) => e.stopPropagation()
         }, [
-            h('img', {
-                key: 'full',
-                src: `/api/images?id=${encodeURIComponent(selectedImage.filename)}`,
-                alt: selectedImage.name
-            }),
+            selectedImage.filename
+                ? h('img', {
+                    key: 'full',
+                    src: `/api/images?id=${encodeURIComponent(selectedImage.filename)}`,
+                    alt: selectedImage.name
+                })
+                : h('div', {
+                    key: 'panel',
+                    className: 'modal-panel',
+                    style: { '--panel': `var(--blank-${panelColor(selectedImage)})` },
+                    'aria-hidden': 'true'
+                }),
             h('div', { key: 'meta', className: 'modal-meta' }, [
                 h('h2', { key: 'name' }, selectedImage.name),
                 selectedImage.description
                     ? h('p', { key: 'desc' }, selectedImage.description)
                     : null,
-                Array.isArray(selectedImage.tags) && selectedImage.tags.length > 0
+                (selectedImage.mediums || []).length > 0
+                    ? h('p', { key: 'mediums', className: 'modal-tags' },
+                        selectedImage.mediums.join(', '))
+                    : null,
+                (selectedImage.tags || []).length > 0
                     ? h('p', { key: 'tags', className: 'modal-tags' }, selectedImage.tags.join(', '))
                     : null
             ]),

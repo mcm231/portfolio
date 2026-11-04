@@ -3,7 +3,8 @@ const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const worker = (await import(`${ROOT}/src/index.js`)).default;
 
 const kv = new Map([['piece-one', JSON.stringify({
-  name: 'Piece One', filename: 'piece-one.jpg', tags: ['watercolor'], dateCreated: '2026-01-01'
+  name: 'Piece One', filename: 'piece-one.jpg', tags: ['watercolor'],
+  medium: 'Ink', dateCreated: '2026-01-01'   // the older single medium field
 })]]);
 
 const env = {
@@ -64,9 +65,19 @@ const cases = [
   ['session is never cached',    sessionPublic,                       r => r.cacheControl === 'no-store'],
   ['session never gates itself', sessionPublic,                       r => r.status !== 302 && r.status !== 503],
   ['css serves an asset',        await hit('/css/styles.css'),        r => r.body === 'asset:/css/styles.css'],
-  ['tags returns json',          await hit('/api/tags'),              r => r.status === 200 && r.body.includes('watercolor')],
-  ['tags all returns the enum',  await hit('/api/tags?all=true'),     r => r.full.includes('programming') && r.full.includes('gouache')],
-  ['metadata returns json',      await hit('/api/image-metadata'),    r => r.status === 200 && r.body.includes('Piece One')],
+  ['vocabulary returns json',    await hit('/api/vocabulary'),        r => r.status === 200 && r.full.includes('watercolor')],
+  ['vocabulary lists both sets', await hit('/api/vocabulary'),        r => {
+    const v = JSON.parse(r.full);
+    return Array.isArray(v.tags) && Array.isArray(v.mediums);
+  }],
+  ['vocabulary counts a medium', await hit('/api/vocabulary'),        r =>
+    JSON.parse(r.full).mediums.some(m => m.value === 'ink' && m.count === 1)],
+  ['metadata returns json',      await hit('/api/image-metadata'),    r => r.status === 200 && r.full.includes('Piece One')],
+  ['metadata names the kind',    await hit('/api/image-metadata'),    r => JSON.parse(r.full)[0].kind === 'image'],
+  ['an old medium is promoted',  await hit('/api/image-metadata'),    r => {
+    const row = JSON.parse(r.full)[0];
+    return JSON.stringify(row.mediums) === '["ink"]' && row.medium === undefined;
+  }],
   ['images needs an id',         await hit('/api/images'),            r => r.status === 400],
   ['unknown api is 404',         await hit('/api/nope'),              r => r.status === 404],
   ['upload page is gated',       await hit('/upload'),                r => r.status === 503],

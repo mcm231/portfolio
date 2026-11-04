@@ -3,13 +3,14 @@
 // R2 and the metadata entry to KV.
 
 import { slugify, freeIdSync } from './id-rules.js';
+import { createTermField } from './term-field.js';
 
 const form = document.getElementById('upload-form');
 const fileInput = document.getElementById('file');
 const idInput = document.getElementById('id');
 const nameInput = document.getElementById('name');
 const preview = document.getElementById('preview');
-const tagList = document.getElementById('tag-list');
+
 const entryPreview = document.getElementById('entry-preview');
 const submitButton = document.getElementById('submit');
 const status = document.getElementById('status');
@@ -21,6 +22,25 @@ const fileHint = document.getElementById('file-hint');
 const overwriteRow = document.getElementById('overwrite-row');
 const overwriteInput = document.getElementById('overwrite');
 const deleteButton = document.getElementById('delete');
+
+// Two categories of term, one control each.
+const tagField = createTermField({
+    input: document.getElementById('tag-input'),
+    datalist: document.getElementById('tag-options'),
+    addButton: document.getElementById('tag-add'),
+    chips: document.getElementById('tag-chips'),
+    label: 'tag',
+    onChange: refreshPreview
+});
+
+const mediumField = createTermField({
+    input: document.getElementById('medium-input'),
+    datalist: document.getElementById('medium-options'),
+    addButton: document.getElementById('medium-add'),
+    chips: document.getElementById('medium-chips'),
+    label: 'medium',
+    onChange: refreshPreview
+});
 const dateInput = document.getElementById('dateCreated');
 
 let previewUrl = null;
@@ -34,10 +54,6 @@ let editingFilename = '';
 
 function splitList(value) {
     return value.split(',').map(item => item.trim()).filter(Boolean);
-}
-
-function checkedTags() {
-    return Array.from(tagList.querySelectorAll('input:checked')).map(input => input.value);
 }
 
 function extensionOf(file) {
@@ -73,8 +89,8 @@ function currentEntry() {
             name,
             filename: file ? `${id}.${extensionOf(file)}` : editingFilename,
             description: document.getElementById('description').value.trim(),
-            medium: document.getElementById('medium').value.trim(),
-            tags: checkedTags(),
+            mediums: mediumField.values(),
+            tags: tagField.values(),
             dateCreated: dateInput.value,
             galleries: splitList(document.getElementById('galleries').value)
         }
@@ -119,12 +135,15 @@ function firstProblem() {
     if (!fileInput.files[0] && !editingId) return [fileInput, 'Choose an image file.'];
     if (!nameInput.value.trim()) return [nameInput, 'Give the piece a name.'];
 
-    const medium = document.getElementById('medium');
-    if (!medium.value.trim()) return [medium, 'Name the medium.'];
+    if (mediumField.values().length === 0) {
+        return [document.getElementById('medium-input'), 'Name at least one medium.'];
+    }
 
     if (!dateInput.value) return [dateInput, 'Pick the date created.'];
 
-    if (checkedTags().length === 0) return [tagList, 'Tick at least one tag.'];
+    if (tagField.values().length === 0) {
+        return [document.getElementById('tag-input'), 'Add at least one tag.'];
+    }
 
     return null;
 }
@@ -135,30 +154,17 @@ function markInvalid(element) {
     element.focus();
 }
 
-async function loadTags() {
+// The suggestion lists come from the rows already stored.
+async function loadVocabulary() {
     try {
-        const response = await fetch('/api/tags?all=true');
+        const response = await fetch('/api/vocabulary');
         if (!response.ok) throw new Error(String(response.status));
 
-        const tags = await response.json();
-        tagList.replaceChildren(...tags.map(({ tag, count }) => {
-            const label = document.createElement('label');
-            label.className = 'tag-option';
-
-            const input = document.createElement('input');
-            input.type = 'checkbox';
-            input.name = 'tags';
-            input.value = tag;
-            input.addEventListener('change', refreshPreview);
-
-            const text = document.createElement('span');
-            text.textContent = count ? `${tag} (${count})` : tag;
-
-            label.append(input, text);
-            return label;
-        }));
+        const { tags = [], mediums = [] } = await response.json();
+        tagField.setSuggestions(tags);
+        mediumField.setSuggestions(mediums);
     } catch {
-        tagList.textContent = 'The tag list did not load. Reload the page.';
+        setStatus('The suggestion lists did not load. You can still type a new term.');
     }
 }
 
@@ -193,13 +199,13 @@ form.addEventListener('input', event => {
     refreshPreview();
 });
 
-form.addEventListener('change', () => {
-    tagList.classList.remove('is-invalid');
-    refreshPreview();
-});
+form.addEventListener('change', refreshPreview);
 
 form.addEventListener('submit', async event => {
     event.preventDefault();
+
+    tagField.commitPending();
+    mediumField.commitPending();
 
     const problem = firstProblem();
     if (problem) {
@@ -213,6 +219,11 @@ form.addEventListener('submit', async event => {
     const { wanted } = currentEntry();
     const body = new FormData(form);
     body.set('id', editingId || wanted);
+
+    body.delete('tags');
+    body.delete('mediums');
+    for (const tag of tagField.values()) body.append('tags', tag);
+    for (const medium of mediumField.values()) body.append('mediums', medium);
     body.set('overwrite', String(Boolean(editingId) || overwriteInput.checked));
 
     // An edit with no new file keeps the image already in the bucket.
@@ -285,7 +296,7 @@ async function enterEditMode(id) {
         const entry = await response.json();
         nameInput.value = entry.name || '';
         document.getElementById('description').value = entry.description || '';
-        document.getElementById('medium').value = entry.medium || '';
+        mediumField.set(entry.mediums || []);
         dateInput.value = entry.dateCreated || '';
         document.getElementById('galleries').value = (entry.galleries || []).join(', ');
 
@@ -295,7 +306,7 @@ async function enterEditMode(id) {
             preview.hidden = false;
         }
 
-        checkTags(entry.tags || []);
+        tagField.set(entry.tags || []);
         setStatus('');
         refreshPreview();
     } catch {
@@ -356,14 +367,6 @@ form.addEventListener('pointerdown', event => {
     if (event.target !== deleteButton) disarmDelete();
 });
 
-// Ticks the boxes for an entry's tags, once the tag list exists.
-function checkTags(tags) {
-    const wanted = new Set(tags);
-    tagList.querySelectorAll('input').forEach(input => {
-        input.checked = wanted.has(input.value);
-    });
-}
-
 document.getElementById('overwrite').addEventListener('change', refreshPreview);
 
 // Default the date to today, in the browser's own time zone.
@@ -372,7 +375,7 @@ const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
 dateInput.value = localDate.toISOString().slice(0, 10);
 
 (async function start() {
-    await loadTags();
+    await loadVocabulary();
 
     if (editingId) {
         await enterEditMode(editingId);

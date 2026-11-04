@@ -3,7 +3,7 @@
 import { guard } from './gate.js';
 import { onRequest as imageMetadata } from './api/image-metadata.js';
 import { onRequest as images } from './api/images.js';
-import { onRequest as tags } from './api/tags.js';
+import { onRequest as vocabulary } from './api/vocabulary.js';
 import { onRequest as upload } from './api/upload.js';
 import { onRequest as session } from './api/session.js';
 
@@ -12,7 +12,7 @@ import { onRequest as session } from './api/session.js';
 const API_ROUTES = {
   '/api/image-metadata': imageMetadata,
   '/api/images': images,
-  '/api/tags': tags,
+  '/api/vocabulary': vocabulary,
   '/api/upload': upload,
   '/api/session': session
 };

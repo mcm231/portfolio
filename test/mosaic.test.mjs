@@ -2,13 +2,20 @@
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 
 function stubDom() {
-  globalThis.document = {
-    createElement: () => ({
+  const make = () => {
+    const node = {
       className: '', children: [],
       style: { _v: {}, cssText: '', setProperty(k, v) { this._v[k] = v; } },
       appendChild(c) { this.children.push(c); },
-      classList: { add() {} }
-    }),
+      attrs: {},
+      setAttribute(k, v) { this.attrs[k] = v; },
+      classList: { add(name) { node.className += ` ${name}`; } }
+    };
+    return node;
+  };
+
+  globalThis.document = {
+    createElement: make,
     createDocumentFragment: () => ({ children: [], appendChild(c) { this.children.push(c); } })
   };
   globalThis.window = { innerWidth: 1512, innerHeight: 864 };
@@ -111,7 +118,46 @@ check('the largest tile is 9 cells or more', Math.max(...areas) >= 9, true);
 check('no tile is more than 4 cells long', Math.max(...rects.map(r => Math.max(r.cols, r.rows))), 4);
 check('the smallest tile is one cell', Math.min(...areas), 1);
 
-// A dead API cannot know the row count, so it falls back to blanks.
+// A panel is a row with no filename. It draws a color block, and it sits in
+// the wall beside the photos.
+async function mixedWall(rows) {
+  globalThis.fetch = async () => ({ ok: true, json: async () => rows });
+  let fragment;
+  const result = await renderMosaic({
+    container: { replaceChildren(f) { fragment = f; } }, card
+  });
+  const nodes = fragment.children.map(n => ({
+    isPanel: n.className.includes('is-panel'),
+    hasImage: n.children.length > 0,
+    color: n.style._v['--panel'],
+    label: n.attrs && n.attrs['aria-label']
+  }));
+  return { result, nodes };
+}
+
+const PHOTO = { id: 'a', filename: 'a.jpg', name: 'A photo', width: 1600, height: 1200 };
+const STORY = { id: 'b', name: 'A story' };
+
+const mix = await mixedWall([PHOTO, STORY, { ...PHOTO, id: 'c' }, { ...STORY, id: 'd' }]);
+check('a mixed wall seats every row', mix.result.tiles, 4);
+check('it counts the photos', mix.result.images, 2);
+check('it counts the panels', mix.result.panels, 2);
+check('two tiles hold an image', mix.nodes.filter(n => n.hasImage).length, 2);
+check('two tiles are panels', mix.nodes.filter(n => n.isPanel).length, 2);
+check('every panel takes a color', mix.nodes.filter(n => n.isPanel).every(n => n.color), true);
+
+// A row may ask for its own shape and its own color.
+const asked = await mixedWall([
+  { id: 'p1', name: 'Tall', shape: 'portrait', panelColor: 3 },
+  { id: 'p2', name: 'Wide', shape: 'landscape', panelColor: 7 }
+]);
+check('a panel keeps its color', asked.nodes.map(n => n.color),
+  ['var(--blank-3)', 'var(--blank-7)']);
+
+const asPanels = await wall(0);
+check('an empty database shows nothing', asPanels.result.tiles, 0);
+
+// A dead API cannot know the row count, so it falls back to panels.
 globalThis.fetch = async () => { throw new Error('offline'); };
 let offlineFragment;
 const offline = await renderMosaic({
@@ -119,6 +165,7 @@ const offline = await renderMosaic({
 });
 check('an offline wall still fills', offline.tiles > 40, true);
 check('an offline wall has no images', offline.images, 0);
+check('an offline wall is all panels', offline.panels, offline.tiles);
 
 let failed = 0;
 for (const [label, got, want] of results) {

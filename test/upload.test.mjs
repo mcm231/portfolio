@@ -29,12 +29,13 @@ async function upload(fields = {}) {
   if (!fields.noFile) {
     body.set('file', new File([PNG], fields.fileName ?? 'shot.png', { type: 'image/png' }));
   }
-  const defaults = { name: 'Piece', medium: 'ink', dateCreated: '2026-01-01' };
+  const defaults = { name: 'Piece', dateCreated: '2026-01-01' };
   for (const [k, v] of Object.entries({ ...defaults, ...fields })) {
-    if (k === 'fileName' || k === 'tags' || k === 'noFile') continue;
+    if (['fileName', 'tags', 'mediums', 'noFile'].includes(k)) continue;
     if (v !== undefined) body.set(k, String(v));
   }
   for (const tag of fields.tags ?? ['watercolor']) body.append('tags', tag);
+  for (const medium of fields.mediums ?? ['ink']) body.append('mediums', medium);
 
   const res = await worker.fetch(
     new Request('http://localhost/api/upload', { method: 'POST', body }),
@@ -71,19 +72,34 @@ check('overwrite wrote the entry', JSON.parse(kv.get('piece')).description, 'new
 const fresh = await upload({ name: 'Other Work', id: '' });
 check('a new name is untouched', fresh.json.id, 'other-work');
 
-check('four ids exist', [...kv.keys()].sort(), ['other-work', 'piece', 'piece-2', 'piece-3', 'piece-4']);
-check('r2 holds one object each', r2.size, 5);
+check('five ids exist', [...kv.keys()].sort(), ['other-work', 'piece', 'piece-2', 'piece-3', 'piece-4']);
+check('r2 holds one object each', r2.size, kv.size);
 
+const beforeReject = r2.size;
 const missingTag = await upload({ tags: [] });
 check('no tag is rejected', missingTag.json.error, 'Pick at least one tag.');
-check('a rejected upload adds nothing', r2.size, 5);
+
+const missingMedium = await upload({ mediums: [] });
+check('no medium is rejected', missingMedium.json.error, 'Name at least one medium.');
+
+// Any term is allowed. It is cleaned, not checked against a list.
+const freeTerms = await upload({
+  id: 'free-terms', name: 'Free Terms',
+  tags: ['Brand New Tag', 'brand new tag', '  SECOND  '],
+  mediums: ['Oil Paint', 'oil_paint']
+});
+check('a new tag is kept', JSON.parse(kv.get('free-terms')).tags,
+  ['brand-new-tag', 'second']);
+check('a new medium is kept', JSON.parse(kv.get('free-terms')).mediums, ['oil-paint']);
+check('a rejected upload adds nothing', r2.size, beforeReject);
 
 // ---------- Edit mode: a save with no new file ----------
 
 const before = JSON.parse(kv.get('piece'));
+const beforeEdit = r2.size;
 const edited = await upload({
   noFile: true, id: 'piece', overwrite: 'true',
-  name: 'Renamed Piece', medium: 'charcoal', tags: ['charcoal']
+  name: 'Renamed Piece', mediums: ['Charcoal'], tags: ['charcoal']
 });
 const after = JSON.parse(kv.get('piece'));
 
@@ -92,7 +108,8 @@ check('the edit keeps the id', edited.json.id, 'piece');
 check('the edit keeps the image', after.filename, before.filename);
 check('the edit saves the name', after.name, 'Renamed Piece');
 check('the edit saves the tags', after.tags, ['charcoal']);
-check('the edit adds no object', r2.size, 5);
+check('the edit saves the mediums', after.mediums, ['charcoal']);
+check('the edit adds no object', r2.size, beforeEdit);
 
 const orphan = await upload({ noFile: true, id: 'nothing-here', overwrite: 'true' });
 check('no file and no row fails', orphan.json.error, 'Choose an image file.');

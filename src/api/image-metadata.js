@@ -1,5 +1,5 @@
-import { isValidTag } from "./_constants.js";
 import { readImageSize } from "./_image-size.js";
+import { readTags, readMediums, normalizeTerm } from "../../public/js/taxonomy.js";
 
 const HEADER_BYTES = 262144;
 
@@ -10,6 +10,7 @@ const SIZE_VERSION = 2;
 // A row written before the size was stored gets it now, from the object
 // header, and keeps it. One ranged read per row, once.
 async function backfillSize(name, entry, kv, r2) {
+  if (entry.kind === "panel") return entry;   // a panel has no bytes to read
   if (entry.width && entry.height && entry.sizeVersion === SIZE_VERSION) return entry;
 
   const object = await r2.get(entry.filename, { range: { offset: 0, length: HEADER_BYTES } });
@@ -24,11 +25,18 @@ async function backfillSize(name, entry, kv, r2) {
   if (!size) return entry;
 
   const filled = { ...entry, width: size.width, height: size.height, sizeVersion: SIZE_VERSION };
-  const { id, ...stored } = filled;
+  const { id, kind, ...stored } = filled;
   await kv.put(name, JSON.stringify(stored));
   return filled;
 }
 
+// Two kinds of row live in this namespace.
+//
+//   image  carries a "filename", and the bytes sit in the R2 bucket.
+//   panel  carries no "filename". It stands for a piece with no picture, such
+//          as a story or a program. The home page draws it as a color block.
+//
+// Every row reports its kind, so a page never has to guess.
 async function resolveEntry(name, value, r2) {
   let parsed;
   try {
@@ -38,17 +46,23 @@ async function resolveEntry(name, value, r2) {
     return null;
   }
 
-  if (!parsed.filename) {
-    console.error(`Skipping IMAGE_METADATA entry "${name}": missing required "filename"`);
-    return null;
-  }
+  // An older row holds one `medium` string. Readers only ever see `mediums`.
+  const shared = {
+    id: name,
+    ...parsed,
+    tags: readTags(parsed),
+    mediums: readMediums(parsed)
+  };
+  delete shared.medium;
+
+  if (!parsed.filename) return { ...shared, kind: "panel" };
 
   if (!(await r2.head(parsed.filename))) {
     console.error(`Skipping IMAGE_METADATA entry "${name}": filename "${parsed.filename}" not found in R2`);
     return null;
   }
 
-  return { id: name, ...parsed };
+  return { ...shared, kind: "image" };
 }
 
 async function getAllEntries(kv, r2) {
@@ -75,6 +89,7 @@ export async function onRequest(context) {
   const url = new URL(context.request.url);
   const imageId = url.searchParams.get("id");
   const tag = url.searchParams.get("tag");
+  const medium = url.searchParams.get("medium");
 
   if (imageId) {
     const value = await context.env.IMAGE_METADATA.get(imageId);
@@ -90,18 +105,16 @@ export async function onRequest(context) {
     });
   }
 
-  if (tag !== null && !isValidTag(tag)) {
-    return new Response(JSON.stringify({ error: `Unknown tag: "${tag}"` }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
+  // There is no fixed vocabulary, so any term is a valid query. One that
+  // nobody has used simply matches nothing.
   const entries = await getAllEntries(context.env.IMAGE_METADATA, context.env.IMAGES);
 
-  const results = tag
-    ? entries.filter(e => Array.isArray(e.tags) && e.tags.includes(tag))
-    : entries;
+  const wantedTag = tag === null ? null : normalizeTerm(tag);
+  const wantedMedium = medium === null ? null : normalizeTerm(medium);
+
+  const results = entries.filter(entry =>
+    (!wantedTag || entry.tags.includes(wantedTag))
+    && (!wantedMedium || entry.mediums.includes(wantedMedium)));
 
   return new Response(JSON.stringify(results), {
     headers: { "Content-Type": "application/json" }

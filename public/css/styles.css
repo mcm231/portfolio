@@ -229,8 +229,9 @@ body.home {
     -webkit-user-drag: none;
 }
 
-.tile.is-blank {
-    background: var(--blank);
+/* A piece with no picture. The color stands in for the artwork. */
+.tile.is-panel {
+    background: var(--panel);
 }
 
 /* The card is one more cell of the wall. Before the layout runs it centers on
@@ -564,11 +565,23 @@ body.gallery {
     border-color: var(--color-mark-line);
 }
 
-.grid-item img {
+.grid-item img,
+.grid-item-panel {
     display: block;
     width: 100%;
     height: 200px;
     object-fit: cover;
+}
+
+/* The same color panel the home page wall uses, at thumbnail size. */
+.grid-item-panel {
+    background: var(--panel);
+}
+
+.modal-panel {
+    width: min(60vw, 420px);
+    height: min(45vh, 320px);
+    background: var(--panel);
 }
 
 .grid-item-info {
@@ -650,6 +663,20 @@ body.admin {
     max-height: 260px;
     margin-bottom: var(--space-5);
     border: 1px solid var(--color-line);
+}
+
+/* An input with a suggestion list, plus its Add button. */
+.combo {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.form-row .chips {
+    margin: var(--space-3) 0 0;
+}
+
+.form-row .chips:empty {
+    display: none;
 }
 
 .tag-list {

@@ -122,6 +122,39 @@ Hit the endpoint to verify (note: `id` here is the R2 object key, i.e. the metad
 entry's `filename`, not the KV key):
 - Fetch image bytes: `curl "http://localhost:8787/api/images?id=[FILENAME HERE]" --output [FILENAME HERE]`
 
+## Two kinds of row
+
+The `IMAGE_METADATA` namespace holds two kinds of row. The `filename` field
+decides which one a row is, and every API response states the kind.
+
+| Kind | Has `filename` | The home page draws |
+|---|---|---|
+| `image` | yes | The photo, in a tile matching its orientation |
+| `panel` | no | A color block, in the same grid |
+
+A panel stands for a piece with no picture, such as a story or a program. The
+colors come from `--blank-1` to `--blank-8` in `public/css/styles.css`.
+
+### A panel row
+
+Only `name` is needed. Two optional fields control the look:
+
+```
+npx wrangler kv key put --namespace-id=<YOUR ID HERE> "first-story" \
+  '{"name":"A Story","description":"","medium":"writing","tags":["storytelling"],"dateCreated":"2026-11-04","galleries":[],"shape":"landscape","panelColor":3}'
+```
+
+| Field | Values | Effect |
+|---|---|---|
+| `shape` | `landscape`, `portrait`, `square` | The tile shape. Left out, the wall picks one |
+| `panelColor` | 1 to 8 | The color. Left out, the wall picks one |
+
+A panel also shows in Gallery Search, as a color card with its name and date.
+Every filter still works, because a panel carries the same fields.
+
+The upload page writes image rows only. Write a panel row with wrangler, or
+with whatever you build later.
+
 ## Upload page (/upload)
 
 `/upload` is a private page. It writes one image to the `IMAGES` R2 bucket and

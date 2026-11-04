@@ -63,7 +63,7 @@ const forged = `${forgedHead}.${forgedBody}.${b64(new Uint8Array(forgedSig))}`;
 
 const cases = [
   ['public page passes',            await run('/',            { env: CONFIG }),                       'served'],
-  ['public api passes',             await run('/api/tags',    { env: CONFIG }),                       'served'],
+  ['public api passes',             await run('/api/vocabulary', { env: CONFIG }),                       'served'],
   ['no config fails closed',        await run('/upload',      { env: {} }),                           503],
   ['no token goes to login',        await run('/upload',      { env: CONFIG }),                       302],
   ['allowed user is served',        await run('/upload',      { env: CONFIG, token: good }),          'served'],

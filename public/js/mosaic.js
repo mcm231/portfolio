@@ -1,4 +1,10 @@
-// Builds the photo wall that surrounds the title card.
+// Builds the wall of work that surrounds the title card.
+//
+// Two kinds of tile sit in the wall:
+//
+//   image  a row with a filename. The photo fills the tile.
+//   panel  a row with no filename. A piece with no picture, such as a story
+//          or a program. The tile shows one of the palette colors.
 //
 // Every tile snaps to a square grid and spans a whole number of cells, so the
 // edges line up and the gutter stays the same everywhere. Cells fill in order
@@ -9,7 +15,7 @@ const GAP = 3;             // px of page showing between two tiles
 const FIELD_SCALE_X = 2.4; // field width, in screens
 const FIELD_SCALE_Y = 2.8; // field height, in screens
 const MAX_TILES = 900;
-const BLANK_TILES = 90;    // only when the image API is unreachable
+const OFFLINE_TILES = 90;  // panels drawn when the API does not answer
 const EDGE_OPACITY = 0.72; // opacity of the outermost tiles
 const LARGE_FIRST = 3;     // tiles nearest the card that prefer a big shape
 
@@ -50,9 +56,20 @@ const LARGE_SHAPES = Object.fromEntries(
         [kind, [...list].sort((a, b) => b[0] * b[1] - a[0] * a[1])])
 );
 
-// The orientation of one database row. A row with no size reads as square,
-// which crops either orientation the least.
-function shapeKind(entry) {
+const KINDS = ['landscape', 'portrait', 'square'];
+
+// The orientation of one database row.
+//
+// A photo takes the shape of its pixels. A panel takes the shape its row asks
+// for, or a varied one. A row with no size at all reads as square, which
+// crops either orientation the least.
+function shapeKind(entry, random) {
+    if (isPanel(entry)) {
+        return KINDS.includes(entry.shape)
+            ? entry.shape
+            : KINDS[Math.floor(random() * KINDS.length)];
+    }
+
     if (!entry || !entry.width || !entry.height) return 'square';
 
     const ratio = entry.width / entry.height;
@@ -61,8 +78,14 @@ function shapeKind(entry) {
     return 'square';
 }
 
-// Placeholder tile colors live in css/styles.css as --blank-1 .. --blank-N.
-const BLANK_COUNT = 8;
+// Panel colors live in css/styles.css as --blank-1 .. --blank-N. A row may
+// name one with a `panelColor` number. Otherwise the wall picks one.
+const PANEL_COLORS = 8;
+
+// True when a row has no picture, so the wall draws a color panel for it.
+function isPanel(entry) {
+    return Boolean(entry) && !entry.filename;
+}
 
 // Deterministic PRNG, so the wall stays put between renders.
 function mulberry32(seed) {
@@ -230,7 +253,7 @@ function buildTile(tile, entry, maxDistance, random) {
         `--o:${opacity.toFixed(2)}`
     ].join(';');
 
-    if (entry) {
+    if (entry && entry.filename) {
         const img = document.createElement('img');
         img.src = `/api/images?id=${encodeURIComponent(entry.filename)}`;
         img.alt = entry.name || '';
@@ -238,24 +261,33 @@ function buildTile(tile, entry, maxDistance, random) {
         img.decoding = 'async';
         img.draggable = false;
         figure.appendChild(img);
-    } else {
-        figure.classList.add('is-blank');
-        figure.style.setProperty('--blank', `var(--blank-${Math.floor(random() * BLANK_COUNT) + 1})`);
+        return figure;
     }
+
+    // A panel. The row may name a color, or the wall picks one.
+    const named = Number(entry && entry.panelColor);
+    const index = Number.isInteger(named) && named >= 1 && named <= PANEL_COLORS
+        ? named
+        : Math.floor(random() * PANEL_COLORS) + 1;
+
+    figure.classList.add('is-panel');
+    figure.style.setProperty('--panel', `var(--blank-${index})`);
+    if (entry && entry.name) figure.setAttribute('aria-label', entry.name);
 
     return figure;
 }
 
+// Returns the rows, or null when the API did not answer. An empty array and
+// a dead API mean different things, so they must not look alike.
 async function loadEntries() {
     try {
         const response = await fetch('/api/image-metadata');
-        if (!response.ok) return [];
+        if (!response.ok) return null;
 
         const entries = await response.json();
-        return Array.isArray(entries) ? entries.filter(e => e && e.filename) : [];
+        return Array.isArray(entries) ? entries.filter(Boolean) : null;
     } catch {
-        // No API behind the page (plain static preview). Fall back to blanks.
-        return [];
+        return null;
     }
 }
 
@@ -277,14 +309,14 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
     // One tile per row in the database. No image repeats. Blanks appear only
     // when the API is unreachable, because then the real count is unknown.
     const entries = await loadEntries();
-    const shown = entries.slice(0, MAX_TILES);
 
-    // One orientation per tile. A blank wall has no images, so it uses the
-    // full shape mix instead.
-    const kinds = shown.length
-        ? shown.map(shapeKind)
-        : Array.from({ length: BLANK_TILES },
-            () => ['landscape', 'portrait', 'square'][Math.floor(random() * 3)]);
+    // No answer means the real count is unknown, so the wall fills with
+    // panels. An empty database is different: it shows nothing.
+    const shown = entries === null
+        ? Array.from({ length: OFFLINE_TILES }, () => ({}))
+        : entries.slice(0, MAX_TILES);
+
+    const kinds = shown.map(entry => shapeKind(entry, random));
 
     const tiles = layOutTiles(grid, random, kinds);
 
@@ -303,5 +335,10 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
     card.style.setProperty('--w', `${cardRect.w}px`);
     card.style.setProperty('--h', `${cardRect.h}px`);
 
-    return { tiles: tiles.length, images: shown.length, card: cardRect };
+    return {
+        tiles: tiles.length,
+        images: shown.filter(entry => entry.filename).length,
+        panels: shown.filter(isPanel).length,
+        card: cardRect
+    };
 }

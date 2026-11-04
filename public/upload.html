@@ -43,9 +43,17 @@
                 <textarea class="field" id="description" name="description" rows="3"></textarea>
             </div>
 
+            <!-- Mediums. Type a new one, or pick a used one from the list. -->
             <div class="form-row">
-                <label class="form-label" for="medium">Medium <span class="required" aria-hidden="true">*</span></label>
-                <input class="field" id="medium" name="medium" type="text" placeholder="watercolor" required>
+                <label class="form-label" for="medium-input">Mediums <span class="required" aria-hidden="true">*</span></label>
+                <div class="combo">
+                    <input class="field field-grow" id="medium-input" type="text"
+                           list="medium-options" autocomplete="off" placeholder="watercolor">
+                    <datalist id="medium-options"></datalist>
+                    <button class="button button-quiet" id="medium-add" type="button">Add</button>
+                </div>
+                <div class="chips" id="medium-chips"></div>
+                <p class="form-hint">Press Enter to add. A new medium joins the list.</p>
             </div>
 
             <div class="form-row">
@@ -53,9 +61,17 @@
                 <input class="field" id="dateCreated" name="dateCreated" type="date" required>
             </div>
 
+            <!-- Tags. The same control, a second category. -->
             <div class="form-row">
-                <span class="form-label">Tags <span class="required" aria-hidden="true">*</span></span>
-                <div id="tag-list" class="tag-list" role="group" aria-label="Tags">Loading the tag list…</div>
+                <label class="form-label" for="tag-input">Tags <span class="required" aria-hidden="true">*</span></label>
+                <div class="combo">
+                    <input class="field field-grow" id="tag-input" type="text"
+                           list="tag-options" autocomplete="off" placeholder="watercolor">
+                    <datalist id="tag-options"></datalist>
+                    <button class="button button-quiet" id="tag-add" type="button">Add</button>
+                </div>
+                <div class="chips" id="tag-chips"></div>
+                <p class="form-hint">Press Enter to add. A new tag joins the list.</p>
             </div>
 
             <div class="form-row">

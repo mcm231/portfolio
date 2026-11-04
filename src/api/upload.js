@@ -3,7 +3,7 @@
 //
 // It writes the image bytes to R2, then writes the metadata entry to KV. The
 // KV key is the image id. The R2 object key is the entry's filename.
-import { isValidTag } from './_constants.js';
+import { normalizeList } from '../../public/js/taxonomy.js';
 // The browser loads the same file over HTTP, so the rules cannot drift.
 import { slugify, freeId } from '../../public/js/id-rules.js';
 import { readImageSize } from './_image-size.js';
@@ -64,14 +64,12 @@ export async function onRequestPost(context) {
   const id = slugify(String(form.get('id') || '').trim() || name);
   if (!id) return json({ error: 'The id is empty after cleanup. Type one.' }, 400);
 
-  const medium = String(form.get('medium') || '').trim();
-  if (!medium) return json({ error: 'Name the medium.' }, 400);
+  // No fixed list. Each term is cleaned to its steady form and kept.
+  const mediums = normalizeList(form.getAll('mediums'));
+  if (mediums.length === 0) return json({ error: 'Name at least one medium.' }, 400);
 
-  const tags = form.getAll('tags').map(tag => String(tag).trim()).filter(Boolean);
+  const tags = normalizeList(form.getAll('tags'));
   if (tags.length === 0) return json({ error: 'Pick at least one tag.' }, 400);
-
-  const unknownTag = tags.find(tag => !isValidTag(tag));
-  if (unknownTag) return json({ error: `Unknown tag: "${unknownTag}"` }, 400);
 
   const dateCreated = String(form.get('dateCreated') || '').trim();
   if (!dateCreated) return json({ error: 'Give the date created.' }, 400);
@@ -123,7 +121,7 @@ export async function onRequestPost(context) {
     name,
     filename,
     description: String(form.get('description') || '').trim(),
-    medium,
+    mediums,
     tags,
     dateCreated,
     galleries: splitList(String(form.get('galleries') || '')),
