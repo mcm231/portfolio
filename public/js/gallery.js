@@ -5,8 +5,8 @@
 // The first entry is the default filter type. A `vocabulary` key names the
 // list of used terms that suggests values for that type.
 const FILTER_TYPES = [
-    { value: 'tag', label: 'Tag', vocabulary: 'tags' },
     { value: 'medium', label: 'Medium', vocabulary: 'mediums' },
+    { value: 'tag', label: 'Tag', vocabulary: 'tags' },
     { value: 'title', label: 'Title' },
     { value: 'dateCreated', label: 'Date Created' }
 ];
@@ -83,6 +83,21 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
         addFilter();
     };
 
+    // Newest first. A piece with no date goes last, and the id breaks a tie,
+    // so the order never shuffles between loads.
+    function byNewest(a, b) {
+        const dateA = a.dateCreated || '';
+        const dateB = b.dateCreated || '';
+
+        if (dateA !== dateB) {
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateB.localeCompare(dateA);
+        }
+
+        return String(a.id).localeCompare(String(b.id));
+    }
+
     const filteredEntries = useMemo(() => entries.filter(entry =>
         activeFilters.every(filter => {
             if (filter.type === 'title') {
@@ -100,7 +115,7 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
             }
             return true;
         })
-    ), [entries, activeFilters]);
+    ).sort(byNewest), [entries, activeFilters]);
 
     function renderValueField() {
         const type = FILTER_TYPES.find(f => f.value === filterType);
