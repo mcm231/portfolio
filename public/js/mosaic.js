@@ -23,20 +23,19 @@ const LARGE_FIRST = 3;     // tiles nearest the card that prefer a big shape
 // they can hold. A photo only ever lands in a tile of its own orientation, so
 // object-fit crops the edges rather than cutting the subject in half.
 //
-// Repeats act as weights, so the middle sizes are common.
+// Repeats act as weights, so the middle sizes are common. No shape goes past
+// two to one, because a longer band reads as a strip rather than a picture.
 const SHAPES = {
     landscape: [
         [2, 1], [2, 1],
         [3, 2], [3, 2], [3, 2],
         [4, 3], [4, 3],
-        [3, 1],
         [4, 2]
     ],
     portrait: [
         [1, 2], [1, 2],
         [2, 3], [2, 3], [2, 3],
         [3, 4], [3, 4],
-        [1, 3],
         [2, 4]
     ],
     square: [

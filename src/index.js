@@ -6,6 +6,8 @@ import { onRequest as images } from './api/images.js';
 import { onRequest as vocabulary } from './api/vocabulary.js';
 import { onRequest as upload } from './api/upload.js';
 import { onRequest as session } from './api/session.js';
+import { onRequest as contact } from './api/contact.js';
+import { onRequest as messages } from './api/messages.js';
 
 // Each handler keeps the Pages Functions signature, so it reads context.request
 // and context.env and nothing else.
@@ -14,7 +16,9 @@ const API_ROUTES = {
   '/api/images': images,
   '/api/vocabulary': vocabulary,
   '/api/upload': upload,
-  '/api/session': session
+  '/api/session': session,
+  '/api/contact': contact,
+  '/api/messages': messages
 };
 
 export default {

@@ -75,9 +75,20 @@ check('a new name is untouched', fresh.json.id, 'other-work');
 check('five ids exist', [...kv.keys()].sort(), ['other-work', 'piece', 'piece-2', 'piece-3', 'piece-4']);
 check('r2 holds one object each', r2.size, kv.size);
 
+// The name is optional. The id then comes from the file name.
+const noName = await upload({ name: '', fileName: 'quiet-study.png' });
+check('an upload needs no name', noName.status, 201);
+check('the id comes from the file', noName.json.id, 'quiet-study');
+check('the stored name is empty', JSON.parse(kv.get('quiet-study')).name, '');
+
+const noNameNoFile = await upload({ name: '', noFile: true, id: '', overwrite: 'true' });
+check('nothing to build an id fails', noNameNoFile.json.error,
+  'Type an id. Nothing else gives one.');
+
 const beforeReject = r2.size;
 const missingTag = await upload({ tags: [] });
 check('no tag is rejected', missingTag.json.error, 'Pick at least one tag.');
+check('a rejected upload adds nothing', r2.size, beforeReject);
 
 const missingMedium = await upload({ mediums: [] });
 check('no medium is rejected', missingMedium.json.error, 'Name at least one medium.');
@@ -91,7 +102,6 @@ const freeTerms = await upload({
 check('a new tag is kept', JSON.parse(kv.get('free-terms')).tags,
   ['brand-new-tag', 'second']);
 check('a new medium is kept', JSON.parse(kv.get('free-terms')).mediums, ['oil-paint']);
-check('a rejected upload adds nothing', r2.size, beforeReject);
 
 // ---------- Edit mode: a save with no new file ----------
 

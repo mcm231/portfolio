@@ -67,9 +67,12 @@ function extensionOf(file) {
 // Mirrors what src/api/upload.js stores, so the page shows the real row.
 function currentEntry() {
     const name = nameInput.value.trim();
-    const wanted = slugify(idInput.value.trim() || name);
-    const overwrite = document.getElementById('overwrite').checked;
     const file = fileInput.files[0];
+
+    // The id comes from the typed id, then the name, then the file name.
+    const wanted = slugify(idInput.value.trim() || name
+        || (file ? file.name.replace(/\.[a-z0-9]+$/i, '') : ''));
+    const overwrite = document.getElementById('overwrite').checked;
 
     // freeId resolves at once here, because the id set is already in memory.
     let id = wanted;
@@ -106,7 +109,7 @@ function refreshPreview() {
 
     idHint.textContent = renamed
         ? `"${wanted}" is taken, so this entry becomes "${key}".`
-        : 'The KV key. Lower case, dashes only. It fills itself from the name.';
+        : 'The KV key. Lower case, dashes only. It fills itself from the name, or the file name.';
     idHint.classList.toggle('is-warning', renamed);
 }
 
@@ -128,12 +131,11 @@ function setStatus(message, kind) {
     status.className = `form-status${kind ? ` is-${kind}` : ''}`;
 }
 
-// Every field except the id, the description, and the galleries. The id fills
-// itself from the name. The server checks the same list, so a direct POST
-// cannot skip one.
+// Every field except the name, the id, the description, and the galleries.
+// The id fills itself from the name or the file. The server checks the same
+// list, so a direct POST cannot skip one.
 function firstProblem() {
     if (!fileInput.files[0] && !editingId) return [fileInput, 'Choose an image file.'];
-    if (!nameInput.value.trim()) return [nameInput, 'Give the piece a name.'];
 
     if (mediumField.values().length === 0) {
         return [document.getElementById('medium-input'), 'Name at least one medium.'];
@@ -177,9 +179,8 @@ fileInput.addEventListener('change', () => {
     preview.hidden = !file;
     if (file) {
         preview.src = previewUrl;
-        if (!nameInput.value.trim()) {
-            nameInput.value = file.name.replace(/\.[a-z0-9]+$/i, '');
-            if (!idEdited) idInput.value = slugify(nameInput.value);
+        if (!idEdited && !idInput.value.trim()) {
+            idInput.value = slugify(file.name.replace(/\.[a-z0-9]+$/i, ''));
         }
     }
 

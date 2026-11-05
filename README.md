@@ -75,7 +75,7 @@ This spins up a local server (usually at `http://localhost:8787`) with your real
 Hit the endpoints to verify:
 - All metadata: `curl http://localhost:8787/api/image-metadata`
 - By tag: `curl "http://localhost:8787/api/image-metadata?tag=watercolor"`
-- All tags: `curl http://localhost:8787/api/tags`
+- The words in use: `curl http://localhost:8787/api/vocabulary`
 - Single entry by ID: `curl "http://localhost:8787/api/image-metadata?id=test-image-1"`
 
 
@@ -121,6 +121,83 @@ This spins up a local server (usually at `http://localhost:8787`) with your real
 Hit the endpoint to verify (note: `id` here is the R2 object key, i.e. the metadata
 entry's `filename`, not the KV key):
 - Fetch image bytes: `curl "http://localhost:8787/api/images?id=[FILENAME HERE]" --output [FILENAME HERE]`
+
+## Tags and mediums
+
+There is no fixed list. A term is whatever you type. It is cleaned to one
+steady form first, so `Oil Paint`, `oil paint` and `OIL-PAINT` all become
+`oil-paint`. `public/js/taxonomy.js` holds that rule, and the browser and the
+Worker both import it.
+
+Two categories work the same way:
+
+| Field | Holds |
+|---|---|
+| `tags` | A list of terms. What the piece is about |
+| `mediums` | A list of terms. What the piece is made of |
+
+`GET /api/vocabulary` returns every term already in use, with a count, most
+used first:
+
+```
+{"tags":[{"value":"watercolor","count":3}],"mediums":[{"value":"ink","count":2}]}
+```
+
+The upload page feeds that list into a suggestion box. Type to narrow it, pick
+a used term, or type a new one and press Enter. Gallery Search uses the same
+list to suggest filter values, for Tag and for Medium.
+
+An older row holds one `medium` string. The read path promotes it into
+`mediums` on the way out, so nothing needs a migration. A row saved again
+keeps only the list.
+
+Both filters also work straight on the API:
+
+```
+curl "http://localhost:8787/api/image-metadata?tag=watercolor"
+curl "http://localhost:8787/api/image-metadata?medium=ink"
+```
+
+## Contact form
+
+`/pages/contact` carries a form, an Instagram link, and a commissions link.
+The email address never appears on the page.
+
+### Where a message goes
+
+Every message is written to the R2 bucket, under `messages/`. That prefix sits
+apart from the artwork, so the gallery never sees it. A message is kept even
+when email is not set up, so nothing is lost.
+
+Read the messages at `/messages`. The page is private, behind the same Access
+gate as `/upload`. Each card shows the sender, the date, and the text, with a
+reply link and a Delete button.
+
+### Turning on email
+
+Email needs a domain. A `workers.dev` subdomain cannot send, so this waits
+until you point a domain at the site.
+
+1. Run `npx wrangler email sending enable yourdomain.com`.
+2. Add the binding to `wrangler.jsonc`: `"send_email": [{ "name": "EMAIL" }]`.
+3. Add two variables: `CONTACT_TO`, your own address, and `CONTACT_FROM`, an
+   address on the onboarded domain.
+4. Deploy.
+
+With all three in place, each message is also mailed to you, with the sender
+set as the reply address. Without them the message is still stored, and the
+visitor still sees the same answer.
+
+### What stops spam
+
+| Guard | What it does |
+|---|---|
+| A honeypot field | A crawler fills it in. The reply looks normal, and nothing is stored |
+| A rate limit | Three messages a minute per address |
+| Length caps | 120 for a name, 160 for a subject, 5000 for the body |
+
+The rate limit lives in the Worker isolate, so it slows a flood rather than
+stopping one. Add Cloudflare Turnstile when the form draws real traffic.
 
 ## Two kinds of row
 
@@ -217,7 +294,7 @@ says *variables cannot be added to a worker that only has static assets*.
 To confirm the Worker runs in production, request a public route:
 
 ```
-curl -i https://portfolio.mayacollege2020.workers.dev/api/tags
+curl -i https://portfolio.mayacollege2020.workers.dev/api/vocabulary
 ```
 
 A JSON array means the Worker is live. HTML, or a 404, means the deploy

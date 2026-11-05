@@ -45,6 +45,10 @@
 
     --color-error: #b23a48;            /* a brick red, cool enough for alice blue */
     --color-overlay: rgba(25, 42, 81, 0.6);   /* space indigo, see through */
+    /* A caption sits over a photo of any color. At this alpha the lightest
+       possible photo still gives white text 5.2 to 1. */
+    --color-scrim: rgba(25, 42, 81, 0.72);
+    --color-scrim-flat: #5e6b86;              /* the scrim over a white photo */
 
     /* Placeholder tiles, shown only when the image API is unavailable. */
     --blank-1: #cfe0e3;
@@ -554,6 +558,7 @@ body.gallery {
 }
 
 .grid-item {
+    position: relative;
     border: 1px solid var(--color-line-strong);
     background: var(--color-surface);
     overflow: hidden;
@@ -561,15 +566,45 @@ body.gallery {
     transition: border-color 0.2s ease;
 }
 
-.grid-item:hover {
+.grid-item:hover,
+.grid-item:focus-visible {
     border-color: var(--color-mark-line);
+    outline: none;
+}
+
+/* The caption rests on the image, and appears on hover or on focus. */
+.grid-item-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-scrim);
+    color: var(--color-on-brand);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.grid-item:hover .grid-item-caption,
+.grid-item:focus-visible .grid-item-caption {
+    opacity: 1;
+}
+
+/* A touch screen has no hover, so the caption always shows there. */
+@media (hover: none) {
+    .grid-item-caption {
+        opacity: 1;
+    }
 }
 
 .grid-item img,
 .grid-item-panel {
     display: block;
     width: 100%;
-    height: 200px;
+    height: 240px;
     object-fit: cover;
 }
 
@@ -584,20 +619,15 @@ body.gallery {
     background: var(--panel);
 }
 
-.grid-item-info {
-    padding: var(--space-3) var(--space-4);
-}
-
 .grid-item-name {
-    margin: 0 0 var(--space-1);
+    font-family: var(--font-display);
     font-size: var(--text-sm);
     font-weight: 600;
 }
 
 .grid-item-date {
-    margin: 0;
-    color: var(--color-ink-muted);
     font-size: var(--text-xs);
+    opacity: 0.85;
 }
 
 /* ---------- Upload form ---------- */
@@ -1028,6 +1058,133 @@ body.about {
     .hero-media::before {
         display: none;
     }
+}
+
+/* ---------- Contact page ---------- */
+
+.contact-page {
+    max-width: 820px;
+}
+
+.contact-hero {
+    grid-template-columns: 1fr;
+    padding-bottom: var(--space-7);
+}
+
+.contact-lead {
+    max-width: 48ch;
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.5;
+}
+
+.contact-form {
+    max-width: 620px;
+}
+
+.contact-form .button {
+    margin-top: var(--space-2);
+}
+
+/* Only a crawler finds this. A person never sees it, and a screen reader
+   skips it, because the wrapper is hidden from the accessibility tree. */
+.honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.link-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+}
+
+.link-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.link-card:hover {
+    border-color: var(--color-mark-line);
+    transform: translateY(-4px);
+}
+
+.link-card-label {
+    color: var(--color-mark-text);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.link-card-value {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 500;
+}
+
+.link-card-note {
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+@media (max-width: 760px) {
+    .link-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- Messages ---------- */
+
+.message-card {
+    margin-bottom: var(--space-5);
+    padding: var(--space-5);
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+}
+
+.message-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.message-from {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: 500;
+}
+
+.message-reply {
+    display: inline-block;
+    margin-top: var(--space-2);
+    color: var(--color-mark-text);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+}
+
+.message-date {
+    margin: var(--space-1) 0 var(--space-4);
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+}
+
+.message-body {
+    margin: 0;
+    line-height: 1.6;
+    white-space: pre-wrap;
 }
 
 /* ---------- Loading ---------- */

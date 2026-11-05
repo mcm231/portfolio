@@ -78,6 +78,7 @@ const PAIRS = [
   ['the eyebrow on the page',      '--color-mark-text',    '--color-bg',               'normal'],
   ['a section number, page',       '--color-mark-text',    '--color-bg',               'normal'],
   ['chip text on a chip',          '--color-ink',          '--color-mark-soft',        'normal'],
+  ['a caption on the palest photo', '--color-on-brand',    '--color-scrim-flat',       'normal'],
 
   ['error text on the page',       '--color-error',        '--color-bg',               'normal'],
   ['error text on a card',         '--color-error',        '--color-surface',          'normal'],

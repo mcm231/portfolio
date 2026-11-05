@@ -29,13 +29,14 @@
 
             <div class="form-row">
                 <label class="form-label" for="id">Id</label>
-                <input class="field" id="id" name="id" type="text" placeholder="auto from the name">
-                <p class="form-hint" id="id-hint">The KV key. Lower case, dashes only. It fills itself from the name.</p>
+                <input class="field" id="id" name="id" type="text" placeholder="auto from the name or the file">
+                <p class="form-hint" id="id-hint">The KV key. Lower case, dashes only. It fills itself from the name, or the file name.</p>
             </div>
 
             <div class="form-row">
-                <label class="form-label" for="name">Name <span class="required" aria-hidden="true">*</span></label>
-                <input class="field" id="name" name="name" type="text" required>
+                <label class="form-label" for="name">Name</label>
+                <input class="field" id="name" name="name" type="text">
+                <p class="form-hint">Left empty, the piece shows as untitled.</p>
             </div>
 
             <div class="form-row">

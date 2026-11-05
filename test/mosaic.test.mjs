@@ -116,6 +116,10 @@ check('at least six shapes appear', shapes.size >= 6, true);
 const areas = rects.map(r => r.cols * r.rows);
 check('the largest tile is 9 cells or more', Math.max(...areas) >= 9, true);
 check('no tile is more than 4 cells long', Math.max(...rects.map(r => Math.max(r.cols, r.rows))), 4);
+
+// A band longer than two to one reads as a strip, not a picture.
+const widest = Math.max(...rects.map(r => Math.max(r.cols / r.rows, r.rows / r.cols)));
+check('no tile goes past two to one', widest, 2);
 check('the smallest tile is one cell', Math.min(...areas), 1);
 
 // A panel is a row with no filename. It draws a color block, and it sits in

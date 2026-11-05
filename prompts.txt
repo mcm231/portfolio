@@ -134,3 +134,14 @@ However, make sure that if an image is a portrait image, the mosaic gallery only
 However, make sure that if an image is a portrait image, it does not get reduced to a wide band, and a landscape does not get reduced to a tall column. I don't want unevenly or awkwardly chopped images
 In the remote/public site, I can see tiles with various light colors filling in space when there aren't pictures. I like this, but I want these to be used for when there are non-image artifacts that I want to display on the homepage alongside the image artifacts. Keep the color scheme. I will figure out how I want those non-image artifacts to be stored later, just make sure this component is still available. '/Users/mayamalavasi/Desktop/Screenshot 2026-11-04 at 4.26.27 PM.png'
 I want to revamp how mediums and tags work: I should be able to add my own tags, but as I type I should see a dropdown of matching options that have already been used that I can pick from. Similar for medium, it should work like another category of tags, and be searchable by filters in a gallery page.
+add the Contact page, fun but elegant and professional. There should only be a section for email (specifically a form you can email me through) and instagram, since I don't use the others and don't want my phone number out on the internet. I also want to be able to link to my comissions page.
+Instagram handle @_maymala
+Instagram handle @_maymala continue
+"Say hello" --> CONTACT
+"Get in touch" --> Contact Me
+"Send a message below. It reaches me directly, and I answer from my own address." --> Want to reach out? Send me a direct message with the form below. I will reply from my email address.
+"I reply to this address. Nothing else uses it." remove
+"Elsewhere" --> Find me on...
+I want name to no longer be a required entry for an upload. This also means that the image display under Gallery search should be changed so that it only displays the image, and the title and date with a translucent background to offset the (white) text on hover over an image.
+I want name to no longer be a required entry for an upload. This also means that the image display under Gallery search should be changed so that it only displays the image, and the optional title and date with a translucent background to offset the (white) text on hover over an image.
+The absolute longest and tallest mosaic tiles are too long/tall. The 2nd longest/tallest are alright

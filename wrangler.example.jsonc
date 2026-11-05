@@ -10,7 +10,7 @@
     "not_found_handling": "404-page",
     // Assets normally answer before the Worker runs. These paths must reach
     // src/gate.js first, or the private pages would serve to anyone.
-    "run_worker_first": ["/upload", "/upload/*", "/edit", "/edit/*"]
+    "run_worker_first": ["/upload", "/upload/*", "/edit", "/edit/*", "/messages", "/messages/*"]
   },
   "kv_namespaces": [
     { "binding": "IMAGE_METADATA", "id": "YOUR_KV_NAMESPACE_ID" }

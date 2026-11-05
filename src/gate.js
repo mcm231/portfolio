@@ -7,7 +7,7 @@
 // It returns a Response to stop the request, or null to let it continue.
 import { verifyAccessToken } from './api/_access.js';
 
-const PROTECTED_PATHS = ['/upload', '/edit', '/api/upload'];
+const PROTECTED_PATHS = ['/upload', '/edit', '/messages', '/api/upload', '/api/messages'];
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export function isProtected(pathname) {

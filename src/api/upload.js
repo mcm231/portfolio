@@ -58,11 +58,13 @@ export async function onRequestPost(context) {
     }
   }
 
+  // The name is optional. A piece with none shows as untitled.
   const name = String(form.get('name') || '').trim();
-  if (!name) return json({ error: 'Give the piece a name.' }, 400);
 
-  const id = slugify(String(form.get('id') || '').trim() || name);
-  if (!id) return json({ error: 'The id is empty after cleanup. Type one.' }, 400);
+  // The id comes from the typed id, then the name, then the file name.
+  const fromFile = hasFile ? String(file.name || '').replace(/\.[a-z0-9]+$/i, '') : '';
+  const id = slugify(String(form.get('id') || '').trim() || name || fromFile);
+  if (!id) return json({ error: 'Type an id. Nothing else gives one.' }, 400);
 
   // No fixed list. Each term is cleaned to its steady form and kept.
   const mediums = normalizeList(form.getAll('mediums'));

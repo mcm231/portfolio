@@ -144,11 +144,21 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
             return h('p', { key: 'empty', className: 'message' }, 'No images match your filters.');
         }
 
-        return h('div', { key: 'grid', className: 'grid' }, filteredEntries.map(entry =>
-            h('div', {
+        return h('div', { key: 'grid', className: 'grid' }, filteredEntries.map(entry => {
+            const caption = [entry.name, entry.dateCreated].filter(Boolean);
+
+            return h('div', {
                 key: entry.id,
                 className: 'grid-item',
-                onClick: () => (onSelect ? onSelect(entry) : setSelectedImage(entry))
+                role: 'button',
+                tabIndex: 0,
+                'aria-label': entry.name || 'Untitled piece',
+                onClick: () => (onSelect ? onSelect(entry) : setSelectedImage(entry)),
+                onKeyDown: (e) => {
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    e.preventDefault();
+                    return onSelect ? onSelect(entry) : setSelectedImage(entry);
+                }
             }, [
                 // A row with no filename is a piece with no picture. It shows
                 // a color panel, the same component the home page wall uses.
@@ -165,14 +175,20 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
                         style: { '--panel': `var(--blank-${panelColor(entry)})` },
                         'aria-hidden': 'true'
                     }),
-                h('div', { key: 'info', className: 'grid-item-info' }, [
-                    h('h3', { key: 'name', className: 'grid-item-name' }, entry.name),
-                    h('p', { key: 'meta', className: 'grid-item-date' },
-                        [entry.dateCreated, (entry.mediums || []).join(', ')]
-                            .filter(Boolean).join(' · '))
-                ])
-            ])
-        ));
+                // The title and the date sit over the image, on hover and
+                // on focus. A piece with neither shows the image alone.
+                caption.length > 0
+                    ? h('div', { key: 'caption', className: 'grid-item-caption' }, [
+                        entry.name
+                            ? h('span', { key: 'name', className: 'grid-item-name' }, entry.name)
+                            : null,
+                        entry.dateCreated
+                            ? h('span', { key: 'date', className: 'grid-item-date' }, entry.dateCreated)
+                            : null
+                    ])
+                    : null
+            ]);
+        }));
     }
 
     function renderModal() {
