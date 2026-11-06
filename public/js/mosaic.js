@@ -12,7 +12,7 @@
 // of distance from the center, which grows the wall outward from the title.
 
 import { buildCodeBlock } from './code-tile.js';
-import { readImages } from './row.js';
+import { readImages, previewKey } from './row.js';
 
 const CELL = 118;          // px, one grid unit
 const GAP = 3;             // px of page showing between two tiles
@@ -274,9 +274,10 @@ function buildTile(tile, entry, maxDistance, random) {
     const kind = tileKind(entry);
 
     if (kind === 'image') {
+        // The small copy, when the row has one. The wall never needs more.
         const cover = readImages(entry)[0];
         const img = document.createElement('img');
-        img.src = `/api/images?id=${encodeURIComponent(cover.key)}`;
+        img.src = `/api/images?id=${encodeURIComponent(previewKey(cover))}`;
         img.alt = entry.name || '';
         img.loading = 'lazy';
         img.decoding = 'async';

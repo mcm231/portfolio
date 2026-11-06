@@ -7,7 +7,13 @@
 // It returns a Response to stop the request, or null to let it continue.
 import { verifyAccessToken } from './api/_access.js';
 
-const PROTECTED_PATHS = ['/upload', '/edit', '/messages', '/api/upload', '/api/messages'];
+// Every private page and every private route, behind one rule. A path here
+// must also appear in run_worker_first in wrangler.jsonc, or the asset would
+// answer before this file runs.
+const PROTECTED_PATHS = [
+  '/upload', '/edit', '/messages', '/thumbnails',
+  '/api/upload', '/api/messages', '/api/thumbnail'
+];
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export function isProtected(pathname) {

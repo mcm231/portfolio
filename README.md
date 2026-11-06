@@ -266,6 +266,29 @@ saved again keeps only the list.
 Up to 12 pictures fit on one row. The cover takes the plain id, and the rest
 are numbered: `piece.png`, `piece-2.png`, `piece-3.png`.
 
+### Small copies
+
+The wall never draws a tile wider than 469px, but a stored photo is three to
+four times that. Each picture therefore carries a 938px copy, and the wall and
+the gallery cards load that instead. The detail view loads the original.
+
+```jsonc
+{ "key": "piece.png", "thumb": "thumbs/piece.png.webp", "width": 3024, "height": 4032 }
+```
+
+The browser makes the copy. You pick one file, and the upload page draws it
+small on a canvas before sending, so both go up in the same submit. A picture
+the browser cannot read stores no copy, and `thumb` stays null. The wall then
+loads the original.
+
+Cloudflare resizes at the edge only for a zone you own. A workers.dev
+subdomain has none, so the canvas does the work until a domain points here.
+
+To fill in the copies for rows uploaded before this, open `/thumbnails`. The
+page lists every picture with no copy, makes one for each, and stores it. It
+is private, behind the same Access gate as `/upload`. Running it twice is
+safe, because a row with a copy is skipped.
+
 ### The detail view
 
 A click opens one of two layouts.
@@ -285,6 +308,7 @@ One bucket, three prefixes. Each one stays out of the others' way.
 | Prefix | Holds | Served by |
 |---|---|---|
 | no prefix | An artwork image | `/api/images?id=<filename>` |
+| `thumbs/` | A 938px copy of a picture | `/api/images?id=thumbs/...` |
 | `files/` | A project download | `/api/files?key=files/...` |
 | `messages/` | A contact message | `/api/messages`, behind the gate |
 

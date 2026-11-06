@@ -81,6 +81,32 @@ const cases = [
   ['no bypass flag on localhost',   await run('/upload',      { env: {}, host: 'localhost' }),        503],
 ];
 
+// Every private page and route answers the same way, to the same people.
+// A new one belongs in this list, in PROTECTED_PATHS, and in run_worker_first.
+const PRIVATE = ['/upload', '/edit', '/messages', '/thumbnails',
+  '/api/upload', '/api/messages', '/api/thumbnail'];
+
+for (const path of PRIVATE) {
+  cases.push([`${path} sends a stranger to login`,
+    await run(path, { env: CONFIG }), 302]);
+  cases.push([`${path} bounces the wrong user`,
+    await run(path, { env: CONFIG, token: wrongUser }), 302]);
+  cases.push([`${path} serves the owner`,
+    await run(path, { env: CONFIG, token: good }), 'served']);
+  cases.push([`${path} fails closed with no config`,
+    await run(path, { env: {} }), 503]);
+}
+
+// A path below one of them is covered too.
+cases.push(['a path under /messages is gated', await run('/messages/one', { env: CONFIG }), 302]);
+cases.push(['a path under /thumbnails is gated', await run('/thumbnails/one', { env: CONFIG }), 302]);
+
+// A public path stays public.
+for (const path of ['/', '/pages/gallery', '/pages/contact', '/api/contact',
+    '/api/image-metadata', '/api/images', '/api/vocabulary', '/api/files', '/api/session']) {
+  cases.push([`${path} stays public`, await run(path, { env: CONFIG }), 'served']);
+}
+
 let failed = 0;
 for (const [label, result, expected] of cases) {
   const got = result.outcome;

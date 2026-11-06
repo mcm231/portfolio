@@ -18,9 +18,10 @@
          waits inside it, because gallery.js reads window.buildCodeBlock. -->
     <script type="module">
         import { buildCodeBlock } from '/js/code-tile.js';
-        import { readImages, readParagraphs } from '/js/row.js';
+        import { readImages, readParagraphs, previewKey } from '/js/row.js';
         window.buildCodeBlock = buildCodeBlock;
         window.readImages = readImages;
+        window.previewKey = previewKey;
         window.readParagraphs = readParagraphs;
 
         const root = ReactDOM.createRoot(document.getElementById('app'));

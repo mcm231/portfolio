@@ -6,6 +6,7 @@ import { slugify, freeIdSync } from './id-rules.js';
 import { createTermField } from './term-field.js';
 import { KNOWN_LANGUAGES } from './taxonomy.js';
 import { readImages, readSnippet } from './row.js';
+import { makeThumbnail } from './thumbnail.js';
 
 const form = document.getElementById('upload-form');
 const fileInput = document.getElementById('file');
@@ -271,6 +272,19 @@ form.addEventListener('submit', async event => {
 
     // An edit with no new file keeps the pictures already in the bucket.
     if (editingId && fileInput.files.length === 0) body.delete('file');
+
+    // A small copy of each picture, made here, so the wall loads kilobytes
+    // instead of megabytes. One per file, in the same order. A picture the
+    // browser cannot read sends an empty part, and the wall uses the original.
+    const chosen = Array.from(fileInput.files);
+    if (chosen.length > 0) {
+        setStatus('Making the small copies…');
+
+        const copies = await Promise.all(chosen.map(file => makeThumbnail(file)));
+        for (const copy of copies) {
+            body.append('thumb', copy ?? new Blob([], { type: 'application/octet-stream' }));
+        }
+    }
 
     // The same for the download.
     if (!downloadInput.files[0]) body.delete('download');

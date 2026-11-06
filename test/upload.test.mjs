@@ -30,11 +30,16 @@ async function upload(fields = {}) {
     const names = fields.fileNames ?? [fields.fileName ?? 'shot.png'];
     for (const fileName of names) {
       body.append('file', new File([PNG], fileName, { type: 'image/png' }));
+      // The browser sends a small copy beside each picture. An empty part
+      // means it could not read that one.
+      body.append('thumb', fields.noThumbs
+        ? new Blob([])
+        : new Blob([new Uint8Array(32)], { type: 'image/webp' }));
     }
   }
   const defaults = { name: 'Piece', dateCreated: '2026-01-01' };
   for (const [k, v] of Object.entries({ ...defaults, ...fields })) {
-    if (['fileName', 'fileNames', 'tags', 'mediums', 'noFile'].includes(k)) continue;
+    if (['fileName', 'fileNames', 'tags', 'mediums', 'noFile', 'noThumbs'].includes(k)) continue;
     if (v !== undefined) body.set(k, String(v));
   }
   for (const tag of fields.tags ?? ['watercolor']) body.append('tags', tag);
@@ -76,7 +81,8 @@ const fresh = await upload({ name: 'Other Work', id: '' });
 check('a new name is untouched', fresh.json.id, 'other-work');
 
 check('five ids exist', [...kv.keys()].sort(), ['other-work', 'piece', 'piece-2', 'piece-3', 'piece-4']);
-check('r2 holds one object each', r2.size, kv.size);
+// Each row writes two objects: the picture, and its small copy.
+check('r2 holds two per row', r2.size, kv.size * 2);
 
 // The name is optional. The id then comes from the file name.
 const noName = await upload({ name: '', fileName: 'quiet-study.png' });
@@ -131,6 +137,23 @@ check('no file and no row fails', orphan.json.error, 'Choose an image file.');
 const noFileNoOverwrite = await upload({ noFile: true, id: 'piece' });
 check('no file needs overwrite', noFileNoOverwrite.json.error, 'Choose an image file.');
 
+// ---------- Small copies ----------
+
+const copied = await upload({ id: 'with-copy', name: 'With a copy' });
+const copyRow = JSON.parse(kv.get('with-copy'));
+check('the row names its copy', copyRow.images[0].thumb, 'thumbs/with-copy.png.webp');
+check('the copy is stored', r2.has('thumbs/with-copy.png.webp'), true);
+
+const noCopy = await upload({ id: 'no-copy', name: 'No copy', noThumbs: true });
+check('an unreadable picture stores none', JSON.parse(kv.get('no-copy')).images[0].thumb, null);
+check('and writes no object', r2.has('thumbs/no-copy.png.webp'), false);
+
+// A delete takes the copy with the original.
+await worker.fetch(new Request('http://localhost/api/upload?id=with-copy',
+  { method: 'DELETE' }), env, { waitUntil() {} });
+check('a delete clears the original', r2.has('with-copy.png'), false);
+check('a delete clears the copy', r2.has('thumbs/with-copy.png.webp'), false);
+
 // ---------- Several pictures on one row ----------
 
 const many = await upload({
@@ -162,7 +185,7 @@ const beforeDelete = r2.size;
 await worker.fetch(new Request('http://localhost/api/upload?id=three-shots',
   { method: 'DELETE' }), env, { waitUntil() {} });
 check('a delete clears the row', kv.has('three-shots'), false);
-check('a delete clears its object', r2.size, beforeDelete - 1);
+check('a delete clears both objects', r2.size, beforeDelete - 2);
 
 // ---------- A code project ----------
 

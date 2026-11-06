@@ -17,6 +17,7 @@ const MAX_SNIPPET = 2000;
 const FILE_PREFIX = 'files/';
 const KINDS = new Set(['image', 'code']);
 const MAX_IMAGES = 12;
+const THUMB_PREFIX = 'thumbs/';
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function json(body, status = 200) {
@@ -134,15 +135,25 @@ export async function onRequestPost(context) {
 
   const previous = existingRaw ? JSON.parse(existingRaw) : null;
 
+  // The small copies the browser made, one per picture, in the same order.
+  // An empty part means the browser could not read that one.
+  const copies = form.getAll('thumb')
+    .map(item => (item && typeof item !== 'string' && item.size > 0 ? item : null));
+
   // A new set of pictures replaces the old one. An edit with none keeps what
   // the row already holds.
   const images = hasFile
-    ? picked.map((item, index) => ({
-        key: `${finalId}${index === 0 ? '' : `-${index + 1}`}.`
-          + extensionOf(item.name || '', item.type),
-        width: null,
-        height: null
-      }))
+    ? picked.map((item, index) => {
+        const key = `${finalId}${index === 0 ? '' : `-${index + 1}`}.`
+          + extensionOf(item.name || '', item.type);
+
+        return {
+          key,
+          thumb: copies[index] ? `${THUMB_PREFIX}${key}.webp` : null,
+          width: null,
+          height: null
+        };
+      })
     : readImages(previous);
   // The wall picks a tile shape from the pixel size, so a portrait never
   // lands in a wide band. Read it from the header, not from the browser.
@@ -203,6 +214,12 @@ export async function onRequestPost(context) {
       env.IMAGES.put(images[index].key, item.stream(), {
         httpMetadata: { contentType: item.type }
       })));
+
+    await Promise.all(images.map((image, index) =>
+      image.thumb
+        ? env.IMAGES.put(image.thumb, copies[index].stream(),
+            { httpMetadata: { contentType: 'image/webp' } })
+        : null));
   }
 
   if (hasDownload) {
@@ -216,7 +233,11 @@ export async function onRequestPost(context) {
   } catch (error) {
     // Drop the new object, so a failed write leaves nothing behind in R2. An
     // edit that reused the old object must keep it.
-    if (hasFile) await Promise.all(images.map(image => env.IMAGES.delete(image.key)));
+    if (hasFile) {
+      await Promise.all(images.flatMap(image =>
+        [env.IMAGES.delete(image.key), image.thumb ? env.IMAGES.delete(image.thumb) : null]
+          .filter(Boolean)));
+    }
     if (hasDownload) await env.IMAGES.delete(download.key);
     console.error('KV write failed:', error);
     return json({ error: 'The upload worked, but the metadata write failed.' }, 500);
@@ -253,7 +274,9 @@ export async function onRequestDelete(context) {
   }
 
   await env.IMAGE_METADATA.delete(id);
-  await Promise.all(images.map(image => env.IMAGES.delete(image.key)));
+  await Promise.all(images.flatMap(image =>
+    [env.IMAGES.delete(image.key), image.thumb ? env.IMAGES.delete(image.thumb) : null]
+      .filter(Boolean)));
   if (downloadKey) await env.IMAGES.delete(downloadKey);
 
   return json({ id, deleted: true, images: images.map(i => i.key), downloadKey });

@@ -21,6 +21,7 @@ const buildCodeBlock = (entry) => window.buildCodeBlock(entry);
 
 // The same two readers the Worker uses, set on the window by the page.
 const readImages = (entry) => window.readImages(entry);
+const previewKey = (image) => window.previewKey(image);
 const readParagraphs = (text) => window.readParagraphs(text);
 
 function cardKind(entry) {
@@ -204,7 +205,8 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
                 cardKind(entry) === 'image'
                     ? h('img', {
                         key: 'thumb',
-                        src: imageUrl(readImages(entry)[0].key),
+                        // A card is a thumbnail, so it loads the small copy.
+                        src: imageUrl(previewKey(readImages(entry)[0])),
                         alt: entry.name || '',
                         loading: 'lazy'
                     })

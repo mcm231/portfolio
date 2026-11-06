@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Small copies - Maya Malavasi</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="admin">
+    <a class="button button-quiet back-link" href="/">← Home</a>
+    <a class="button button-quiet forward-link" href="/edit">Edit images</a>
+
+    <main class="page page-narrow">
+        <div class="page-header">
+            <h1 class="page-title">Small copies</h1>
+            <p class="page-count">
+                The wall loads a 938px copy of each picture. This page makes
+                one for every picture that has none.
+            </p>
+        </div>
+
+        <button id="start" class="button" type="button">Make the missing copies</button>
+        <p id="status" class="form-status" role="status">Counting…</p>
+        <pre id="log" class="code-block" hidden></pre>
+    </main>
+
+    <script type="module" src="js/thumbnails.js"></script>
+</body>
+</html>
