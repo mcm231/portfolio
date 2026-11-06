@@ -159,3 +159,4 @@ what was the outcome of looking into whether displaying lower res images for the
 would this require me to upload an image twice?
 would this require me to upload an image twice when I upload in the future?
 Build it
+I want to merge the current changes on this branch into main to make sure I don't lose them. Wait for me to say build it, then restart the process and build it.
