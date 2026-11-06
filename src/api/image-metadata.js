@@ -11,7 +11,11 @@ const SIZE_VERSION = 2;
 // Fills in any picture size the row does not already hold, by reading the
 // object header once, and keeps the answer. A parser fix raises SIZE_VERSION,
 // and every row is read again.
-async function backfillSizes(name, entry, kv, r2) {
+//
+// `stored` is the row as the database holds it. The write builds on that, not
+// on the resolved entry, so a field the read path adds can never be mistaken
+// for a stored one.
+async function backfillSizes(name, entry, stored, kv, r2) {
   const stale = entry.images.filter(image =>
     !image.width || !image.height || entry.sizeVersion !== SIZE_VERSION);
   if (stale.length === 0) return entry;
@@ -37,9 +41,19 @@ async function backfillSizes(name, entry, kv, r2) {
 
   const updated = { ...entry, images: filled, sizeVersion: SIZE_VERSION };
 
-  // The derived fields never go back into the stored value.
-  const { id, kind, width, height, filename, ...stored } = updated;
-  await kv.put(name, JSON.stringify(stored));
+  // A size fix also saves the promoted lists, so an old row ends up in the
+  // current shape. The legacy singles go, and a stored `kind` stays, because
+  // `stored` carries it and nothing here invents one.
+  const { medium, filename, width, height, ...rest } = stored;
+  const next = {
+    ...rest,
+    tags: entry.tags,
+    mediums: entry.mediums,
+    images: filled,
+    sizeVersion: SIZE_VERSION
+  };
+
+  await kv.put(name, JSON.stringify(next));
   return updated;
 }
 
@@ -54,6 +68,10 @@ async function backfillSizes(name, entry, kv, r2) {
 // A row written by the upload page stores its kind. An older row has none,
 // so the kind is worked out from the fields. Every row reports one, and no
 // page ever has to guess.
+//
+// Returns { entry, stored }, or null when the row cannot be read. `entry` is
+// what a reader sees. `stored` is the row the database holds, which the size
+// backfill writes on.
 async function resolveEntry(name, value, r2) {
   let parsed;
   try {
@@ -81,7 +99,7 @@ async function resolveEntry(name, value, r2) {
   // means panel. That keeps every row written before this field correct.
   const kind = parsed.kind || (shared.images.length > 0 ? "image" : "panel");
 
-  if (shared.images.length === 0) return { ...shared, kind };
+  if (shared.images.length === 0) return { entry: { ...shared, kind }, stored: parsed };
 
   // Drop a picture whose object is gone, rather than fail the whole row.
   const present = [];
@@ -95,7 +113,7 @@ async function resolveEntry(name, value, r2) {
     return null;
   }
 
-  return { ...shared, images: present, kind };
+  return { entry: { ...shared, images: present, kind }, stored: parsed };
 }
 
 async function getAllEntries(kv, r2) {
@@ -108,8 +126,8 @@ async function getAllEntries(kv, r2) {
         const value = await kv.get(name);
         if (!value) return null;
 
-        const entry = await resolveEntry(name, value, r2);
-        return entry ? backfillSizes(name, entry, kv, r2) : null;
+        const found = await resolveEntry(name, value, r2);
+        return found ? backfillSizes(name, found.entry, found.stored, kv, r2) : null;
       })
     );
     entries.push(...batch.filter(Boolean));
@@ -131,7 +149,8 @@ export async function onRequest(context) {
     const found = await resolveEntry(imageId, value, context.env.IMAGES);
     if (!found) return new Response("Not found", { status: 404 });
 
-    const entry = await backfillSizes(imageId, found, context.env.IMAGE_METADATA, context.env.IMAGES);
+    const entry = await backfillSizes(
+      imageId, found.entry, found.stored, context.env.IMAGE_METADATA, context.env.IMAGES);
 
     return new Response(JSON.stringify(entry), {
       headers: { "Content-Type": "application/json" }

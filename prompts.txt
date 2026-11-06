@@ -162,3 +162,6 @@ Build it
 I want to merge the current changes on this branch into main to make sure I don't lose them. Wait for me to say build it, then restart the process and build it.
 build it.
 messages and small copies should be gated behind the same permissions as edit and upload
+this codebase has been coded mostly by claude, with minimal human review. In other words, it's very likely a spaghetti mess. I have created a file called ARCHITECTURE_GUIDE.md. Ask me questions to help me fill it out. Areas of interest: comments, file connections, back-end layers, back-end access (through specific files), UI component organization, splitting pages into organized sections, reusing components, using libraries, front-end layers, name conventions, and any other pertinent areas to specify
+Go for it. But please also write/rewrite the Architecture guide and all previous files using the /no-ai-slop skill
+yes, fix the backfillSizes that strips the stored kind
