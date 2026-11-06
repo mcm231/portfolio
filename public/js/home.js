@@ -1,6 +1,7 @@
 // Home page wiring: the pannable plane, the photo wall, and the side drawer.
 import { createPan } from './pan.js';
 import { renderMosaic } from './mosaic.js';
+import { createLoadingScreen } from './loading-screen.js';
 
 const CENTERED_PX = 0.5;      // distance from origin still counted as centered
 const CENTERED_SCALE = 0.005; // zoom gap still counted as 100 percent
@@ -90,6 +91,17 @@ async function showPrivateLinksIfAllowed() {
 
 /* ---------- Photo wall ---------- */
 
+// The cover opens first, so nobody watches the tiles arrive one at a time. It
+// goes once every picture of the first screen answers, or after its own time
+// limit. A failure must not leave the cover up, so the catch drops it.
+const cover = createLoadingScreen();
+
 applyPan({ x: 0, y: 0, scale: 1 });
-renderMosaic({ container: mosaic, card });
 showPrivateLinksIfAllowed();
+
+renderMosaic({ container: mosaic, card })
+    .then(wall => {
+        wall.covers.forEach(img => cover.track(img));
+        return cover.seal();
+    })
+    .catch(() => cover.finish());

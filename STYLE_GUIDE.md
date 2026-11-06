@@ -144,6 +144,25 @@ Focus moves to the first link when the drawer opens. Focus returns to the
 button when the drawer closes. The button carries `aria-expanded` and
 `aria-controls`.
 
+## Loading
+
+A page that shows pictures opens behind a cover. `js/loading-screen.js` builds
+it, and `css/styles.css` holds the look. The rules:
+
+1. The cover fills the window and hides the page under it.
+2. A block of 16 squares fills from the middle outward.
+3. One square lights up for each answered image request.
+4. The word `Loading` sits under the block, and no count.
+5. The cover goes when every picture of the first screen answers.
+
+The block reports the network, never a timer. It counts a picture the window
+shows at that moment, because a lazy picture below the fold starts no request.
+A stalled picture cannot trap a visitor: the cover drops after ten seconds.
+
+The squares are sharp, like every other corner. The circle exception in the
+table above belongs to `.loading-spinner`, which is the small spinner inside a
+page, not the cover.
+
 ## Forms
 
 A required field carries a red asterisk after its label text:

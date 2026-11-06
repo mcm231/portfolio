@@ -257,7 +257,19 @@ function layOutTiles(grid, random, kinds) {
     return tiles;
 }
 
-function buildTile(tile, entry, maxDistance, random) {
+// True when the window shows this tile before any pan. The wall reaches well
+// past the window, so only these tiles load at once.
+function onFirstScreen(tile) {
+    const halfWidth = window.innerWidth / 2 + CELL;
+    const halfHeight = window.innerHeight / 2 + CELL;
+
+    return tile.x < halfWidth && tile.x + tile.w > -halfWidth
+        && tile.y < halfHeight && tile.y + tile.h > -halfHeight;
+}
+
+// `near` says the first screen shows this tile. `covers` collects the picture
+// elements of those tiles, so the loading cover can wait for them.
+function buildTile(tile, entry, maxDistance, random, { near = false, covers = null } = {}) {
     const fade = Math.min(1, tile.distance / maxDistance);
     const opacity = 1 - fade * (1 - EDGE_OPACITY);
 
@@ -279,10 +291,13 @@ function buildTile(tile, entry, maxDistance, random) {
         const img = document.createElement('img');
         img.src = `/api/images?id=${encodeURIComponent(previewKey(cover))}`;
         img.alt = entry.name || '';
-        img.loading = 'lazy';
+        // A tile the first screen shows must not wait for a scroll that never
+        // comes. Everything further out stays lazy.
+        img.loading = near ? 'eager' : 'lazy';
         img.decoding = 'async';
         img.draggable = false;
         figure.appendChild(img);
+        if (near && covers) covers.push(img);
         return figure;
     }
 
@@ -353,8 +368,12 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
     const maxDistance = tiles.reduce((far, tile) => Math.max(far, tile.distance), 1);
 
     const fragment = document.createDocumentFragment();
+    const covers = [];
+
     tiles.forEach((tile, index) => {
-        fragment.appendChild(buildTile(tile, shown[index] ?? null, maxDistance, random));
+        const options = { near: onFirstScreen(tile), covers };
+        fragment.appendChild(
+            buildTile(tile, shown[index] ?? null, maxDistance, random, options));
     });
 
     container.replaceChildren(fragment);
@@ -365,6 +384,9 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
     card.style.setProperty('--h', `${cardRect.h}px`);
 
     return {
+        // The picture elements the first screen shows. js/home.js hands these
+        // to the loading cover, which waits for them and nothing else.
+        covers,
         tiles: tiles.length,
         images: shown.filter(entry => tileKind(entry) === 'image').length,
         code: shown.filter(entry => tileKind(entry) === 'code').length,

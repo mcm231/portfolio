@@ -162,3 +162,16 @@ Build it
 I want to merge the current changes on this branch into main to make sure I don't lose them. Wait for me to say build it, then restart the process and build it.
 build it.
 messages and small copies should be gated behind the same permissions as edit and upload
+my uploaded files/images are not showing on the publically hosted site, how do I port those over?
+I want to run the deploy. Walk me through it
+I received a 302 error with the curl command
+still a 302
+prod is accessible now, though I can't access login-gated pages. Local is inaccessible
+where can I find teh AUD on Cloudflare
+cloudflare Unable to find your Access application!
+How do I create my own domain? Why should I? Can I host it on Cloudflare?
+my images are flickering when I load the gallery and the mosaic. Don't fix it, just tell me why and I'll decided
+my images are flickering when I load the gallery and the mosaic. Don't fix it, just tell me why and I'll decide
+Caching would only solve the problem on subsequent loads, not the first. Add an elegant&fun loading spinner that covers the page before the images load. The loading spinner should be based on the received network calls for loading images so that it is responsive.
+just include the loading text on the loading screen, no other text. The filled in boxes are good
+just loading, not "loading the gallery" or "loading the wall"

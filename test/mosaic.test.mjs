@@ -101,6 +101,14 @@ const codeRects = codeWall.nodes;
 check('every code tile is marked', codeRects.every(n => n.isCode), true);
 check('no code tile is one cell', codeRects.every(n => n.cols >= 2), true);
 
+// The loading cover waits for the first screen only, so the wall reports the
+// pictures that screen shows and no others.
+const near = await wall(60);
+check('the first screen names pictures', near.result.covers.length > 0, true);
+check('it names no more than the wall holds',
+  near.result.covers.length <= near.result.images, true);
+check('it names fewer than the whole wall', near.result.covers.length < 60, true);
+
 const noSize = await wall(12, [{}]);
 check('an unknown size goes square', noSize.rects.every(r => r.cols === r.rows), true);
 
@@ -184,6 +192,7 @@ const offline = await renderMosaic({
 check('an offline wall still fills', offline.tiles > 40, true);
 check('an offline wall has no images', offline.images, 0);
 check('an offline wall is all panels', offline.panels, offline.tiles);
+check('an offline wall names no picture', offline.covers.length, 0);
 
 let failed = 0;
 for (const [label, got, want] of results) {

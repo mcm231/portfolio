@@ -1553,6 +1553,99 @@ body.about {
     margin-top: var(--space-7);
 }
 
+/* The cover over a whole page, while its first screen of pictures loads.
+   js/loading-screen.js turns one square on for each answered request, so the
+   block reports the network. The squares fill from the middle outward, the
+   shape of the photo wall they stand for. */
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;        /* above the image modal, which sits at 2000 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-5);
+    background: var(--color-bg);
+    transition: opacity 0.26s ease;
+}
+
+.loading-screen.is-gone {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* The page must not scroll behind the cover. */
+body.is-loading {
+    overflow: hidden;
+}
+
+.loading-block {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-1);
+    width: 148px;
+    height: 148px;
+}
+
+/* A square waiting for its picture. */
+.loading-cell {
+    background: var(--color-surface-alt);
+    opacity: 0.5;
+    transform: scale(0.72);
+    transition: background 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* A square whose picture arrived. Three teal shades run on the diagonal, so
+   the block does not read as one flat panel. Nothing sits on these fills, so
+   the decorative shades are safe here. */
+.loading-cell.is-on {
+    opacity: 1;
+    transform: scale(1);
+    animation: cell-pop 0.34s ease;
+}
+
+.loading-cell.is-on.tint-0 { background: var(--color-brand); }
+.loading-cell.is-on.tint-1 { background: var(--color-brand-light); }
+.loading-cell.is-on.tint-2 { background: var(--color-brand-dark); }
+
+/* The square next in line breathes, so a slow network still looks alive. */
+.loading-cell.is-next {
+    animation: cell-wait 1.2s ease-in-out infinite;
+}
+
+@keyframes cell-pop {
+    0%   { transform: scale(0.72); }
+    55%  { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes cell-wait {
+    0%, 100% { opacity: 0.4; transform: scale(0.72); }
+    50%      { opacity: 0.9; transform: scale(0.94); }
+}
+
+.loading-label {
+    margin: 0;
+    color: var(--color-brand-dark);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* A visitor who asked for no motion still reads the progress, because the
+   color of a square changes without any movement. */
+@media (prefers-reduced-motion: reduce) {
+    .loading-cell,
+    .loading-cell.is-on,
+    .loading-cell.is-next {
+        animation: none;
+        transform: none;
+    }
+}
+
 .loading-spinner {
     width: 44px;
     height: 44px;

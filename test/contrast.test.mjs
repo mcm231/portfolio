@@ -88,6 +88,8 @@ const PAIRS = [
   ['a string on a code tile',      '--color-code-string',  '--color-code-bg',          'normal'],
   ['a comment on a code tile',     '--color-code-comment', '--color-code-bg',          'normal'],
 
+  ['the loading cover label',      '--color-brand-dark',   '--color-bg',               'normal'],
+
   ['error text on the page',       '--color-error',        '--color-bg',               'normal'],
   ['error text on a card',         '--color-error',        '--color-surface',          'normal'],
   ['danger button text',           '--color-on-brand',     '--color-error',            'normal'],

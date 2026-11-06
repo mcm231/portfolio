@@ -35,6 +35,11 @@ function imageUrl(key) {
 
 const PANEL_COLORS = 8;
 
+// Cards of the first screen load at once, so the loading cover has something
+// to wait for. The widest grid is six columns, and a tall window shows three
+// rows of them. Every card past these stays lazy.
+const EAGER_CARDS = 18;
+
 // A steady color for a row with no picture, from the id. The same row keeps
 // the same color on every visit.
 function panelColor(entry) {
@@ -50,8 +55,10 @@ function panelColor(entry) {
 //   title     heading text, default "Gallery Search"
 //   onSelect  what a click on a tile does, default: open the modal
 //   action    an optional top right link, { label, href }
-function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
-    const { useState, useEffect, useMemo } = React;
+//   loader    an optional loading cover from js/loading-screen.js. The page
+//             hands it every card picture, and seals it after the first grid.
+function GalleryPage({ title = 'Gallery Search', onSelect, action, loader } = {}) {
+    const { useState, useEffect, useMemo, useCallback } = React;
 
     const [entries, setEntries] = useState([]);
     const [vocabulary, setVocabulary] = useState({ tags: [], mediums: [] });
@@ -64,6 +71,20 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
     const [selectedImage, setSelectedImage] = useState(null);
     const [slide, setSlide] = useState(0);        // which picture is showing
     const [panelOpen, setPanelOpen] = useState(false);
+
+    // The cover counts a card picture, so its block follows the real requests.
+    // It keeps the cards of the first screen and ignores the rest.
+    const trackImage = useCallback(node => {
+        if (node && loader) loader.track(node);
+    }, [loader]);
+
+    // The cover goes once the grid renders and its first screen answers. This
+    // effect runs after the commit, so every card already registered. A failed
+    // fetch also ends the wait, because it clears `loading` too.
+    useEffect(() => {
+        if (!loader || loading) return;
+        loader.seal();
+    }, [loader, loading]);
 
     // Every detail view opens on the first picture, with the panel closed.
     useEffect(() => {
@@ -185,7 +206,7 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
             return h('p', { key: 'empty', className: 'message' }, 'No images match your filters.');
         }
 
-        return h('div', { key: 'grid', className: 'grid' }, filteredEntries.map(entry => {
+        return h('div', { key: 'grid', className: 'grid' }, filteredEntries.map((entry, index) => {
             const caption = [entry.name, entry.dateCreated].filter(Boolean);
 
             return h('div', {
@@ -208,7 +229,9 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
                         // A card is a thumbnail, so it loads the small copy.
                         src: imageUrl(previewKey(readImages(entry)[0])),
                         alt: entry.name || '',
-                        loading: 'lazy'
+                        loading: index < EAGER_CARDS ? 'eager' : 'lazy',
+                        decoding: 'async',
+                        ref: trackImage
                     })
                     : cardKind(entry) === 'code'
                         ? h('div', {

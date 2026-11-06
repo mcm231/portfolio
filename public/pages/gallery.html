@@ -18,14 +18,18 @@
          waits inside it, because gallery.js reads window.buildCodeBlock. -->
     <script type="module">
         import { buildCodeBlock } from '/js/code-tile.js';
+        import { createLoadingScreen } from '/js/loading-screen.js';
         import { readImages, readParagraphs, previewKey } from '/js/row.js';
         window.buildCodeBlock = buildCodeBlock;
         window.readImages = readImages;
         window.previewKey = previewKey;
         window.readParagraphs = readParagraphs;
 
+        // The cover hides the grid until its first screen of pictures arrives.
+        const loader = createLoadingScreen();
+
         const root = ReactDOM.createRoot(document.getElementById('app'));
-        root.render(React.createElement(GalleryPage, { title: 'Gallery Search' }));
+        root.render(React.createElement(GalleryPage, { title: 'Gallery Search', loader }));
     </script>
 </body>
 </html>

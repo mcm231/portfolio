@@ -339,11 +339,16 @@ A signed-in person who is not on the email list goes back to the home page.
 
 ### Set up Cloudflare Access
 
+Do not use the Access tab on the Worker. It offers All traffic or Previews
+only, and All traffic puts a login in front of the whole site, including the
+home page and the public API. Use a self-hosted application per path instead.
+
 1. Open the Cloudflare dashboard. Go to Zero Trust, then Access, then
    Applications. Add a self-hosted application.
-2. Set the path to `portfolio.mayacollege2020.workers.dev/upload`. Add a
-   second path for `portfolio.mayacollege2020.workers.dev/api/upload`. Use your
-   own domain instead if you have one.
+2. Give it these seven paths, on `portfolio.mayacollege2020.workers.dev`:
+   `/upload`, `/edit`, `/messages`, `/thumbnails`, `/api/upload`,
+   `/api/messages`, `/api/thumbnail`. Use your own domain instead if you have
+   one. A path with children needs a second entry ending in `/*`.
 3. Add a policy of action Allow, with an Emails rule that lists your email.
 4. Open the application Overview tab. Copy the Application Audience (AUD) tag.
 5. Read your team domain in Zero Trust, under Settings, then Custom Pages. It
