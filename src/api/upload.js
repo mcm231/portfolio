@@ -4,6 +4,7 @@
 // It writes the image bytes to R2, then writes the metadata entry to KV. The
 // KV key is the image id. The R2 object key is the entry's filename.
 import { normalizeList } from '../../public/js/taxonomy.js';
+import { readImages, readSnippet } from '../../public/js/row.js';
 // The browser loads the same file over HTTP, so the rules cannot drift.
 import { slugify, freeId } from '../../public/js/id-rules.js';
 import { readImageSize } from './_image-size.js';
@@ -12,6 +13,10 @@ const HEADER_BYTES = 262144;   // reaches past the Exif block of a phone photo
 const SIZE_VERSION = 2;        // matches src/api/image-metadata.js
 
 const MAX_BYTES = 25 * 1024 * 1024;
+const MAX_SNIPPET = 2000;
+const FILE_PREFIX = 'files/';
+const KINDS = new Set(['image', 'code']);
+const MAX_IMAGES = 12;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function json(body, status = 200) {
@@ -27,6 +32,20 @@ function extensionOf(filename, contentType) {
 
   const fromType = (contentType.match(/^image\/([a-z0-9+.-]+)$/i) || [])[1];
   return fromType ? fromType.replace('jpeg', 'jpg') : 'bin';
+}
+
+// A link the browser can open. Anything else is refused, so a row cannot
+// carry a javascript: url into a page.
+function cleanUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : '';
+  } catch {
+    return '';
+  }
 }
 
 function splitList(value) {
@@ -46,29 +65,39 @@ export async function onRequestPost(context) {
     return json({ error: 'Send the upload as multipart form data.' }, 400);
   }
 
-  const file = form.get('file');
-  const hasFile = Boolean(file) && typeof file !== 'string' && file.size > 0;
+  // The kind is stored, not guessed. An image row needs a picture. A code
+  // row does not, because its tile can show code instead.
+  const kind = KINDS.has(String(form.get('kind'))) ? String(form.get('kind')) : 'image';
 
-  if (hasFile) {
-    if (file.size > MAX_BYTES) {
-      return json({ error: `The file is over the ${MAX_BYTES / 1024 / 1024}MB limit.` }, 413);
+  // A row may carry several pictures. The first one is the cover.
+  const picked = form.getAll('file')
+    .filter(item => item && typeof item !== 'string' && item.size > 0)
+    .slice(0, MAX_IMAGES);
+  const hasFile = picked.length > 0;
+
+  for (const item of picked) {
+    if (item.size > MAX_BYTES) {
+      return json({ error: `"${item.name}" is over the ${MAX_BYTES / 1024 / 1024}MB limit.` }, 413);
     }
-    if (!String(file.type).startsWith('image/')) {
-      return json({ error: 'The file must be an image.' }, 415);
+    if (!String(item.type).startsWith('image/')) {
+      return json({ error: `"${item.name}" is not an image.` }, 415);
     }
   }
 
   // The name is optional. A piece with none shows as untitled.
   const name = String(form.get('name') || '').trim();
 
-  // The id comes from the typed id, then the name, then the file name.
-  const fromFile = hasFile ? String(file.name || '').replace(/\.[a-z0-9]+$/i, '') : '';
+  // The id comes from the typed id, then the name, then the first file name.
+  const fromFile = hasFile ? String(picked[0].name || '').replace(/\.[a-z0-9]+$/i, '') : '';
   const id = slugify(String(form.get('id') || '').trim() || name || fromFile);
   if (!id) return json({ error: 'Type an id. Nothing else gives one.' }, 400);
 
   // No fixed list. Each term is cleaned to its steady form and kept.
-  const mediums = normalizeList(form.getAll('mediums'));
-  if (mediums.length === 0) return json({ error: 'Name at least one medium.' }, 400);
+  // A code project has no medium, so the field stays an empty list.
+  const mediums = kind === 'code' ? [] : normalizeList(form.getAll('mediums'));
+  if (kind !== 'code' && mediums.length === 0) {
+    return json({ error: 'Name at least one medium.' }, 400);
+  }
 
   const tags = normalizeList(form.getAll('tags'));
   if (tags.length === 0) return json({ error: 'Pick at least one tag.' }, 400);
@@ -83,8 +112,9 @@ export async function onRequestPost(context) {
   const existingRaw = await env.IMAGE_METADATA.get(id);
   const clash = Boolean(existingRaw);
 
-  // No file is only valid for an edit, where the entry keeps its own image.
-  if (!hasFile && !(overwrite && clash)) {
+  // An image row needs a picture. A code row may have none. An edit keeps
+  // whatever the row already holds.
+  if (!hasFile && kind === 'image' && !(overwrite && clash)) {
     return json({ error: 'Choose an image file.' }, 400);
   }
 
@@ -102,39 +132,82 @@ export async function onRequestPost(context) {
     }
   }
 
-  // An edit with no new file keeps the object already in the bucket.
-  const filename = hasFile
-    ? `${finalId}.${extensionOf(file.name || '', file.type)}`
-    : JSON.parse(existingRaw).filename;
+  const previous = existingRaw ? JSON.parse(existingRaw) : null;
+
+  // A new set of pictures replaces the old one. An edit with none keeps what
+  // the row already holds.
+  const images = hasFile
+    ? picked.map((item, index) => ({
+        key: `${finalId}${index === 0 ? '' : `-${index + 1}`}.`
+          + extensionOf(item.name || '', item.type),
+        width: null,
+        height: null
+      }))
+    : readImages(previous);
   // The wall picks a tile shape from the pixel size, so a portrait never
   // lands in a wide band. Read it from the header, not from the browser.
-  let size = null;
   if (hasFile) {
-    size = readImageSize(await file.slice(0, HEADER_BYTES).arrayBuffer());
-    if (!size) console.warn(`Could not read the size of "${filename}".`);
-  } else {
-    const previous = JSON.parse(existingRaw);
-    if (previous.width && previous.height && previous.sizeVersion === SIZE_VERSION) {
-      size = { width: previous.width, height: previous.height };
-    }
+    await Promise.all(picked.map(async (item, index) => {
+      const size = readImageSize(await item.slice(0, HEADER_BYTES).arrayBuffer());
+      if (size) {
+        images[index].width = size.width;
+        images[index].height = size.height;
+      } else {
+        console.warn(`Could not read the size of "${images[index].key}".`);
+      }
+    }));
+  }
+
+  // The optional download. Any type, under its own prefix, so it never
+  // looks like artwork to the gallery.
+  const extra = form.get('download');
+  const hasDownload = Boolean(extra) && typeof extra !== 'string' && extra.size > 0;
+
+  if (hasDownload && extra.size > MAX_BYTES) {
+    return json({ error: `The download is over the ${MAX_BYTES / 1024 / 1024}MB limit.` }, 413);
+  }
+
+  const keepDownload = String(form.get('keepDownload')) === 'true';
+  let download = keepDownload && previous ? (previous.download ?? null) : null;
+
+  if (hasDownload) {
+    download = {
+      key: `${FILE_PREFIX}${finalId}-${slugify(extra.name || 'file') || 'file'}`,
+      name: String(extra.name || 'download'),
+      size: extra.size,
+      type: String(extra.type || 'application/octet-stream')
+    };
   }
 
   const entry = {
+    kind,
     name,
-    filename,
+    images,
     description: String(form.get('description') || '').trim(),
     mediums,
     tags,
     dateCreated,
     galleries: splitList(String(form.get('galleries') || '')),
-    width: size ? size.width : null,
-    height: size ? size.height : null,
-    sizeVersion: size ? SIZE_VERSION : null
+    sizeVersion: SIZE_VERSION,
+
+    // Code fields. Every one is optional, and an image row leaves them empty.
+    repoUrl: cleanUrl(form.get('repoUrl')),
+    liveUrl: cleanUrl(form.get('liveUrl')),
+    language: normalizeList([form.get('language')])[0] ?? '',
+    snippet: readSnippet(form.get('snippet')).slice(0, MAX_SNIPPET),
+    download
   };
 
   if (hasFile) {
-    await env.IMAGES.put(filename, file.stream(), {
-      httpMetadata: { contentType: file.type }
+    await Promise.all(picked.map((item, index) =>
+      env.IMAGES.put(images[index].key, item.stream(), {
+        httpMetadata: { contentType: item.type }
+      })));
+  }
+
+  if (hasDownload) {
+    await env.IMAGES.put(download.key, extra.stream(), {
+      httpMetadata: { contentType: download.type }
     });
   }
 
@@ -143,9 +216,10 @@ export async function onRequestPost(context) {
   } catch (error) {
     // Drop the new object, so a failed write leaves nothing behind in R2. An
     // edit that reused the old object must keep it.
-    if (hasFile) await env.IMAGES.delete(filename);
+    if (hasFile) await Promise.all(images.map(image => env.IMAGES.delete(image.key)));
+    if (hasDownload) await env.IMAGES.delete(download.key);
     console.error('KV write failed:', error);
-    return json({ error: 'The image upload worked, but the metadata write failed.' }, 500);
+    return json({ error: 'The upload worked, but the metadata write failed.' }, 500);
   }
 
   const replaced = clash && overwrite;
@@ -164,17 +238,25 @@ export async function onRequestDelete(context) {
   const raw = await env.IMAGE_METADATA.get(id);
   if (!raw) return json({ error: `No entry with the id "${id}".` }, 404);
 
-  let filename = null;
+  let images = [];
   try {
-    filename = JSON.parse(raw).filename || null;
+    images = readImages(JSON.parse(raw));
   } catch {
     console.error(`Unparseable entry "${id}". Deleting the key anyway.`);
   }
 
-  await env.IMAGE_METADATA.delete(id);
-  if (filename) await env.IMAGES.delete(filename);
+  let downloadKey = null;
+  try {
+    downloadKey = (JSON.parse(raw).download || {}).key || null;
+  } catch {
+    // Already reported above.
+  }
 
-  return json({ id, deleted: true, filename });
+  await env.IMAGE_METADATA.delete(id);
+  await Promise.all(images.map(image => env.IMAGES.delete(image.key)));
+  if (downloadKey) await env.IMAGES.delete(downloadKey);
+
+  return json({ id, deleted: true, images: images.map(i => i.key), downloadKey });
 }
 
 export async function onRequest(context) {

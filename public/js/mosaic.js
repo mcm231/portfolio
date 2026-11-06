@@ -1,14 +1,18 @@
 // Builds the wall of work that surrounds the title card.
 //
-// Two kinds of tile sit in the wall:
+// Three kinds of tile sit in the wall:
 //
-//   image  a row with a filename. The photo fills the tile.
-//   panel  a row with no filename. A piece with no picture, such as a story
-//          or a program. The tile shows one of the palette colors.
+//   image  a row with a picture. The photo fills the tile.
+//   code   a program with no picture. The tile shows the row's own snippet,
+//          or a short sample of its language. It is always square.
+//   panel  a piece with no picture and no code. The tile shows a color.
 //
 // Every tile snaps to a square grid and spans a whole number of cells, so the
 // edges line up and the gutter stays the same everywhere. Cells fill in order
 // of distance from the center, which grows the wall outward from the title.
+
+import { buildCodeBlock } from './code-tile.js';
+import { readImages } from './row.js';
 
 const CELL = 118;          // px, one grid unit
 const GAP = 3;             // px of page showing between two tiles
@@ -42,6 +46,11 @@ const SHAPES = {
         [1, 1], [1, 1], [1, 1],
         [2, 2], [2, 2], [2, 2],
         [3, 3]
+    ],
+    // A block of code needs room to read, so one cell is too small.
+    code: [
+        [2, 2], [2, 2], [2, 2],
+        [3, 3]
     ]
 };
 
@@ -63,15 +72,20 @@ const KINDS = ['landscape', 'portrait', 'square'];
 // for, or a varied one. A row with no size at all reads as square, which
 // crops either orientation the least.
 function shapeKind(entry, random) {
-    if (isPanel(entry)) {
+    // A block of code reads best in a square, and never in one cell.
+    if (tileKind(entry) === 'code') return 'code';
+
+    if (tileKind(entry) === 'panel') {
         return KINDS.includes(entry.shape)
             ? entry.shape
             : KINDS[Math.floor(random() * KINDS.length)];
     }
 
-    if (!entry || !entry.width || !entry.height) return 'square';
+    // The cover decides the shape, because the tile shows the cover.
+    const cover = readImages(entry)[0];
+    if (!cover || !cover.width || !cover.height) return 'square';
 
-    const ratio = entry.width / entry.height;
+    const ratio = cover.width / cover.height;
     if (ratio <= SQUARE_LOW) return 'portrait';
     if (ratio >= SQUARE_HIGH) return 'landscape';
     return 'square';
@@ -81,9 +95,14 @@ function shapeKind(entry, random) {
 // name one with a `panelColor` number. Otherwise the wall picks one.
 const PANEL_COLORS = 8;
 
-// True when a row has no picture, so the wall draws a color panel for it.
-function isPanel(entry) {
-    return Boolean(entry) && !entry.filename;
+// What the wall should draw for one row.
+//
+// A picture always wins, whatever the kind, because a code project with a
+// screenshot should show the screenshot.
+function tileKind(entry) {
+    if (!entry) return 'panel';
+    if (readImages(entry).length > 0) return 'image';
+    return entry.kind === 'code' ? 'code' : 'panel';
 }
 
 // Deterministic PRNG, so the wall stays put between renders.
@@ -252,14 +271,24 @@ function buildTile(tile, entry, maxDistance, random) {
         `--o:${opacity.toFixed(2)}`
     ].join(';');
 
-    if (entry && entry.filename) {
+    const kind = tileKind(entry);
+
+    if (kind === 'image') {
+        const cover = readImages(entry)[0];
         const img = document.createElement('img');
-        img.src = `/api/images?id=${encodeURIComponent(entry.filename)}`;
+        img.src = `/api/images?id=${encodeURIComponent(cover.key)}`;
         img.alt = entry.name || '';
         img.loading = 'lazy';
         img.decoding = 'async';
         img.draggable = false;
         figure.appendChild(img);
+        return figure;
+    }
+
+    if (kind === 'code') {
+        figure.classList.add('is-code');
+        figure.appendChild(buildCodeBlock(entry));
+        if (entry.name) figure.setAttribute('aria-label', entry.name);
         return figure;
     }
 
@@ -336,8 +365,9 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
 
     return {
         tiles: tiles.length,
-        images: shown.filter(entry => entry.filename).length,
-        panels: shown.filter(isPanel).length,
+        images: shown.filter(entry => tileKind(entry) === 'image').length,
+        code: shown.filter(entry => tileKind(entry) === 'code').length,
+        panels: shown.filter(entry => tileKind(entry) === 'panel').length,
         card: cardRect
     };
 }

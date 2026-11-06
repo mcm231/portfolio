@@ -15,6 +15,23 @@ const DEFAULT_FILTER_TYPE = FILTER_TYPES[0].value;
 
 const h = React.createElement;
 
+// A code row with no picture shows code on its card, the same block the home
+// page wall uses. The module is loaded by the page, so this reads a global.
+const buildCodeBlock = (entry) => window.buildCodeBlock(entry);
+
+// The same two readers the Worker uses, set on the window by the page.
+const readImages = (entry) => window.readImages(entry);
+const readParagraphs = (text) => window.readParagraphs(text);
+
+function cardKind(entry) {
+    if (readImages(entry).length > 0) return 'image';
+    return entry.kind === 'code' ? 'code' : 'panel';
+}
+
+function imageUrl(key) {
+    return `/api/images?id=${encodeURIComponent(key)}`;
+}
+
 const PANEL_COLORS = 8;
 
 // A steady color for a row with no picture, from the id. The same row keeps
@@ -44,6 +61,14 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
     const [inputValue, setInputValue] = useState('');
     const [activeFilters, setActiveFilters] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [slide, setSlide] = useState(0);        // which picture is showing
+    const [panelOpen, setPanelOpen] = useState(false);
+
+    // Every detail view opens on the first picture, with the panel closed.
+    useEffect(() => {
+        setSlide(0);
+        setPanelOpen(false);
+    }, [selectedImage]);
 
     useEffect(() => {
         Promise.all([
@@ -175,21 +200,29 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
                     return onSelect ? onSelect(entry) : setSelectedImage(entry);
                 }
             }, [
-                // A row with no filename is a piece with no picture. It shows
-                // a color panel, the same component the home page wall uses.
-                entry.filename
+                // A picture, a block of code, or a color panel.
+                cardKind(entry) === 'image'
                     ? h('img', {
                         key: 'thumb',
-                        src: `/api/images?id=${encodeURIComponent(entry.filename)}`,
-                        alt: entry.name,
+                        src: imageUrl(readImages(entry)[0].key),
+                        alt: entry.name || '',
                         loading: 'lazy'
                     })
-                    : h('div', {
-                        key: 'panel',
-                        className: 'grid-item-panel',
-                        style: { '--panel': `var(--blank-${panelColor(entry)})` },
-                        'aria-hidden': 'true'
-                    }),
+                    : cardKind(entry) === 'code'
+                        ? h('div', {
+                            key: 'code',
+                            className: 'grid-item-code',
+                            ref: node => {
+                                if (!node || node.firstChild) return;
+                                node.appendChild(buildCodeBlock(entry));
+                            }
+                        })
+                        : h('div', {
+                            key: 'panel',
+                            className: 'grid-item-panel',
+                            style: { '--panel': `var(--blank-${panelColor(entry)})` },
+                            'aria-hidden': 'true'
+                        }),
                 // The title and the date sit over the image, on hover and
                 // on focus. A piece with neither shows the image alone.
                 caption.length > 0
@@ -206,48 +239,187 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
         }));
     }
 
+    // The rotating gallery at the top of a detail view.
+    function renderSlides(images, name) {
+        if (images.length === 0) return null;
+
+        const step = (by) => setSlide((slide + by + images.length) % images.length);
+
+        return h('div', { key: 'slides', className: 'slides' }, [
+            h('img', {
+                key: 'shown',
+                className: 'slides-image',
+                src: imageUrl(images[slide % images.length].key),
+                alt: name || ''
+            }),
+
+            images.length > 1
+                ? h('button', {
+                    key: 'prev', type: 'button', className: 'slides-step is-prev',
+                    'aria-label': 'The picture before',
+                    onClick: (e) => { e.stopPropagation(); step(-1); }
+                }, '‹')
+                : null,
+
+            images.length > 1
+                ? h('button', {
+                    key: 'next', type: 'button', className: 'slides-step is-next',
+                    'aria-label': 'The next picture',
+                    onClick: (e) => { e.stopPropagation(); step(1); }
+                }, '›')
+                : null,
+
+            images.length > 1
+                ? h('div', { key: 'dots', className: 'slides-dots' },
+                    images.map((image, index) => h('button', {
+                        key: image.key, type: 'button',
+                        className: `slides-dot${index === slide % images.length ? ' is-on' : ''}`,
+                        'aria-label': `Picture ${index + 1}`,
+                        onClick: (e) => { e.stopPropagation(); setSlide(index); }
+                    })))
+                : null
+        ]);
+    }
+
+    function renderParagraphs(text) {
+        const paragraphs = readParagraphs(text);
+        if (paragraphs.length === 0) return null;
+
+        return h('div', { key: 'text', className: 'detail-text' },
+            paragraphs.map((block, index) => h('p', { key: index }, block)));
+    }
+
+    function renderName(entry) {
+        return entry.name
+            ? h('h2', { key: 'name', className: 'detail-name' }, entry.name)
+            : null;
+    }
+
+    // True when the panel would hold nothing. The handle then stays away.
+    function hasWords(entry) {
+        return Boolean(entry.name)
+            || Boolean(entry.dateCreated)
+            || (entry.mediums || []).length > 0
+            || (entry.tags || []).length > 0
+            || readParagraphs(entry.description).length > 0;
+    }
+
+    function renderMeta(entry) {
+        const parts = [
+            entry.dateCreated,
+            (entry.mediums || []).join(', '),
+            (entry.tags || []).join(', ')
+        ].filter(Boolean);
+
+        return parts.length > 0
+            ? h('p', { key: 'meta', className: 'detail-meta' }, parts.join(' · '))
+            : null;
+    }
+
+    function renderActions(entry) {
+        return h('div', { key: 'actions', className: 'modal-actions' }, [
+            entry.repoUrl
+                ? h('a', {
+                    key: 'repo', className: 'button', href: entry.repoUrl,
+                    target: '_blank', rel: 'noopener noreferrer'
+                }, 'Repo')
+                : null,
+            entry.liveUrl
+                ? h('a', {
+                    key: 'live', className: 'button', href: entry.liveUrl,
+                    target: '_blank', rel: 'noopener noreferrer'
+                }, 'Live')
+                : null,
+            entry.download && entry.download.key
+                ? h('a', {
+                    key: 'download', className: 'button button-quiet',
+                    href: `/api/files?key=${encodeURIComponent(entry.download.key)}`
+                }, `Download ${entry.download.name}`)
+                : null,
+            h('button', {
+                key: 'close', type: 'button', className: 'button button-quiet',
+                onClick: () => setSelectedImage(null)
+            }, 'Close')
+        ]);
+    }
+
+    // A code project reads as a document: the pictures, then the words.
+    function renderCodeDetail(entry, images) {
+        return h('div', {
+            className: 'modal-content detail-document',
+            onClick: (e) => e.stopPropagation()
+        }, [
+            renderSlides(images, entry.name),
+            renderName(entry),
+            renderMeta(entry),
+            renderParagraphs(entry.description),
+            images.length === 0
+                ? h('div', {
+                    key: 'code', className: 'detail-code',
+                    ref: node => {
+                        if (!node || node.firstChild) return;
+                        node.appendChild(buildCodeBlock(entry));
+                    }
+                })
+                : null,
+            renderActions(entry)
+        ]);
+    }
+
+    // Everything else: the picture fills the view, and a button slides the
+    // words out beside it.
+    function renderPieceDetail(entry, images) {
+        const words = hasWords(entry);
+
+        return h('div', {
+            className: `modal-content detail-stage${panelOpen && words ? ' is-open' : ''}`,
+            onClick: (e) => e.stopPropagation()
+        }, [
+            h('div', { key: 'stage', className: 'detail-stage-image' }, [
+                images.length > 0
+                    ? renderSlides(images, entry.name)
+                    : h('div', {
+                        key: 'panel',
+                        className: 'modal-panel',
+                        style: { '--panel': `var(--blank-${panelColor(entry)})` },
+                        'aria-hidden': 'true'
+                    }),
+                renderActions(entry)
+            ]),
+
+            // A piece with nothing written about it needs no handle.
+            words
+                ? h('button', {
+                    key: 'handle', type: 'button', className: 'detail-handle',
+                    'aria-expanded': String(panelOpen),
+                    'aria-controls': 'detail-panel',
+                    'aria-label': panelOpen ? 'Hide the description' : 'Show the description',
+                    onClick: () => setPanelOpen(!panelOpen)
+                }, panelOpen ? '›' : '‹')
+                : null,
+
+            words
+                ? h('aside', { key: 'panel', id: 'detail-panel', className: 'detail-panel' }, [
+                    renderName(entry),
+                    renderMeta(entry),
+                    renderParagraphs(entry.description)
+                ])
+                : null
+        ]);
+    }
+
     function renderModal() {
         if (!selectedImage) return null;
+
+        const images = readImages(selectedImage);
 
         return h('div', {
             key: 'modal',
             className: 'modal-overlay',
             onClick: () => setSelectedImage(null)
-        }, h('div', {
-            className: 'modal-content',
-            onClick: (e) => e.stopPropagation()
-        }, [
-            selectedImage.filename
-                ? h('img', {
-                    key: 'full',
-                    src: `/api/images?id=${encodeURIComponent(selectedImage.filename)}`,
-                    alt: selectedImage.name
-                })
-                : h('div', {
-                    key: 'panel',
-                    className: 'modal-panel',
-                    style: { '--panel': `var(--blank-${panelColor(selectedImage)})` },
-                    'aria-hidden': 'true'
-                }),
-            h('div', { key: 'meta', className: 'modal-meta' }, [
-                h('h2', { key: 'name' }, selectedImage.name),
-                selectedImage.description
-                    ? h('p', { key: 'desc' }, selectedImage.description)
-                    : null,
-                (selectedImage.mediums || []).length > 0
-                    ? h('p', { key: 'mediums', className: 'modal-tags' },
-                        selectedImage.mediums.join(', '))
-                    : null,
-                (selectedImage.tags || []).length > 0
-                    ? h('p', { key: 'tags', className: 'modal-tags' }, selectedImage.tags.join(', '))
-                    : null
-            ]),
-            h('button', {
-                key: 'close',
-                className: 'button button-quiet modal-close',
-                onClick: () => setSelectedImage(null)
-            }, 'Close')
-        ]));
+        }, selectedImage.kind === 'code'
+            ? renderCodeDetail(selectedImage, images)
+            : renderPieceDetail(selectedImage, images));
     }
 
     return h('div', { className: 'page' }, [

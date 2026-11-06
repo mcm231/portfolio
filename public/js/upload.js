@@ -4,6 +4,8 @@
 
 import { slugify, freeIdSync } from './id-rules.js';
 import { createTermField } from './term-field.js';
+import { KNOWN_LANGUAGES } from './taxonomy.js';
+import { readImages, readSnippet } from './row.js';
 
 const form = document.getElementById('upload-form');
 const fileInput = document.getElementById('file');
@@ -22,6 +24,12 @@ const fileHint = document.getElementById('file-hint');
 const overwriteRow = document.getElementById('overwrite-row');
 const overwriteInput = document.getElementById('overwrite');
 const deleteButton = document.getElementById('delete');
+const kindInput = document.getElementById('kind');
+const kindHint = document.getElementById('kind-hint');
+const codeOnly = document.querySelector('.code-only');
+const imageOnly = document.querySelectorAll('.image-only');
+const snippetInput = document.getElementById('snippet');
+const downloadInput = document.getElementById('download');
 
 // Two categories of term, one control each.
 const tagField = createTermField({
@@ -43,14 +51,14 @@ const mediumField = createTermField({
 });
 const dateInput = document.getElementById('dateCreated');
 
-let previewUrl = null;
+let previewUrls = [];
 let idEdited = false;
 // Ids already in the database. The page shows the free id before you submit.
 let takenIds = new Set();
 // Set when /upload?id=KEY opens the page on an existing row.
 let editingId = new URLSearchParams(window.location.search).get('id');
 // The object key the edited row already points at.
-let editingFilename = '';
+let editingImages = [];
 
 function splitList(value) {
     return value.split(',').map(item => item.trim()).filter(Boolean);
@@ -67,11 +75,11 @@ function extensionOf(file) {
 // Mirrors what src/api/upload.js stores, so the page shows the real row.
 function currentEntry() {
     const name = nameInput.value.trim();
-    const file = fileInput.files[0];
+    const files = Array.from(fileInput.files);
 
-    // The id comes from the typed id, then the name, then the file name.
+    // The id comes from the typed id, then the name, then the first file.
     const wanted = slugify(idInput.value.trim() || name
-        || (file ? file.name.replace(/\.[a-z0-9]+$/i, '') : ''));
+        || (files[0] ? files[0].name.replace(/\.[a-z0-9]+$/i, '') : ''));
     const overwrite = document.getElementById('overwrite').checked;
 
     // freeId resolves at once here, because the id set is already in memory.
@@ -84,18 +92,32 @@ function currentEntry() {
         }
     }
 
+    const isCode = kindInput.value === 'code';
+
     return {
         key: id || '(the id is still empty)',
         wanted,
         renamed: Boolean(wanted) && id !== wanted,
         value: {
+            kind: kindInput.value,
             name,
-            filename: file ? `${id}.${extensionOf(file)}` : editingFilename,
+            images: files.length
+                ? files.map((f, i) => ({
+                    key: `${id}${i === 0 ? '' : `-${i + 1}`}.${extensionOf(f)}`
+                }))
+                : editingImages,
             description: document.getElementById('description').value.trim(),
-            mediums: mediumField.values(),
+            mediums: isCode ? [] : mediumField.values(),
             tags: tagField.values(),
             dateCreated: dateInput.value,
-            galleries: splitList(document.getElementById('galleries').value)
+            galleries: splitList(document.getElementById('galleries').value),
+            repoUrl: isCode ? document.getElementById('repoUrl').value.trim() : '',
+            liveUrl: isCode ? document.getElementById('liveUrl').value.trim() : '',
+            language: isCode ? document.getElementById('language').value.trim() : '',
+            snippet: isCode ? readSnippet(snippetInput.value) : '',
+            download: isCode && downloadInput.files[0]
+                ? { name: downloadInput.files[0].name, size: downloadInput.files[0].size }
+                : null
         }
     };
 }
@@ -135,9 +157,11 @@ function setStatus(message, kind) {
 // The id fills itself from the name or the file. The server checks the same
 // list, so a direct POST cannot skip one.
 function firstProblem() {
-    if (!fileInput.files[0] && !editingId) return [fileInput, 'Choose an image file.'];
+    const needsPicture = kindInput.value !== 'code' && !editingId;
+    if (needsPicture && !fileInput.files[0]) return [fileInput, 'Choose an image file.'];
 
-    if (mediumField.values().length === 0) {
+    // A code project has no medium.
+    if (kindInput.value !== 'code' && mediumField.values().length === 0) {
         return [document.getElementById('medium-input'), 'Name at least one medium.'];
     }
 
@@ -170,18 +194,34 @@ async function loadVocabulary() {
     }
 }
 
+// A thumbnail for each chosen file. The first one is the cover.
+function drawPreview(items) {
+    preview.hidden = items.length === 0;
+    preview.replaceChildren(...items.map((item, index) => {
+        const figure = document.createElement('figure');
+        figure.className = 'form-preview-item';
+
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.alt = '';
+
+        const caption = document.createElement('figcaption');
+        caption.textContent = index === 0 ? 'Cover' : String(index + 1);
+
+        figure.append(img, caption);
+        return figure;
+    }));
+}
+
 fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
+    const files = Array.from(fileInput.files);
 
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    previewUrl = file ? URL.createObjectURL(file) : null;
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    previewUrls = files.map(file => URL.createObjectURL(file));
+    drawPreview(previewUrls.map(src => ({ src })));
 
-    preview.hidden = !file;
-    if (file) {
-        preview.src = previewUrl;
-        if (!idEdited && !idInput.value.trim()) {
-            idInput.value = slugify(file.name.replace(/\.[a-z0-9]+$/i, ''));
-        }
+    if (files[0] && !idEdited && !idInput.value.trim()) {
+        idInput.value = slugify(files[0].name.replace(/\.[a-z0-9]+$/i, ''));
     }
 
     refreshPreview();
@@ -224,11 +264,17 @@ form.addEventListener('submit', async event => {
     body.delete('tags');
     body.delete('mediums');
     for (const tag of tagField.values()) body.append('tags', tag);
-    for (const medium of mediumField.values()) body.append('mediums', medium);
+    if (kindInput.value !== 'code') {
+        for (const medium of mediumField.values()) body.append('mediums', medium);
+    }
     body.set('overwrite', String(Boolean(editingId) || overwriteInput.checked));
 
-    // An edit with no new file keeps the image already in the bucket.
-    if (editingId && !fileInput.files[0]) body.delete('file');
+    // An edit with no new file keeps the pictures already in the bucket.
+    if (editingId && fileInput.files.length === 0) body.delete('file');
+
+    // The same for the download.
+    if (!downloadInput.files[0]) body.delete('download');
+    body.set('keepDownload', String(Boolean(editingId)));
 
     submitButton.disabled = true;
     setStatus('Uploading…');
@@ -272,7 +318,7 @@ async function enterEditMode(id) {
 
     fileRequired.hidden = true;
     fileInput.required = false;
-    fileHint.textContent = 'Leave this empty to keep the current image.';
+    fileHint.textContent = 'Leave this empty to keep the current pictures.';
 
     idInput.readOnly = true;
     idInput.value = id;
@@ -301,13 +347,25 @@ async function enterEditMode(id) {
         dateInput.value = entry.dateCreated || '';
         document.getElementById('galleries').value = (entry.galleries || []).join(', ');
 
-        editingFilename = entry.filename || '';
-        if (editingFilename) {
-            preview.src = `/api/images?id=${encodeURIComponent(editingFilename)}`;
-            preview.hidden = false;
-        }
+        editingImages = readImages(entry);
+        drawPreview(editingImages.map(image =>
+            ({ src: `/api/images?id=${encodeURIComponent(image.key)}` })));
 
         tagField.set(entry.tags || []);
+
+        kindInput.value = entry.kind === 'code' ? 'code' : 'image';
+        applyKind();
+
+        document.getElementById('repoUrl').value = entry.repoUrl || '';
+        document.getElementById('liveUrl').value = entry.liveUrl || '';
+        document.getElementById('language').value = entry.language || '';
+        snippetInput.value = entry.snippet || '';
+
+        if (entry.download && entry.download.name) {
+            document.getElementById('download-hint').textContent =
+                `Holding ${entry.download.name}. Choose a file to replace it.`;
+        }
+
         setStatus('');
         refreshPreview();
     } catch {
@@ -368,6 +426,37 @@ form.addEventListener('pointerdown', event => {
     if (event.target !== deleteButton) disarmDelete();
 });
 
+// The kind decides which fields show, and whether a picture is needed.
+function applyKind() {
+    const isCode = kindInput.value === 'code';
+
+    codeOnly.hidden = !isCode;
+    imageOnly.forEach(row => { row.hidden = isCode; });
+    fileRequired.hidden = isCode;
+    fileInput.required = !isCode;
+
+    kindHint.textContent = isCode
+        ? 'A code project needs no picture. With none, the tile shows code.'
+        : 'An image needs a picture.';
+
+    if (!editingId) {
+        fileHint.textContent = isCode
+            ? 'Optional. The first picture takes the place of the code on the tile.'
+            : '25MB each, 12 at most. The first one is the cover.';
+    }
+
+    refreshPreview();
+}
+
+kindInput.addEventListener('change', applyKind);
+
+document.getElementById('language-options').replaceChildren(
+    ...KNOWN_LANGUAGES.map(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        return option;
+    }));
+
 document.getElementById('overwrite').addEventListener('change', refreshPreview);
 
 // Default the date to today, in the browser's own time zone.
@@ -376,6 +465,7 @@ const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
 dateInput.value = localDate.toISOString().slice(0, 10);
 
 (async function start() {
+    applyKind();
     await loadVocabulary();
 
     if (editingId) {

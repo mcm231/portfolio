@@ -50,6 +50,13 @@
     --color-scrim: rgba(25, 42, 81, 0.72);
     --color-scrim-flat: #5e6b86;              /* the scrim over a white photo */
 
+    /* A code tile. Dark indigo, so the text reads at any tile size. */
+    --color-code-bg: #121c33;          /* space indigo, darkened */
+    --color-code-text: #cfd8ea;        /* alice blue, dimmed */
+    --color-code-keyword: #c79ac3;     /* amethyst, lightened for a dark field */
+    --color-code-string: #76c3cc;      /* teal, lightened for a dark field */
+    --color-code-comment: #8793ad;     /* space indigo, lightened */
+
     /* Placeholder tiles, shown only when the image API is unavailable. */
     --blank-1: #cfe0e3;
     --blank-2: #d8e6f4;
@@ -683,16 +690,34 @@ body.admin {
     font-size: var(--text-xs);
 }
 
-.form-preview[hidden] {
-    display: none;
+/* One thumbnail for each picture on the row. The first one is the cover. */
+.form-preview-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
 }
 
-.form-preview {
+.form-preview-item {
+    margin: 0;
+    width: 110px;
+}
+
+.form-preview-item img {
     display: block;
-    max-width: 100%;
-    max-height: 260px;
-    margin-bottom: var(--space-5);
-    border: 1px solid var(--color-line);
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border: 1px solid var(--color-line-strong);
+}
+
+.form-preview-item figcaption {
+    margin-top: var(--space-1);
+    color: var(--color-ink-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 /* An input with a suggestion list, plus its Add button. */
@@ -1145,6 +1170,297 @@ body.about {
     }
 }
 
+/* ---------- Detail view ---------- */
+
+/* The rotating gallery at the top of a detail view. */
+.slides {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slides-image {
+    display: block;
+    max-width: 100%;
+    max-height: 62vh;
+    object-fit: contain;
+}
+
+.slides-step {
+    position: absolute;
+    top: 50%;
+    width: 40px;
+    height: 56px;
+    transform: translateY(-50%);
+    border: none;
+    background: var(--color-scrim);
+    color: var(--color-on-brand);
+    font-size: var(--text-xl);
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.slides-step:hover {
+    background: var(--color-brand-dark);
+}
+
+.slides-step.is-prev { left: 0; }
+.slides-step.is-next { right: 0; }
+
+.slides-dots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--space-3);
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.slides-dot {
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    border: 1px solid var(--color-on-brand);
+    border-radius: var(--radius-circle);   /* named exception */
+    background: var(--color-scrim);
+    cursor: pointer;
+}
+
+.slides-dot.is-on {
+    background: var(--color-on-brand);
+}
+
+/* Words, in both layouts. */
+.detail-name {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 500;
+}
+
+.detail-meta {
+    margin: 0 0 var(--space-4);
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+}
+
+.detail-text p {
+    margin: 0 0 var(--space-4);
+    line-height: 1.65;
+    text-align: left;
+}
+
+.detail-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* A code project reads as a document. */
+.detail-document {
+    width: min(760px, 92vw);
+    text-align: left;
+}
+
+.detail-document .slides {
+    margin-bottom: var(--space-5);
+}
+
+/* .modal-content centers its text. A document reads from the left edge. */
+.detail-document .detail-name,
+.detail-document .detail-meta,
+.detail-document .modal-actions {
+    text-align: left;
+    justify-content: flex-start;
+}
+
+.detail-code {
+    height: 260px;
+    margin-bottom: var(--space-5);
+}
+
+/* Everything else: the picture, with the words beside it. */
+.detail-stage {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+    max-width: 94vw;
+    background: none;
+}
+
+.detail-stage-image {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    background: var(--color-surface);
+}
+
+/* The button that pulls the words out, and pushes them back. */
+.detail-handle {
+    align-self: center;
+    width: 26px;
+    height: 72px;
+    padding: 0;
+    border: none;
+    background: var(--color-brand-dark);
+    color: var(--color-on-brand);
+    font-size: var(--text-lg);
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.detail-handle:hover {
+    background: var(--color-brand-deep);
+}
+
+.detail-panel {
+    width: 0;
+    overflow: hidden;
+    background: var(--color-surface);
+    text-align: left;
+    transition: width 0.28s ease, padding 0.28s ease;
+}
+
+.detail-stage.is-open .detail-panel {
+    width: min(340px, 42vw);
+    padding: var(--space-5);
+    overflow-y: auto;
+}
+
+@media (max-width: 760px) {
+    /* No room beside the picture, so the words go under it. */
+    .detail-stage {
+        flex-direction: column;
+    }
+
+    .detail-handle {
+        align-self: stretch;
+        width: auto;
+        height: 26px;
+    }
+
+    .detail-stage.is-open .detail-panel {
+        width: auto;
+        max-height: 40vh;
+    }
+}
+
+/* ---------- Code tiles ---------- */
+
+/* A column, so the lines box can be told exactly how much room it has. The
+   foot is left clear for the language label. */
+.code-block-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    padding: var(--space-4) var(--space-4) var(--space-6);
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
+}
+
+/* The card clips whatever does not fit, down and across. No scrollbar, and
+   no cut in the middle of a word by the script. */
+.code-lines {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;        /* so the box may shrink below its content */
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.55;
+    white-space: pre;
+    overflow: hidden;
+}
+
+.code-line {
+    display: block;
+    flex: none;
+}
+
+/* A blank line in the code has no content, so it would collapse to nothing.
+   A non-breaking space holds the line open. */
+.code-line:empty::before {
+    content: '\00a0';
+}
+
+/* A line wider than the tile fades out, rather than stopping mid letter. */
+.code-block-tile::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--space-6);
+    background: linear-gradient(to right, transparent, var(--color-code-bg));
+    pointer-events: none;
+}
+
+.code-keyword { color: var(--color-code-keyword); }
+.code-string  { color: var(--color-code-string); }
+.code-comment { color: var(--color-code-comment); font-style: italic; }
+
+/* The language, in the corner of the tile. */
+.code-language {
+    position: absolute;
+    right: var(--space-3);
+    bottom: var(--space-2);
+    color: var(--color-code-comment);
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+/* A sample is decoration, so it sits back a little. */
+.code-block-tile.is-sample .code-lines {
+    opacity: 0.72;
+}
+
+.tile.is-code {
+    background: var(--color-code-bg);
+}
+
+.grid-item-code {
+    height: 240px;
+}
+
+.modal-code {
+    width: min(70vw, 560px);
+    max-height: 60vh;
+    overflow: auto;
+}
+
+.modal-code .code-lines {
+    font-size: 13px;
+}
+
+.modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+}
+
+/* The snippet box types like code. */
+.code-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+}
+
 /* ---------- Messages ---------- */
 
 .message-card {
@@ -1221,8 +1537,8 @@ body.about {
 }
 
 .modal-content {
-    max-width: 90vw;
-    max-height: 90vh;
+    max-width: 92vw;
+    max-height: 92vh;
     padding: var(--space-5);
     background: var(--color-surface);
     text-align: center;

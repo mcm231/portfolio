@@ -33,8 +33,8 @@ async function wall(count, sizes = [{ width: 1600, height: 1200 }]) {
   globalThis.fetch = async () => ({
     ok: true,
     json: async () => Array.from({ length: count }, (_, i) => ({
-      id: `piece-${i}`, filename: `piece-${i}.jpg`, name: `Piece ${i}`,
-      ...sizes[i % sizes.length]
+      id: `piece-${i}`, name: `Piece ${i}`,
+      images: [{ key: `piece-${i}.jpg`, ...sizes[i % sizes.length] }]
     }))
   });
 
@@ -90,6 +90,17 @@ const wrong = mixed.rects.filter((r, i) => {
 });
 check('a mixed wall keeps every shape', wrong.length, 0);
 
+// A code row with no picture draws code, in a square of at least two cells.
+const codeWall = await mixedWall(Array.from({ length: 12 }, (_, i) =>
+  ({ id: `code-${i}`, kind: 'code', name: `Project ${i}`, language: 'python' })));
+check('every code row draws a tile', codeWall.result.tiles, 12);
+check('it counts them as code', codeWall.result.code, 12);
+check('none counts as a panel', codeWall.result.panels, 0);
+
+const codeRects = codeWall.nodes;
+check('every code tile is marked', codeRects.every(n => n.isCode), true);
+check('no code tile is one cell', codeRects.every(n => n.cols >= 2), true);
+
 const noSize = await wall(12, [{}]);
 check('an unknown size goes square', noSize.rects.every(r => r.cols === r.rows), true);
 
@@ -132,6 +143,9 @@ async function mixedWall(rows) {
   });
   const nodes = fragment.children.map(n => ({
     isPanel: n.className.includes('is-panel'),
+    isCode: n.className.includes('is-code'),
+    cols: (parseFloat(n.style.cssText.split(';').map(p => p.split(':'))
+      .find(p => p[0] === '--w')[1]) + 3) / 118,
     hasImage: n.children.length > 0,
     color: n.style._v['--panel'],
     label: n.attrs && n.attrs['aria-label']
@@ -139,7 +153,7 @@ async function mixedWall(rows) {
   return { result, nodes };
 }
 
-const PHOTO = { id: 'a', filename: 'a.jpg', name: 'A photo', width: 1600, height: 1200 };
+const PHOTO = { id: 'a', name: 'A photo', images: [{ key: 'a.jpg', width: 1600, height: 1200 }] };
 const STORY = { id: 'b', name: 'A story' };
 
 const mix = await mixedWall([PHOTO, STORY, { ...PHOTO, id: 'c' }, { ...STORY, id: 'd' }]);

@@ -199,38 +199,106 @@ visitor still sees the same answer.
 The rate limit lives in the Worker isolate, so it slows a flood rather than
 stopping one. Add Cloudflare Turnstile when the form draws real traffic.
 
-## Two kinds of row
+## Three kinds of row
 
-The `IMAGE_METADATA` namespace holds two kinds of row. The `filename` field
-decides which one a row is, and every API response states the kind.
+The `IMAGE_METADATA` namespace holds three kinds of row. The upload page
+stores the kind. A row written before that field gets one worked out: a
+picture means `image`, no picture means `panel`.
 
-| Kind | Has `filename` | The home page draws |
+| Kind | Needs a picture | Needs a medium | The home page draws |
+|---|---|---|---|
+| `image` | yes | yes | The photo, in a tile matching its orientation |
+| `code` | no | no | Its own picture. With none, its snippet. With neither, a sample of its language |
+| `panel` | no | no | A color block |
+
+A code project has no medium. The upload form hides the field, and the server
+stores an empty list even if one is sent.
+
+A code tile is always square, and never smaller than two cells, so the code
+reads. A click opens the detail view, which holds the description, the
+snippet, the links, and the download.
+
+### Every field
+
+```jsonc
+{
+  "kind": "code",             // image | code | panel
+  "name": "Portfolio site",   // optional. Empty shows as untitled
+  "description": "Para one.\n\nPara two.",  // a blank line starts a paragraph
+  "mediums": [],              // a list of terms. Always empty on a code row
+  "tags": ["javascript"],     // a list of terms
+  "dateCreated": "2026-11-05",
+  "galleries": [],
+
+  // Pictures, in order. The first one is the cover, and the mosaic tile
+  // shows it. The size is read from each image header on upload.
+  "images": [
+    { "key": "portfolio.png",   "width": 1600, "height": 900 },
+    { "key": "portfolio-2.png", "width": 900,  "height": 1600 }
+  ],
+  "sizeVersion": 2,
+
+  // Code fields. Every one is optional, and an image row leaves them empty.
+  "repoUrl": "https://github.com/you/project",
+  "liveUrl": "https://project.example",
+  "language": "javascript",   // empty reads a tag, then falls back to javascript
+  "snippet": "...",           // up to 2000 characters, shown on the tile
+  "download": {
+    "key": "files/portfolio-site-notes.pdf",
+    "name": "notes.pdf",
+    "size": 184320,
+    "type": "application/pdf"
+  },
+
+  // Panel fields. Optional, and only a panel reads them.
+  "shape": "landscape",       // landscape | portrait | square
+  "panelColor": 3             // 1 to 8
+}
+```
+
+A link must start with `http:` or `https:`. Anything else is dropped on save.
+
+A row written before the list held one `filename`, with `width` and `height`
+beside it. The read path promotes that into a one item `images` list, exactly
+as `medium` became `mediums`. Nothing in the database needs rewriting. A row
+saved again keeps only the list.
+
+Up to 12 pictures fit on one row. The cover takes the plain id, and the rest
+are numbered: `piece.png`, `piece-2.png`, `piece-3.png`.
+
+### The detail view
+
+A click opens one of two layouts.
+
+| Kind | Layout |
+|---|---|
+| `code` | A document. The pictures rotate at the top, then the title, the words, the links and the download |
+| anything else | The picture fills the view. A button on its right slides a panel out with the title, the date, the terms and the words |
+
+With more than one picture, arrows and dots appear. A description keeps its
+paragraphs, because a blank line in the box starts a new one.
+
+### Where the bytes go
+
+One bucket, three prefixes. Each one stays out of the others' way.
+
+| Prefix | Holds | Served by |
 |---|---|---|
-| `image` | yes | The photo, in a tile matching its orientation |
-| `panel` | no | A color block, in the same grid |
+| no prefix | An artwork image | `/api/images?id=<filename>` |
+| `files/` | A project download | `/api/files?key=files/...` |
+| `messages/` | A contact message | `/api/messages`, behind the gate |
 
-A panel stands for a piece with no picture, such as a story or a program. The
-colors come from `--blank-1` to `--blank-8` in `public/css/styles.css`.
+`/api/files` refuses any key outside `files/`, so it can never hand out an
+artwork or a message.
 
-### A panel row
+### Writing a panel row
 
-Only `name` is needed. Two optional fields control the look:
+The upload page writes `image` and `code` rows. Write a panel with wrangler:
 
 ```
 npx wrangler kv key put --namespace-id=<YOUR ID HERE> "first-story" \
-  '{"name":"A Story","description":"","medium":"writing","tags":["storytelling"],"dateCreated":"2026-11-04","galleries":[],"shape":"landscape","panelColor":3}'
+  '{"name":"A Story","mediums":["writing"],"tags":["storytelling"],"dateCreated":"2026-11-05","shape":"landscape","panelColor":3}'
 ```
-
-| Field | Values | Effect |
-|---|---|---|
-| `shape` | `landscape`, `portrait`, `square` | The tile shape. Left out, the wall picks one |
-| `panelColor` | 1 to 8 | The color. Left out, the wall picks one |
-
-A panel also shows in Gallery Search, as a color card with its name and date.
-Every filter still works, because a panel carries the same fields.
-
-The upload page writes image rows only. Write a panel row with wrangler, or
-with whatever you build later.
 
 ## Upload page (/upload)
 

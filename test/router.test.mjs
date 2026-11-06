@@ -2,9 +2,10 @@
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const worker = (await import(`${ROOT}/src/index.js`)).default;
 
+// An older row: one medium string, one filename. Both are promoted on read.
 const kv = new Map([['piece-one', JSON.stringify({
   name: 'Piece One', filename: 'piece-one.jpg', tags: ['watercolor'],
-  medium: 'Ink', dateCreated: '2026-01-01'   // the older single medium field
+  medium: 'Ink', dateCreated: '2026-01-01'
 })]]);
 
 const env = {
@@ -77,6 +78,15 @@ const cases = [
   ['an old medium is promoted',  await hit('/api/image-metadata'),    r => {
     const row = JSON.parse(r.full)[0];
     return JSON.stringify(row.mediums) === '["ink"]' && row.medium === undefined;
+  }],
+  ['an old filename is promoted', await hit('/api/image-metadata'),   r => {
+    const row = JSON.parse(r.full)[0];
+    return row.images.length === 1 && row.images[0].key === 'piece-one.jpg'
+      && row.filename === undefined;
+  }],
+  ['the promoted size is read',  await hit('/api/image-metadata'),    r => {
+    const image = JSON.parse(r.full)[0].images[0];
+    return image.width === 4 && image.height === 3;
   }],
   ['images needs an id',         await hit('/api/images'),            r => r.status === 400],
   ['unknown api is 404',         await hit('/api/nope'),              r => r.status === 404],

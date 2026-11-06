@@ -148,3 +148,9 @@ The absolute longest and tallest mosaic tiles are too long/tall. The 2nd longest
 default the gallery sort order to newest to oldest
 default to search by medium in the gallery
 I want to be able to upload code artifacts, like git hub links or other projects. I want these artifacts to show up on the main mosaic too, as squares with a snapshot of code in them. If there's an image upload to go along with the code project, use that image. If the code is easily accessible from the code snippet option, put a bit of text and format it to look nice in the mosaic. If the code is not easily accessible, check if there are tags for what coding language the project is in, then put code in that language in the mosaic panel. Otherwise, default to javascript. To upload a code project, I want a new tab in the upload page or a dropdown, whichever is easier, which changes the other form submissions. Everything is the same, except that images are now optional, there's an additional optional file download option, there's an additional optional code snippet option (for the gallery/mosaic panel). Ask questions, do not make assumptions. I want to have a lot of say in how the database is organized and how things are stored.
+for code projects, remove medium
+The description should be able to be multi-paragraph. I want a button on the side that you can click to slide the description out to the side when in detail view, similar to comments in online media, and slide it back in. For the code projects, the detail view is the description, with any images set at the top as a rotating gallery. I should be able to upload multiple images for code projects.
+if there's no title, don't show the title field. same for the description
+Would rendering the images in the mosaic at a slightly lower resolution speed up load times?
+keep leading whitespace in code snippets
+the code snippet display in the mosaic is stripping the blank lines in between lines of code. don't do that.

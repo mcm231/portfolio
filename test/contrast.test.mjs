@@ -79,6 +79,10 @@ const PAIRS = [
   ['a section number, page',       '--color-mark-text',    '--color-bg',               'normal'],
   ['chip text on a chip',          '--color-ink',          '--color-mark-soft',        'normal'],
   ['a caption on the palest photo', '--color-on-brand',    '--color-scrim-flat',       'normal'],
+  ['code text on a code tile',     '--color-code-text',    '--color-code-bg',          'normal'],
+  ['a keyword on a code tile',     '--color-code-keyword', '--color-code-bg',          'normal'],
+  ['a string on a code tile',      '--color-code-string',  '--color-code-bg',          'normal'],
+  ['a comment on a code tile',     '--color-code-comment', '--color-code-bg',          'normal'],
 
   ['error text on the page',       '--color-error',        '--color-bg',               'normal'],
   ['error text on a card',         '--color-error',        '--color-surface',          'normal'],
