@@ -154,3 +154,8 @@ if there's no title, don't show the title field. same for the description
 Would rendering the images in the mosaic at a slightly lower resolution speed up load times?
 keep leading whitespace in code snippets
 the code snippet display in the mosaic is stripping the blank lines in between lines of code. don't do that.
+in the description section of the images, I want to differentiate between mediums and tags and the date. mediums and tags should have a box with lighter color fill, 1 color for each respectively. Take the fill colors from the lighter colors in the stylesheet from the empty mosaic tiles, with outlines being their darker colors
+what was the outcome of looking into whether displaying lower res images for the mosaic tab would make it load faster/
+would this require me to upload an image twice?
+would this require me to upload an image twice when I upload in the future?
+Build it

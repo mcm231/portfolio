@@ -304,16 +304,26 @@ function GalleryPage({ title = 'Gallery Search', onSelect, action } = {}) {
             || readParagraphs(entry.description).length > 0;
     }
 
+    // The date reads as plain text. A medium and a tag each get a pill, one
+    // color for each, so the three never blur together.
     function renderMeta(entry) {
-        const parts = [
-            entry.dateCreated,
-            (entry.mediums || []).join(', '),
-            (entry.tags || []).join(', ')
-        ].filter(Boolean);
+        const mediums = entry.mediums || [];
+        const tags = entry.tags || [];
 
-        return parts.length > 0
-            ? h('p', { key: 'meta', className: 'detail-meta' }, parts.join(' · '))
-            : null;
+        return [
+            entry.dateCreated
+                ? h('p', { key: 'date', className: 'detail-date' }, entry.dateCreated)
+                : null,
+
+            mediums.length > 0 || tags.length > 0
+                ? h('ul', { key: 'terms', className: 'detail-terms' }, [
+                    ...mediums.map(term =>
+                        h('li', { key: `m-${term}`, className: 'pill pill-medium' }, term)),
+                    ...tags.map(term =>
+                        h('li', { key: `t-${term}`, className: 'pill pill-tag' }, term))
+                ])
+                : null
+        ];
     }
 
     function renderActions(entry) {

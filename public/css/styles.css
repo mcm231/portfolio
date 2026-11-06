@@ -67,6 +67,13 @@
     --blank-7: #e7eef7;
     --blank-8: #cdd9e8;
 
+    /* A medium pill and a tag pill, in the detail view. The fill is one of
+       the tile tints above, and the outline is a darker shade of it. */
+    --pill-medium-fill: var(--blank-6);
+    --pill-medium-line: #8fb2b9;       /* blank-6, darkened */
+    --pill-tag-fill: var(--blank-3);
+    --pill-tag-line: #b498b3;          /* blank-3, darkened */
+
     /* Type. Placeholder stacks. */
     --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --font-body: Georgia, 'Times New Roman', serif;
@@ -1347,6 +1354,43 @@ body.about {
         width: auto;
         max-height: 40vh;
     }
+}
+
+/* ---------- Term pills ---------- */
+
+.detail-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    list-style: none;
+}
+
+.pill {
+    padding: 2px var(--space-3);
+    border: 1px solid;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    letter-spacing: 0.04em;
+}
+
+.pill-medium {
+    border-color: var(--pill-medium-line);
+    background: var(--pill-medium-fill);
+}
+
+.pill-tag {
+    border-color: var(--pill-tag-line);
+    background: var(--pill-tag-fill);
+}
+
+/* The date is plain, so it never reads as a term. */
+.detail-date {
+    margin: 0 0 var(--space-3);
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
 }
 
 /* ---------- Code tiles ---------- */
