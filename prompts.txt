@@ -1,3 +1,70 @@
+Please save every single prompt I enter in any channel/chat in this project, EXCEPT the "SiteSparq tutorial" chat, in an editable file called "prompts.txt" so that I can go back over my prompts and add notes of what worked and what didn't. Do not save the replies in that file, just the prompts.
+Please explain what code you are creating as you are setting it up so I know what is going on.
+I want to build a sleek, professional, but also fun portfolio website for a mix of my programming work, traditional art, digital art, professional software development, and personal creative media work. My vision is one main page with an interactive node graph web that visitors can scroll around in and click on various nodes. The highest level of each node will be a different medium, whether that be programming, graphic design, traditional art, etc. for example, and then each click will zoom into a smaller node web with various subsections, like for example watercolor, acrylics, charcoal under traditional art. At the most zoomed in will be a word-cloud style collection of nodes displaying the art in that category.
+Let's build it from scratch. I believe I already mentioned the name mayamalavasi.sitesparq.ai
+Where can I see this site? All I see is a blank page
+I still only see a blank page.
+SSq: Great! You just learned the edit skill! Let me wait for deployment and check status:
+But it said React Router was available according to the Chrome dev tools?? Why remove React? 
+I now see the header with Maya Malavasi, the Reset button (good idea), but I don't see any nodes.
+There are no errors showing in the console, I got to "About to render"
+app.js:343 Uncaught SyntaxError: Unexpected token 'const' (at app.js:343:21)
+Nope. Nothing. Please completely delete all existing node rendering code and start from scratch to render the nodes, I think a clean slate would be best so as not to make the code even more twisted by excessive generation.
+Great! The nodes are there. Now let's add the scrolling and zooming functionality, as well as the reset button back in.
+Please make all nodes hexagonal and alpha transparency of 85%
+The hexagon sides should all have equal lengths. Currently the top and bottom are very squished
+Please add some inertia to the pan, so that it slides for a bit like a low-friction surface when you let go
+Raise the friction coefficient a bit. Also, it starts and jolts a bit when I unclick, sometimes heading in a different direction.
+Good. Now that the basic structure is down, here are the designs for the next part. The four nodes that are currently on the website, programming, creative media, traditional art, and digital art, are "level 1 nodes." Like HTML h1, h2, h3, etc. tags, each node level corresponds to a different tag. These level 1 nodes are the big headers for individual node graph webs under them.
+As I zoom in, I want the level 1 nodes to grow increasingly more transparent, revealing the node web of level 2 nodes beneath it. These level 2 nodes are about 5 times smaller, since the web fits inside the hexagonal node. Please increase the size of the level 1 nodes by about 2.5 times to account for this.
+Feel free to add a scattered node graph of random words to test this out under each node.
+Level 1 nodes can be circular, the rest hexagonal
+Remove the shadows under the nodes
+For any level 1 node, the text should move towards the edges of the circle so that it doesn't clutter up the middle.
+I interrupted a css change and now the console is showing Unable to preventDefault inside passive event listener invocation.
+When you changed the level 1 node to be flex-end, that wasn't what I was going for. I wanted the text to be away from the middle, where the nodes overlap: so the nodes on the top will have their text shifted towards the top, while the ones on the side would be shifted to the left or right, whichever is outermost. However, keep in mind that if I add a fifth node, the text should balance accordingly, going to the outermost edge of the node circle, so make sure the position is calculated accordingly.
+Good calculation... but you're off by about 45 degrees. Did you switch sine and cosine? Also please make the reference radius of the positional circle a bit bigger
+I want to change the structure of my level 1 nodes: Instead of them being nodes, I want them to be a venn diagram. I want to be able to click on each part of the venn diagram separately both overlapping parts and individual parts, and zoom into those specific segments. Ensure: the venn diagram is easily scalable and can have sections added, with parts that can change shape and move around based on how many different areas there are (the current 4 are default)
+The venn diagram spaces are rotationally symmetrical -- i.e. the venn diagram should look even.
+Please place any computational code or component code in a separate file to keep the codebase clean. You can separate the venn diagram or the parts of the venn diagram as components separate from app.js. This will simplify the load and clarity of the code.
+I will still refer to the venn diagram as either Level 1 nodes or Venn Diagram.
+Search for libraries that may implement these functionalities, or aid in that goal, before coding from scratch Please narrate what you are doing.
+Option B sounds good, especially since I will want to change the shape of the venn "circles" later on to be more oval/parabola shaped.
+The first screenshot is what I want to see. The second is what I actually see. This is still incorrect.
+Excellent. Now I want it to zoom into the center of each circle when I click them, not the center of the whole page
+Please make each circle a parabola with the vertex being pointed towards the center, still making the same overlapping central shape as before, but now making the overlapping shapes between circles slimmer. The parabolas should extend to the edge of the page
+This first screenshot has no overlaps. I want overlaps like in the second screenshot, including that center area. However, the outer part of the ovals should not curve back in to close the shape, it should extend out to the edge of the screen.
+Sorry, I changed my mind. Keep the current geometry, but add a diamond shape with curved sides (see screenshot) to the center, touching each of the 4 vertices. Make this one clickable as well.
+I want the sides to curve inwards, please. And please also make the parabolic shapes fatter
+I want it to look like the first screenshot. The second is how it currently looks.
+The curves on the existing diamond are too pronounced. They should naturally extend and connect from the parabolae, as seen in this red (concave but hand-drawn so that might not be as obvious) line
+Would all of this geometry automatically adjust itself if I added a new petal? Do not change files, just tell me what parts would change and what would stay the same. For example, would the diamond become a pentagon, would the petal widths adjust to fit, would the rotational symmetry adjust, etc.
+Please add the generateCenterDiamond function to allow for any number of petals, default 4
+ReferenceError: numCategories is not defined
+Currently, the site has a default view that is halfway between the maximum zoomed out view and the maximum zoomed in view. This is a good default. However, I want the shapes to extend out to the edge of the maximum zoomed out view, even if the edges are not visible when first loading the page. At the moment, the maximum zoomed out view sees the shapes abruptly stop (see screenshot).
+No, I don't want the shapes to be larger. In fact, instead of making them 2x larger, make them 0.75x as large, and cap the maximum zoom to what the default zoom was.
+These shapes do not go to the edge of my screen. I want them to continue to the edge of my screen. Please redo the entire size adjustment and zoom functionality so that these shapes can extend to the edge of the screen, even on variable screen sizes. See red lines on second screenshot for example.
+... no. Just no. Please revert everything to right after you solved "ReferenceError: numCategories is not defined".
+Now make the shapes 0.75x the size, and set the default zoom to the minimum zoom. Also make the shapes extend variably depending on viewport size to the edge of the minimum zoom screen, as seen in the red lines
+No. Revert to previous. I want default zoom and minimum zoom to remain at 1x. Shapes are all 0.75x smaller, including diamond. VennSize stays the same.
+Please revert the site back to the version right after the prompt: "Please make each circle a parabola with the vertex being pointed towards the center, still making the same overlapping central shape as before, but now making the overlapping shapes between circles slimmer. The parabolas should extend to the edge of the page"
+Please make the venn diagram match the screenshot above in terms of shape. Make the venn diagram fit inside the default zoom. Make the default zoom 1x and the minimum zoom 1x.
+Please change "creative media" to "writing"
+Please give me every single one of the files in this website so that I can host it on my own if I wanted to
+Please switch around the "Writing" and "Programming" titles and make the radius calculating the circle where the titles should be positioned 0.75x the size
+When I click on one of the venn diagram petals, I want it to function as a link to a page with the same title as the diagram petal. For example, clicking on the writing petal should take you to the writing page. However, I want a fancier transition to a new page than just a redirect. I want the user to zoom into the center of the oval shape of the diagram petal (see screenshot), then have the color of the petal take over the screen as it is the background of that page. No more zooming in and color transparency.
+I do want each page to have an individual url ending, but if there is a noticeable lag in load time to redirect then it can be a slug subsection of the page. However, it is imperative for the page subsections to be separate from the main index file to keep the code neat.
+The zoom is incorrect, I want the zoom to be centered on the positioning of the title associated with the petal.
+Make that zoom radius 2x the size with respect to the title label radius
+Revert that last command
+I want to increase the positioning radius 2x than the label's positioning radius. Still use the label location of the petal, but make it 2x further from the center of the label's positioning circle
+please revert the last command
+The zoom currently only zooms to the center of the diagram. I want it to zoom to the center of wherever my screen is located, even if the diagram is off to the side. Why is it currently constrained to only one zoom focus?
+Nope. Still same problem with the zoom.
+Now the zoom is completely off from the petal. It's zooming to the far right of the screen somehow, for every single petal.
+Please make the titles of the petals a bit smaller. Maybe around 4pts?
+Please reduce it by 4 more pts
+Ok, instead of zooming into a petal when clicked and having the color take over the whole screen, I want it to just zoom into the petal and stay at that petal. It should have a unique slug to show that it is a specific position on the page, but it should not be a whole page altogether.
 Remove the diamond in the middle of the venn diagram and all associated calculations for that diamond
 There's a lot of code here to custom-calculate the size and positioning of the venn diagram petals. I have decided I just want 4 petals. Please hard-code those 4 petals, with the same dimensions and shape they currently have, and remove the functions and files used purely to calculate the petal shapes. Once this is finished, I expect to see no difference visually in the site, but a significant change and increase in code clarity and cleanliness.
 When I zoom out, no matter where I zoom in from, the zoom-out center is always at the middle of the venn diagram, not in the middle of my viewport. I want to zoom out from the middle of my viewport.
@@ -183,3 +250,4 @@ I'm saying adding the custom domain is not working.
 I've run the worker script and the site is up. How do I log in to access the worker-locked edit/upload/messages pages?
 I have already run the deploy and updated the AUD. I have already done all the above steps. I cannot access the pages I should be able to access with my email. How do I make sure I am logged in in the right way or otherwise have access to those pages
 how can I add www to the same path functionality? I already added the subdomain paths as extra lines in the Access permissions
+why do the images flicker in the gallery page on first load? What would the best way to fix this be? Plan first, let me approve the chane
