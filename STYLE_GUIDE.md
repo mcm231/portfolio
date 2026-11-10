@@ -1,6 +1,6 @@
 # Style guide
 
-Rules for every page of this site. The tokens live in `css/styles.css` under
+Rules for every page of this site. The tokens live in `css/tokens.css` under
 `:root`. Read a value from a token. Never write a raw hex value or a raw font
 name in a page, a component, or a JavaScript file.
 
@@ -13,11 +13,11 @@ Corners are sharp. `border-radius` stays at `0`.
 
 Three exceptions exist, and each one is named here:
 
-| Exception | Token | Where |
-|---|---|---|
-| A circle | `--radius-circle` | The loading spinner |
-| A pill | `--radius-pill` | None at present |
-| A hairline round | `--radius-soft` | None at present |
+| Exception        | Token             | Where               |
+| ---------------- | ----------------- | ------------------- |
+| A circle         | `--radius-circle` | The loading spinner |
+| A pill           | `--radius-pill`   | None at present     |
+| A hairline round | `--radius-soft`   | None at present     |
 
 To add an exception, add the element to this table first.
 
@@ -26,11 +26,11 @@ To add an exception, add the element to this table first.
 Four colors carry the site. Every other value is one of them, lightened or
 darkened. There is no second theme.
 
-| Palette token | Value | Name |
-|---|---|---|
-| `--teal` | `#17808f` | Teal |
-| `--space-indigo` | `#192a51` | Space Indigo |
-| `--alice-blue` | `#e2eefa` | Alice Blue |
+| Palette token      | Value     | Name           |
+| ------------------ | --------- | -------------- |
+| `--teal`           | `#17808f` | Teal           |
+| `--space-indigo`   | `#192a51` | Space Indigo   |
+| `--alice-blue`     | `#e2eefa` | Alice Blue     |
 | `--amethyst-smoke` | `#aa78a6` | Amethyst Smoke |
 
 Teal is the main color. Amethyst is a mark. Space Indigo is the text. Alice
@@ -39,45 +39,45 @@ Blue is the page.
 Teal and amethyst each come in several shades, because the palette value alone
 is too light to carry text. Pick the shade by the job, never by the look:
 
-| Job | Teal | Amethyst |
-|---|---|---|
-| A decorative fill, nothing on top | `--color-brand` | `--color-mark` |
-| A fill that carries text | `--color-brand-dark` | `--color-mark-fill` |
-| That fill, hovered | `--color-brand-deep` | `--color-mark-fill-hover` |
-| Text on the page or a card | `--color-brand-dark` | `--color-mark-text` |
-| A border, a rule, a focus ring | `--color-line-strong` | `--color-mark-line` |
-| A soft fill, with ink text | `--color-brand-soft` | `--color-mark-soft` |
+| Job                               | Teal                  | Amethyst                  |
+| --------------------------------- | --------------------- | ------------------------- |
+| A decorative fill, nothing on top | `--color-brand`       | `--color-mark`            |
+| A fill that carries text          | `--color-brand-dark`  | `--color-mark-fill`       |
+| That fill, hovered                | `--color-brand-deep`  | `--color-mark-fill-hover` |
+| Text on the page or a card        | `--color-brand-dark`  | `--color-mark-text`       |
+| A border, a rule, a focus ring    | `--color-line-strong` | `--color-mark-line`       |
+| A soft fill, with ink text        | `--color-brand-soft`  | `--color-mark-soft`       |
 
 Never read a palette token in a component. Read a role token:
 
-| Role token | Value | Use |
-|---|---|---|
-| `--color-bg` | Alice Blue | The page behind everything |
-| `--color-surface` | Alice Blue, lightened | A card, a tile, a panel, an input |
-| `--color-surface-alt` | Alice Blue, darkened | A quiet block |
-| `--color-ink` | Space Indigo | Body text and headings |
-| `--color-ink-muted` | Space Indigo, lightened | A caption, a date, a count |
-| `--color-line` | Alice Blue, darkened | A divider. Decoration only |
-| `--color-line-strong` | Space Indigo, lightened | A control boundary |
-| `--color-brand` | Teal | The rail gradient, dark end |
-| `--color-brand-light` | Teal, lightened | The rail gradient, light end |
-| `--color-brand-dark` | Teal, darkened | The drawer, the band, text on light |
-| `--color-brand-deep` | Teal, darkest | A hover |
-| `--color-brand-soft` | Teal over Alice Blue | A quiet hover fill |
-| `--color-on-brand` | Alice Blue, lightened | Text on a dark teal or on the error red |
-| `--veil-on-brand` | Alice Blue, see through | A hover fill on teal |
-| `--color-accent` | `--color-brand-dark` | The primary action |
-| `--color-accent-hover` | `--color-brand-deep` | That action, hovered |
-| `--color-on-accent` | `--color-on-brand` | Text on the primary action |
-| `--color-mark` | Amethyst Smoke | The About accent block |
-| `--color-mark-line` | Amethyst, darkened | A border, a rule, a focus ring |
-| `--color-mark-text` | Amethyst, darker | A tagline, an eyebrow, a number |
-| `--color-mark-fill` | Amethyst, darker | The gallery Add button |
-| `--color-mark-fill-hover` | Amethyst, darkest | That button, hovered |
-| `--color-mark-soft` | Amethyst over Alice Blue | A chip fill, with ink text |
-| `--color-error` | A brick red | A required marker, an invalid field |
-| `--color-overlay` | Space Indigo, see through | A scrim behind a drawer or a modal |
-| `--blank-1` .. `--blank-8` | Tints of the four | A placeholder tile, when the image API is down |
+| Role token                 | Value                     | Use                                            |
+| -------------------------- | ------------------------- | ---------------------------------------------- |
+| `--color-bg`               | Alice Blue                | The page behind everything                     |
+| `--color-surface`          | Alice Blue, lightened     | A card, a tile, a panel, an input              |
+| `--color-surface-alt`      | Alice Blue, darkened      | A quiet block                                  |
+| `--color-ink`              | Space Indigo              | Body text and headings                         |
+| `--color-ink-muted`        | Space Indigo, lightened   | A caption, a date, a count                     |
+| `--color-line`             | Alice Blue, darkened      | A divider. Decoration only                     |
+| `--color-line-strong`      | Space Indigo, lightened   | A control boundary                             |
+| `--color-brand`            | Teal                      | The rail gradient, dark end                    |
+| `--color-brand-light`      | Teal, lightened           | The rail gradient, light end                   |
+| `--color-brand-dark`       | Teal, darkened            | The drawer, the band, text on light            |
+| `--color-brand-deep`       | Teal, darkest             | A hover                                        |
+| `--color-brand-soft`       | Teal over Alice Blue      | A quiet hover fill                             |
+| `--color-on-brand`         | Alice Blue, lightened     | Text on a dark teal or on the error red        |
+| `--veil-on-brand`          | Alice Blue, see through   | A hover fill on teal                           |
+| `--color-accent`           | `--color-brand-dark`      | The primary action                             |
+| `--color-accent-hover`     | `--color-brand-deep`      | That action, hovered                           |
+| `--color-on-accent`        | `--color-on-brand`        | Text on the primary action                     |
+| `--color-mark`             | Amethyst Smoke            | The About accent block                         |
+| `--color-mark-line`        | Amethyst, darkened        | A border, a rule, a focus ring                 |
+| `--color-mark-text`        | Amethyst, darker          | A tagline, an eyebrow, a number                |
+| `--color-mark-fill`        | Amethyst, darker          | The gallery Add button                         |
+| `--color-mark-fill-hover`  | Amethyst, darkest         | That button, hovered                           |
+| `--color-mark-soft`        | Amethyst over Alice Blue  | A chip fill, with ink text                     |
+| `--color-error`            | A brick red               | A required marker, an invalid field            |
+| `--color-overlay`          | Space Indigo, see through | A scrim behind a drawer or a modal             |
+| `--blank-1` .. `--blank-8` | Tints of the four         | A placeholder tile, when the image API is down |
 
 Rules:
 
@@ -101,20 +101,20 @@ text and for a control boundary.
 
 Two families. One for display, one for reading.
 
-| Token | Stack | Use |
-|---|---|---|
+| Token            | Stack                                            | Use                                   |
+| ---------------- | ------------------------------------------------ | ------------------------------------- |
 | `--font-display` | `'Helvetica Neue', Helvetica, Arial, sans-serif` | Headings, buttons, menu links, labels |
-| `--font-body` | `Georgia, 'Times New Roman', serif` | Paragraphs, captions, image metadata |
+| `--font-body`    | `Georgia, 'Times New Roman', serif`              | Paragraphs, captions, image metadata  |
 
 Sizes come from the scale. Do not invent a size between two steps.
 
-| Token | Size | Use |
-|---|---|---|
-| `--text-xs` | 12px | A caption or a count |
-| `--text-sm` | 14px | A chip, a small label |
-| `--text-md` | 16px | Body copy, an input |
-| `--text-lg` | 20px | A card heading |
-| `--text-xl` | 32px | A page heading |
+| Token            | Size                           | Use                       |
+| ---------------- | ------------------------------ | ------------------------- |
+| `--text-xs`      | 12px                           | A caption or a count      |
+| `--text-sm`      | 14px                           | A chip, a small label     |
+| `--text-md`      | 16px                           | Body copy, an input       |
+| `--text-lg`      | 20px                           | A card heading            |
+| `--text-xl`      | 32px                           | A page heading            |
 | `--text-display` | `clamp(1.9rem, 5.2vw, 3.9rem)` | The name on the home page |
 
 A heading and a button use uppercase with `letter-spacing: 0.06em`.
@@ -164,5 +164,5 @@ The server repeats every required check. A direct POST must not skip one.
 ## JavaScript
 
 No inline style objects with colors, fonts, or sizes. A component sets a class
-name, and `css/styles.css` holds the rule. A value a script computes at
+name, and a file in `css/` holds the rule. A value a script computes at
 runtime, such as a tile position, is passed as a custom property.

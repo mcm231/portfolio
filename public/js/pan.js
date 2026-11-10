@@ -6,17 +6,17 @@
 
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 2.5;
-const WHEEL_STEP = 0.0016;     // scale change per wheel pixel
-const LINE_HEIGHT_PX = 16;     // a wheel line, when the event reports lines
-const FRICTION = 0.94;         // velocity kept per frame during the glide
-const MIN_VELOCITY = 0.05;     // px/frame at which the glide stops
-const IDLE_RELEASE_MS = 80;    // a pointer still for this long does not glide
-const RECENTER_MS = 560;       // length of the recenter ease
+const WHEEL_STEP = 0.0016; // scale change per wheel pixel
+const LINE_HEIGHT_PX = 16; // a wheel line, when the event reports lines
+const FRICTION = 0.94; // velocity kept per frame during the glide
+const MIN_VELOCITY = 0.05; // px/frame at which the glide stops
+const IDLE_RELEASE_MS = 80; // a pointer still for this long does not glide
+const RECENTER_MS = 560; // length of the recenter ease
 // Click or drag. A press counts as a click only when it stays inside the slop
 // and ends inside the time limit. Raise CLICK_MAX_MS for a slower hand, lower
 // it to make a held press start a pan sooner.
-const CLICK_SLOP_PX = 6;       // movement a click may still have
-const CLICK_MAX_MS = 400;      // longest press that still counts as a click
+const CLICK_SLOP_PX = 6; // movement a click may still have
+const CLICK_MAX_MS = 400; // longest press that still counts as a click
 const FRAME_MS = 1000 / 60;
 
 export function createPan({ surface, onChange }) {
@@ -59,7 +59,7 @@ export function createPan({ surface, onChange }) {
 
     function advanceEase(now) {
         const t = Math.min(1, (now - ease.start) / RECENTER_MS);
-        const eased = 1 - Math.pow(1 - t, 3);   // ease-out cubic
+        const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
 
         pan.x = ease.from.x * (1 - eased);
         pan.y = ease.from.y * (1 - eased);
@@ -121,7 +121,7 @@ export function createPan({ surface, onChange }) {
             time: now,
             startedAt: now,
             distance: 0,
-            captured: false
+            captured: false,
         };
     }
 
@@ -201,6 +201,6 @@ export function createPan({ surface, onChange }) {
         // under it. Either too far, or held too long.
         wasDragged() {
             return lastPress.distance > CLICK_SLOP_PX || lastPress.duration > CLICK_MAX_MS;
-        }
+        },
     };
 }

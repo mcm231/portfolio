@@ -1,0 +1,147 @@
+/* The about page: the hero accent, the strip, the cards, the closing band. */
+
+.hero-media {
+    margin: 0;
+    position: relative;
+}
+
+/* A teal square behind the portrait, offset. The one playful note. */
+.hero-media::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--space-5) * -1);
+    top: calc(var(--space-5) * -1);
+    width: 60%;
+    height: 60%;
+    background: var(--color-mark);
+}
+
+.hero-media .placeholder,
+.hero-media .caption {
+    position: relative;
+}
+
+.placeholder-portrait {
+    aspect-ratio: 4 / 5;
+}
+
+.placeholder-wide {
+    aspect-ratio: 4 / 3;
+}
+
+.placeholder-square {
+    aspect-ratio: 1 / 1;
+}
+
+.text-placeholder-invert {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        var(--veil-on-brand-strong) 0 12px,
+        transparent 12px 28px
+    );
+}
+
+/* The band runs a gradient, so a flat patch would show. Keep the full line. */
+.text-placeholder-invert::after {
+    display: none;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-7);
+}
+
+.strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+}
+
+.strip figure {
+    margin: 0;
+}
+
+/* The middle frame sits lower, so the row is not a flat line. */
+.strip figure:nth-child(2) {
+    margin-top: var(--space-6);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+}
+
+.card-tile {
+    padding: var(--space-5);
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.card-tile:hover {
+    border-color: var(--color-mark-line);
+    transform: translateY(-4px);
+}
+
+.card-tile-heading {
+    margin: var(--space-4) 0 var(--space-3);
+    font-size: var(--text-lg);
+    font-weight: 500;
+}
+
+.card-tile .text-placeholder::after {
+    background: var(--color-surface);
+}
+
+/* Closing band */
+.band {
+    margin-top: var(--space-8);
+    padding: var(--space-8) var(--space-7);
+    background: linear-gradient(165deg, var(--color-brand-dark) 0%, var(--color-brand) 100%);
+    color: var(--color-on-brand);
+    text-align: center;
+}
+
+.band-heading {
+    margin: 0 0 var(--space-5);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.band .text-placeholder {
+    max-width: 440px;
+    margin: 0 auto var(--space-6);
+}
+
+.button-on-brand {
+    background: var(--color-on-brand);
+    color: var(--color-brand-dark);
+}
+
+.button-on-brand:hover {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-dark);
+}
+
+@media (max-width: 760px) {
+    .hero,
+    .columns,
+    .strip,
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .strip figure:nth-child(2) {
+        margin-top: 0;
+    }
+
+    /* The offset accent would bleed off a narrow screen. */
+    .hero-media::before {
+        display: none;
+    }
+}

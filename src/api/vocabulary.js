@@ -1,47 +1,31 @@
-// The words already in use, for the suggestion lists.
+// The terms already in use, for the suggestion lists.
 //
-// There is no fixed vocabulary. Every tag and every medium comes from the
-// rows themselves, counted, most used first.
-import { readTags, readMediums } from '../../public/js/taxonomy.js';
+// No fixed vocabulary exists. Every tag and every medium comes from the rows
+// themselves, counted, most used first.
+import { readTags, readMediums } from '../../public/js/shared/taxonomy.js';
+import { rowRepository } from '../repositories/rowRepository.js';
+import { json } from './_reply.js';
 
 function tally(counts, terms) {
-  for (const term of terms) counts.set(term, (counts.get(term) ?? 0) + 1);
+    for (const term of terms) counts.set(term, (counts.get(term) ?? 0) + 1);
 }
 
 function rank(counts) {
-  return [...counts.entries()]
-    .map(([value, count]) => ({ value, count }))
-    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+    return [...counts.entries()]
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 }
 
-export async function onRequest(context) {
-  const tags = new Map();
-  const mediums = new Map();
-  let cursor;
+export async function readVocabulary(request, env) {
+    const tags = new Map();
+    const mediums = new Map();
 
-  do {
-    const list = await context.env.IMAGE_METADATA.list({ cursor });
+    // The stored rows are enough to count terms, so this never reads a single
+    // image out of the bucket.
+    for (const row of await rowRepository.listStored(env)) {
+        tally(tags, readTags(row));
+        tally(mediums, readMediums(row));
+    }
 
-    await Promise.all(list.keys.map(async ({ name }) => {
-      const value = await context.env.IMAGE_METADATA.get(name);
-      if (!value) return;
-
-      let entry;
-      try {
-        entry = JSON.parse(value);
-      } catch {
-        console.error(`Skipping unparseable entry "${name}" in the vocabulary.`);
-        return;
-      }
-
-      tally(tags, readTags(entry));
-      tally(mediums, readMediums(entry));
-    }));
-
-    cursor = list.list_complete ? undefined : list.cursor;
-  } while (cursor);
-
-  return new Response(JSON.stringify({ tags: rank(tags), mediums: rank(mediums) }), {
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
-  });
+    return json({ tags: rank(tags), mediums: rank(mediums) });
 }

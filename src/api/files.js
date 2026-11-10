@@ -1,33 +1,20 @@
-// Serves a project download from the R2 bucket.
+// Serves a project download.
 //
-// Only an object under files/ is served, so this route can never hand out an
-// artwork, a contact message, or anything else in the bucket.
+// The key comes from the visitor, so this route refuses any key outside the
+// download prefix. It can never hand out an artwork or a contact message.
+import { imageRepository } from '../repositories/imageRepository.js';
+import { notFound, objectResponse } from './_reply.js';
 
-const FILE_PREFIX = 'files/';
+export async function readFile(request, env) {
+    const key = new URL(request.url).searchParams.get('key');
 
-export async function onRequest(context) {
-  const { request, env } = context;
+    if (!imageRepository.isFileKey(key)) return notFound();
 
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    return new Response('Use GET.', { status: 405, headers: { Allow: 'GET, HEAD' } });
-  }
+    const object = await imageRepository.get(env, key);
+    if (!object) return notFound();
 
-  const key = new URL(request.url).searchParams.get('key');
+    // The browser saves the file rather than trying to show it.
+    const name = imageRepository.fileNameOf(key);
 
-  if (!key || !key.startsWith(FILE_PREFIX) || key.includes('..')) {
-    return new Response('Not found', { status: 404 });
-  }
-
-  const object = await env.IMAGES.get(key);
-  if (!object) return new Response('Not found', { status: 404 });
-
-  const headers = new Headers();
-  object.writeHttpMetadata(headers);
-  headers.set('etag', object.httpEtag);
-
-  // The browser saves the file rather than trying to display it.
-  const name = key.slice(FILE_PREFIX.length).replace(/"/g, '');
-  headers.set('Content-Disposition', `attachment; filename="${name}"`);
-
-  return new Response(object.body, { headers });
+    return objectResponse(object, { 'Content-Disposition': `attachment; filename="${name}"` });
 }

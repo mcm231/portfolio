@@ -2,11 +2,12 @@
 // it after a sign-in. The form posts to /api/upload, which writes the image to
 // R2 and the metadata entry to KV.
 
-import { slugify, freeIdSync } from './id-rules.js';
+import { slugify, freeIdSync } from './shared/id-rules.js';
 import { createTermField } from './term-field.js';
-import { KNOWN_LANGUAGES } from './taxonomy.js';
-import { readImages, readSnippet } from './row.js';
-import { makeThumbnail } from './thumbnail.js';
+import { KNOWN_LANGUAGES } from './shared/taxonomy.js';
+import { readImages, readSnippet } from './shared/row.js';
+import { makeThumbnail } from './shared/thumbnail.js';
+import { api, ApiError } from './api.js';
 
 const form = document.getElementById('upload-form');
 const fileInput = document.getElementById('file');
@@ -39,7 +40,7 @@ const tagField = createTermField({
     addButton: document.getElementById('tag-add'),
     chips: document.getElementById('tag-chips'),
     label: 'tag',
-    onChange: refreshPreview
+    onChange: refreshPreview,
 });
 
 const mediumField = createTermField({
@@ -48,7 +49,7 @@ const mediumField = createTermField({
     addButton: document.getElementById('medium-add'),
     chips: document.getElementById('medium-chips'),
     label: 'medium',
-    onChange: refreshPreview
+    onChange: refreshPreview,
 });
 const dateInput = document.getElementById('dateCreated');
 
@@ -62,7 +63,10 @@ let editingId = new URLSearchParams(window.location.search).get('id');
 let editingImages = [];
 
 function splitList(value) {
-    return value.split(',').map(item => item.trim()).filter(Boolean);
+    return value
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean);
 }
 
 function extensionOf(file) {
@@ -79,8 +83,9 @@ function currentEntry() {
     const files = Array.from(fileInput.files);
 
     // The id comes from the typed id, then the name, then the first file.
-    const wanted = slugify(idInput.value.trim() || name
-        || (files[0] ? files[0].name.replace(/\.[a-z0-9]+$/i, '') : ''));
+    const wanted = slugify(
+        idInput.value.trim() || name || (files[0] ? files[0].name.replace(/\.[a-z0-9]+$/i, '') : '')
+    );
     const overwrite = document.getElementById('overwrite').checked;
 
     // freeId resolves at once here, because the id set is already in memory.
@@ -104,8 +109,8 @@ function currentEntry() {
             name,
             images: files.length
                 ? files.map((f, i) => ({
-                    key: `${id}${i === 0 ? '' : `-${i + 1}`}.${extensionOf(f)}`
-                }))
+                      key: `${id}${i === 0 ? '' : `-${i + 1}`}.${extensionOf(f)}`,
+                  }))
                 : editingImages,
             description: document.getElementById('description').value.trim(),
             mediums: isCode ? [] : mediumField.values(),
@@ -116,10 +121,11 @@ function currentEntry() {
             liveUrl: isCode ? document.getElementById('liveUrl').value.trim() : '',
             language: isCode ? document.getElementById('language').value.trim() : '',
             snippet: isCode ? readSnippet(snippetInput.value) : '',
-            download: isCode && downloadInput.files[0]
-                ? { name: downloadInput.files[0].name, size: downloadInput.files[0].size }
-                : null
-        }
+            download:
+                isCode && downloadInput.files[0]
+                    ? { name: downloadInput.files[0].name, size: downloadInput.files[0].size }
+                    : null,
+        },
     };
 }
 
@@ -138,15 +144,17 @@ function refreshPreview() {
 
 async function loadTakenIds() {
     try {
-        const response = await fetch('/api/image-metadata');
-        if (!response.ok) return;
-
-        const entries = await response.json();
+        const entries = await api.rows();
         takenIds = new Set(entries.map(entry => entry.id).filter(Boolean));
         refreshPreview();
     } catch {
         // The page still works. The server resolves the final id either way.
     }
+}
+
+// The sentence the server wrote, or a plain fallback when nothing answered.
+function reasonFrom(error, fallback) {
+    return error instanceof ApiError && error.status !== 0 ? error.message : fallback;
 }
 
 function setStatus(message, kind) {
@@ -184,10 +192,7 @@ function markInvalid(element) {
 // The suggestion lists come from the rows already stored.
 async function loadVocabulary() {
     try {
-        const response = await fetch('/api/vocabulary');
-        if (!response.ok) throw new Error(String(response.status));
-
-        const { tags = [], mediums = [] } = await response.json();
+        const { tags = [], mediums = [] } = await api.vocabulary();
         tagField.setSuggestions(tags);
         mediumField.setSuggestions(mediums);
     } catch {
@@ -198,20 +203,22 @@ async function loadVocabulary() {
 // A thumbnail for each chosen file. The first one is the cover.
 function drawPreview(items) {
     preview.hidden = items.length === 0;
-    preview.replaceChildren(...items.map((item, index) => {
-        const figure = document.createElement('figure');
-        figure.className = 'form-preview-item';
+    preview.replaceChildren(
+        ...items.map((item, index) => {
+            const figure = document.createElement('figure');
+            figure.className = 'form-preview-item';
 
-        const img = document.createElement('img');
-        img.src = item.src;
-        img.alt = '';
+            const img = document.createElement('img');
+            img.src = item.src;
+            img.alt = '';
 
-        const caption = document.createElement('figcaption');
-        caption.textContent = index === 0 ? 'Cover' : String(index + 1);
+            const caption = document.createElement('figcaption');
+            caption.textContent = index === 0 ? 'Cover' : String(index + 1);
 
-        figure.append(img, caption);
-        return figure;
-    }));
+            figure.append(img, caption);
+            return figure;
+        })
+    );
 }
 
 fileInput.addEventListener('change', () => {
@@ -294,27 +301,24 @@ form.addEventListener('submit', async event => {
     setStatus('Uploading…');
 
     try {
-        const response = await fetch('/api/upload', { method: 'POST', body });
-        const result = await response.json();
-
-        if (!response.ok) {
-            setStatus(result.error || `The upload failed with status ${response.status}.`, 'error');
-            return;
-        }
+        const result = await api.saveRow(body);
 
         const note = editingId
             ? `Saved "${result.id}".`
             : result.replaced
-            ? `Replaced "${result.id}".`
-            : result.renamedFrom
+              ? `Replaced "${result.id}".`
+              : result.renamedFrom
                 ? `"${result.renamedFrom}" was taken. Stored as "${result.id}".`
                 : `Stored "${result.id}".`;
 
         setStatus(note, 'ok');
         entryPreview.textContent = `${result.id}\n${JSON.stringify(result.entry, null, 2)}`;
         takenIds.add(result.id);
-    } catch {
-        setStatus('The upload failed. Check the network and try again.', 'error');
+    } catch (error) {
+        setStatus(
+            reasonFrom(error, 'The upload failed. Check the network and try again.'),
+            'error'
+        );
     } finally {
         submitButton.disabled = false;
     }
@@ -346,15 +350,7 @@ async function enterEditMode(id) {
     setStatus('Loading the entry…');
 
     try {
-        const response = await fetch(`/api/image-metadata?id=${encodeURIComponent(id)}`);
-        if (!response.ok) {
-            setStatus(`No entry with the id "${id}".`, 'error');
-            submitButton.disabled = true;
-            deleteButton.hidden = true;
-            return;
-        }
-
-        const entry = await response.json();
+        const entry = await api.row(id);
         nameInput.value = entry.name || '';
         document.getElementById('description').value = entry.description || '';
         mediumField.set(entry.mediums || []);
@@ -362,8 +358,7 @@ async function enterEditMode(id) {
         document.getElementById('galleries').value = (entry.galleries || []).join(', ');
 
         editingImages = readImages(entry);
-        drawPreview(editingImages.map(image =>
-            ({ src: `/api/images?id=${encodeURIComponent(image.key)}` })));
+        drawPreview(editingImages.map(image => ({ src: api.imageUrl(image.key) })));
 
         tagField.set(entry.tags || []);
 
@@ -382,9 +377,10 @@ async function enterEditMode(id) {
 
         setStatus('');
         refreshPreview();
-    } catch {
-        setStatus('The entry did not load. Reload the page.', 'error');
+    } catch (error) {
+        setStatus(reasonFrom(error, 'The entry did not load. Reload the page.'), 'error');
         submitButton.disabled = true;
+        deleteButton.hidden = true;
     }
 }
 
@@ -414,22 +410,17 @@ async function runDelete() {
     setStatus('Deleting…');
 
     try {
-        const response = await fetch(`/api/upload?id=${encodeURIComponent(editingId)}`, {
-            method: 'DELETE'
-        });
-        const result = await response.json();
-
-        if (!response.ok) {
-            setStatus(result.error || `The delete failed with status ${response.status}.`, 'error');
-            deleteButton.disabled = false;
-            submitButton.disabled = false;
-            return;
-        }
+        const result = await api.deleteRow(editingId);
 
         setStatus(`Deleted "${result.id}". Going back to the edit list…`, 'ok');
-        window.setTimeout(() => { window.location.href = '/edit'; }, 900);
-    } catch {
-        setStatus('The delete failed. Check the network and try again.', 'error');
+        window.setTimeout(() => {
+            window.location.href = '/pages/edit';
+        }, 900);
+    } catch (error) {
+        setStatus(
+            reasonFrom(error, 'The delete failed. Check the network and try again.'),
+            'error'
+        );
         deleteButton.disabled = false;
         submitButton.disabled = false;
     }
@@ -445,7 +436,9 @@ function applyKind() {
     const isCode = kindInput.value === 'code';
 
     codeOnly.hidden = !isCode;
-    imageOnly.forEach(row => { row.hidden = isCode; });
+    imageOnly.forEach(row => {
+        row.hidden = isCode;
+    });
     fileRequired.hidden = isCode;
     fileInput.required = !isCode;
 
@@ -469,7 +462,8 @@ document.getElementById('language-options').replaceChildren(
         const option = document.createElement('option');
         option.value = name;
         return option;
-    }));
+    })
+);
 
 document.getElementById('overwrite').addEventListener('change', refreshPreview);
 

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="robots" content="noindex, nofollow" />
+        <title>Upload - Maya Malavasi</title>
+        <link rel="stylesheet" href="../css/tokens.css" />
+        <link rel="stylesheet" href="../css/base.css" />
+        <link rel="stylesheet" href="../css/components.css" />
+        <link rel="stylesheet" href="../css/upload.css" />
+    </head>
+    <body class="admin">
+        <a class="button button-quiet back-link" href="/">← Home</a>
+        <a class="button button-quiet forward-link" id="edit-link" href="/pages/edit"
+            >Edit images</a
+        >
+
+        <main class="page page-narrow">
+            <div class="page-header">
+                <h1 class="page-title" id="page-title">Upload an image</h1>
+                <p class="page-count">The fields below are the whole database entry.</p>
+                <p class="page-count"><span class="required">*</span> marks a required field.</p>
+            </div>
+
+            <form id="upload-form" class="form" novalidate>
+                <!-- The kind drives the rest of the form. -->
+                <div class="form-row">
+                    <label class="form-label" for="kind"
+                        >What is this? <span class="required" aria-hidden="true">*</span></label
+                    >
+                    <select class="field" id="kind" name="kind">
+                        <option value="image">An image</option>
+                        <option value="code">A code project</option>
+                    </select>
+                    <p class="form-hint" id="kind-hint">An image needs a picture.</p>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label" for="file"
+                        >Image files
+                        <span class="required" id="file-required" aria-hidden="true">*</span></label
+                    >
+                    <input
+                        class="field"
+                        id="file"
+                        name="file"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        required
+                    />
+                    <p class="form-hint" id="file-hint">
+                        25MB each, 12 at most. The first one is the cover.
+                    </p>
+                </div>
+
+                <div id="preview" class="form-preview-strip" hidden></div>
+
+                <div class="form-row">
+                    <label class="form-label" for="id">Id</label>
+                    <input
+                        class="field"
+                        id="id"
+                        name="id"
+                        type="text"
+                        placeholder="auto from the name or the file"
+                    />
+                    <p class="form-hint" id="id-hint">
+                        The KV key. Lower case, dashes only. It fills itself from the name, or the
+                        file name.
+                    </p>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label" for="name">Name</label>
+                    <input class="field" id="name" name="name" type="text" />
+                    <p class="form-hint">Left empty, the piece shows as untitled.</p>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea class="field" id="description" name="description" rows="8"></textarea>
+                    <p class="form-hint">A blank line starts a new paragraph.</p>
+                </div>
+
+                <!-- Mediums. Type a new one, or pick a used one from the list.
+                 A code project has no medium, so this hides for one. -->
+                <div class="form-row image-only">
+                    <label class="form-label" for="medium-input"
+                        >Mediums <span class="required" aria-hidden="true">*</span></label
+                    >
+                    <div class="combo">
+                        <input
+                            class="field field-grow"
+                            id="medium-input"
+                            type="text"
+                            list="medium-options"
+                            autocomplete="off"
+                            placeholder="watercolor"
+                        />
+                        <datalist id="medium-options"></datalist>
+                        <button class="button button-quiet" id="medium-add" type="button">
+                            Add
+                        </button>
+                    </div>
+                    <div class="chips" id="medium-chips"></div>
+                    <p class="form-hint">Press Enter to add. A new medium joins the list.</p>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label" for="dateCreated"
+                        >Date created <span class="required" aria-hidden="true">*</span></label
+                    >
+                    <input class="field" id="dateCreated" name="dateCreated" type="date" required />
+                </div>
+
+                <!-- Tags. The same control, a second category. -->
+                <div class="form-row">
+                    <label class="form-label" for="tag-input"
+                        >Tags <span class="required" aria-hidden="true">*</span></label
+                    >
+                    <div class="combo">
+                        <input
+                            class="field field-grow"
+                            id="tag-input"
+                            type="text"
+                            list="tag-options"
+                            autocomplete="off"
+                            placeholder="watercolor"
+                        />
+                        <datalist id="tag-options"></datalist>
+                        <button class="button button-quiet" id="tag-add" type="button">Add</button>
+                    </div>
+                    <div class="chips" id="tag-chips"></div>
+                    <p class="form-hint">Press Enter to add. A new tag joins the list.</p>
+                </div>
+
+                <!-- Code fields. Shown only for a code project. -->
+                <div class="code-only" hidden>
+                    <div class="form-row">
+                        <label class="form-label" for="repoUrl">Repository link</label>
+                        <input
+                            class="field"
+                            id="repoUrl"
+                            name="repoUrl"
+                            type="url"
+                            placeholder="https://github.com/you/project"
+                        />
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="liveUrl">Live link</label>
+                        <input
+                            class="field"
+                            id="liveUrl"
+                            name="liveUrl"
+                            type="url"
+                            placeholder="https://project.example"
+                        />
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="language">Language</label>
+                        <input
+                            class="field"
+                            id="language"
+                            name="language"
+                            type="text"
+                            list="language-options"
+                            autocomplete="off"
+                            placeholder="javascript"
+                        />
+                        <datalist id="language-options"></datalist>
+                        <p class="form-hint">
+                            Left empty, a language tag is used. With neither, javascript.
+                        </p>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="snippet">Code snippet</label>
+                        <textarea
+                            class="field code-input"
+                            id="snippet"
+                            name="snippet"
+                            rows="8"
+                            spellcheck="false"
+                        ></textarea>
+                        <p class="form-hint">
+                            Shown on the tile. Left empty, a sample of the language is shown.
+                        </p>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="download">Download file</label>
+                        <input class="field" id="download" name="download" type="file" />
+                        <p class="form-hint" id="download-hint">
+                            Any type, 25MB limit. Offered on the detail view.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label" for="galleries">Galleries</label>
+                    <input
+                        class="field"
+                        id="galleries"
+                        name="galleries"
+                        type="text"
+                        placeholder="Gallery1, Gallery2"
+                    />
+                    <p class="form-hint">Separate the names with a comma.</p>
+                </div>
+
+                <div class="form-row form-row-inline" id="overwrite-row">
+                    <input id="overwrite" name="overwrite" type="checkbox" />
+                    <label class="form-label" for="overwrite"
+                        >Replace the entry if the id exists. Leave it clear to add a number.</label
+                    >
+                </div>
+
+                <div class="form-row">
+                    <span class="form-label">Database entry</span>
+                    <pre id="entry-preview" class="code-block"></pre>
+                </div>
+
+                <div class="form-actions">
+                    <button id="submit" class="button" type="submit">Upload</button>
+                    <!-- Edit mode only. The first click arms it, the second deletes. -->
+                    <button id="delete" class="button button-danger" type="button" hidden>
+                        Delete this image
+                    </button>
+                </div>
+                <p id="status" class="form-status" role="status"></p>
+            </form>
+        </main>
+
+        <script type="module" src="../js/upload.js"></script>
+    </body>
+</html>

@@ -44,10 +44,33 @@ export function readMediums(entry) {
 // Languages the site can name. A code row may carry its own `language`. With
 // none, the tags are read for one of these. With neither, javascript stands in.
 export const KNOWN_LANGUAGES = [
-    'javascript', 'typescript', 'python', 'java', 'c', 'cpp', 'csharp', 'go',
-    'rust', 'ruby', 'php', 'swift', 'kotlin', 'scala', 'haskell', 'elixir',
-    'clojure', 'lua', 'r', 'matlab', 'sql', 'bash', 'html', 'css', 'json',
-    'yaml', 'markdown'
+    'javascript',
+    'typescript',
+    'python',
+    'java',
+    'c',
+    'cpp',
+    'csharp',
+    'go',
+    'rust',
+    'ruby',
+    'php',
+    'swift',
+    'kotlin',
+    'scala',
+    'haskell',
+    'elixir',
+    'clojure',
+    'lua',
+    'r',
+    'matlab',
+    'sql',
+    'bash',
+    'html',
+    'css',
+    'json',
+    'yaml',
+    'markdown',
 ];
 
 const LANGUAGE_SET = new Set(KNOWN_LANGUAGES);

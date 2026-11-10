@@ -1,4 +1,5 @@
-// The contact inbox. Reads /api/messages, which the Access gate protects.
+// The contact inbox. The Access gate protects every call this page makes.
+import { api } from './api.js';
 
 const list = document.getElementById('message-list');
 const count = document.getElementById('message-count');
@@ -31,8 +32,9 @@ function card(message, onRemove) {
 
     const reply = document.createElement('a');
     reply.className = 'message-reply';
-    reply.href = `mailto:${encodeURIComponent(message.email)}`
-        + `?subject=${encodeURIComponent('Re: ' + (message.subject || 'your message'))}`;
+    reply.href =
+        `mailto:${encodeURIComponent(message.email)}` +
+        `?subject=${encodeURIComponent('Re: ' + (message.subject || 'your message'))}`;
     reply.textContent = `${message.name} <${message.email}>`;
 
     const body = document.createElement('p');
@@ -46,10 +48,9 @@ function card(message, onRemove) {
 async function remove(message, button) {
     button.disabled = true;
 
-    const response = await fetch(`/api/messages?key=${encodeURIComponent(message.key)}`,
-        { method: 'DELETE' });
-
-    if (!response.ok) {
+    try {
+        await api.deleteMessage(message.key);
+    } catch {
         button.disabled = false;
         count.textContent = 'That message did not delete. Try again.';
         return;
@@ -60,13 +61,8 @@ async function remove(message, button) {
 
 async function load() {
     try {
-        const response = await fetch('/api/messages', { cache: 'no-store' });
-        if (!response.ok) throw new Error(String(response.status));
-
-        const { messages } = await response.json();
-        count.textContent = messages.length === 1
-            ? '1 message'
-            : `${messages.length} messages`;
+        const { messages } = await api.messages();
+        count.textContent = messages.length === 1 ? '1 message' : `${messages.length} messages`;
 
         list.replaceChildren(...messages.map(message => card(message, remove)));
 

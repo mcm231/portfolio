@@ -1,28 +1,36 @@
 {
-  "name": "portfolio",
-  "main": "src/index.js",
-  "workers_dev": true,
-  "compatibility_date": "2025-01-01",
-  "assets": {
-    "directory": "./public",
-    "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page",
-    // Assets normally answer before the Worker runs. These paths must reach
-    // src/gate.js first, or the private pages would serve to anyone.
-    "run_worker_first": ["/upload", "/upload/*", "/edit", "/edit/*",
-      "/messages", "/messages/*", "/thumbnails", "/thumbnails/*"]
-  },
-  "kv_namespaces": [
-    { "binding": "IMAGE_METADATA", "id": "YOUR_KV_NAMESPACE_ID" }
-  ],
-  "r2_buckets": [
-    { "binding": "IMAGES", "bucket_name": "YOUR_R2_BUCKET_NAME" }
-  ],
-  // The /upload gate. See the Upload page section of README.md.
-  "vars": {
-    "ACCESS_TEAM_DOMAIN": "YOUR_TEAM.cloudflareaccess.com",
-    "ACCESS_AUD": "YOUR_ACCESS_APPLICATION_AUD",
-    "ACCESS_ALLOWED_EMAILS": "you@example.com"
-  }
+    "name": "portfolio",
+    "main": "src/index.js",
+    "workers_dev": true,
+    "compatibility_date": "2025-01-01",
+    "assets": {
+        "directory": "./public",
+        "binding": "ASSETS",
+        "html_handling": "auto-trailing-slash",
+        "not_found_handling": "404-page",
+        // Assets normally answer before the Worker runs. These paths must reach
+        // src/gate.js first, or the private pages would serve to anyone.
+        "run_worker_first": [
+            "/pages/upload",
+            "/pages/upload.html",
+            "/pages/upload/*",
+            "/pages/edit",
+            "/pages/edit.html",
+            "/pages/edit/*",
+            "/pages/messages",
+            "/pages/messages.html",
+            "/pages/messages/*",
+            "/pages/thumbnails",
+            "/pages/thumbnails.html",
+            "/pages/thumbnails/*",
+        ],
+    },
+    "kv_namespaces": [{ "binding": "IMAGE_METADATA", "id": "YOUR_KV_NAMESPACE_ID" }],
+    "r2_buckets": [{ "binding": "IMAGES", "bucket_name": "YOUR_R2_BUCKET_NAME" }],
+    // The /upload gate. See the Upload page section of README.md.
+    "vars": {
+        "ACCESS_TEAM_DOMAIN": "YOUR_TEAM.cloudflareaccess.com",
+        "ACCESS_AUD": "YOUR_ACCESS_APPLICATION_AUD",
+        "ACCESS_ALLOWED_EMAILS": "you@example.com",
+    },
 }

@@ -1,0 +1,111 @@
+/* Every token of the site. The only file with a raw value.
+   STYLE_GUIDE.md explains each one, and test/contrast.test.mjs checks the
+   color pairs against WCAG AA. */
+
+/* Tokens and rules follow STYLE_GUIDE.md. Read values from the tokens below.
+   Never write a raw hex value or a raw font name outside this block. */
+
+:root {
+    /* The four palette colors. Every other value derives from one of them. */
+    --teal: #17808f;
+    --space-indigo: #192a51;
+    --alice-blue: #e2eefa;
+    --amethyst-smoke: #aa78a6;
+
+    /* Roles. Teal carries the site. Amethyst appears in small marks only. */
+    --color-bg: var(--alice-blue);
+    --color-surface: #f6fafe; /* alice blue, lightened */
+    --color-surface-alt: #d4e5f5; /* alice blue, darkened */
+    --color-ink: var(--space-indigo);
+    --color-ink-muted: #5d6b8a; /* space indigo, lightened */
+    /* A divider is decoration, so it may stay soft. A control boundary must
+       meet 3 to 1, so it uses the stronger line. */
+    --color-line: #c2d6ea; /* alice blue, darkened, a divider */
+    --color-line-strong: #6f87a8; /* space indigo, lightened, a control */
+
+    /* Teal. The two light shades are decoration. Anything that carries text
+       sits on --color-brand-dark or darker, so the contrast rule holds. */
+    --color-brand: var(--teal); /* a decorative fill */
+    --color-brand-light: #45a7b3; /* teal, lightened, decorative only */
+    --color-brand-dark: #126a76; /* teal, darkened, carries text */
+    --color-brand-deep: #0e545e; /* teal, darkest, a hover */
+    --color-brand-soft: #d3e9ec; /* teal over alice blue */
+    --color-on-brand: #f6fafe; /* text on a dark teal or on the error red */
+    --veil-on-brand: rgba(246, 250, 254, 0.16);
+    --veil-on-brand-strong: rgba(246, 250, 254, 0.38);
+
+    /* The primary action is teal, because teal is the main color. */
+    --color-accent: var(--color-brand-dark);
+    --color-accent-hover: var(--color-brand-deep);
+    --color-on-accent: var(--color-on-brand);
+
+    /* Amethyst never fills a wide surface behind text. Each shade has one job. */
+    --color-mark: var(--amethyst-smoke); /* a decorative block */
+    --color-mark-line: #9a6696; /* a border, a focus ring, a rule */
+    --color-mark-text: #80507c; /* a tagline, an eyebrow, a number */
+    --color-mark-fill: #8e5c8a; /* the gallery Add button */
+    --color-mark-fill-hover: #74486f; /* that button, hovered */
+    --color-mark-soft: #e7d9e6; /* a chip fill, with ink text */
+
+    --color-error: #b23a48; /* a brick red, cool enough for alice blue */
+    --color-overlay: rgba(25, 42, 81, 0.6); /* space indigo, see through */
+    /* A caption sits over a photo of any color. At this alpha the lightest
+       possible photo still gives white text 5.2 to 1. */
+    --color-scrim: rgba(25, 42, 81, 0.72);
+    --color-scrim-flat: #5e6b86; /* the scrim over a white photo */
+
+    /* A code tile. Dark indigo, so the text reads at any tile size. */
+    --color-code-bg: #121c33; /* space indigo, darkened */
+    --color-code-text: #cfd8ea; /* alice blue, dimmed */
+    --color-code-keyword: #c79ac3; /* amethyst, lightened for a dark field */
+    --color-code-string: #76c3cc; /* teal, lightened for a dark field */
+    --color-code-comment: #8793ad; /* space indigo, lightened */
+
+    /* Placeholder tiles, shown only when the image API is unavailable. */
+    --blank-1: #cfe0e3;
+    --blank-2: #d8e6f4;
+    --blank-3: #e0d3e0;
+    --blank-4: #bfd6da;
+    --blank-5: #c9dcf0;
+    --blank-6: #d8e4e6;
+    --blank-7: #e7eef7;
+    --blank-8: #cdd9e8;
+
+    /* A medium pill and a tag pill, in the detail view. The fill is one of
+       the tile tints above, and the outline is a darker shade of it. */
+    --pill-medium-fill: var(--blank-6);
+    --pill-medium-line: #8fb2b9; /* blank-6, darkened */
+    --pill-tag-fill: var(--blank-3);
+    --pill-tag-line: #b498b3; /* blank-3, darkened */
+
+    /* Type. Placeholder stacks. */
+    --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-body: Georgia, 'Times New Roman', serif;
+
+    --text-xs: 12px;
+    --text-sm: 14px;
+    --text-md: 16px;
+    --text-lg: 20px;
+    --text-xl: 32px;
+    --text-display: clamp(1.9rem, 5.2vw, 3.9rem);
+
+    /* Space. One 4px scale. */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+
+    /* Corners are sharp. Each exception is named in STYLE_GUIDE.md. */
+    --radius: 0;
+    --radius-circle: 50%;
+    --radius-pill: 999px;
+    --radius-soft: 2px;
+
+    --menu-rail: 80px; /* solid part of the teal rail */
+    --menu-fade: 110px; /* the rail fade to its right */
+    --menu-drawer: 270px;
+}

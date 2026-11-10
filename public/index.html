@@ -1,56 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maya Malavasi</title>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body class="home">
-    <!-- Drag surface. Everything inside #plane pans together. -->
-    <main id="viewport">
-        <div id="plane">
-            <div id="mosaic" aria-hidden="true"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Maya Malavasi</title>
+        <link rel="stylesheet" href="css/tokens.css" />
+        <link rel="stylesheet" href="css/base.css" />
+        <link rel="stylesheet" href="css/components.css" />
+        <link rel="stylesheet" href="css/home.css" />
+    </head>
+    <body class="home">
+        <!-- Drag surface. Everything inside #plane pans together. -->
+        <main id="viewport">
+            <div id="plane">
+                <div id="mosaic" aria-hidden="true"></div>
 
-            <div id="card" class="card">
-                <h1 class="card-name">Maya Malavasi</h1>
-                <p class="card-tagline">Artist, Engineer, Computer Scientist, Proud Generalist</p>
-                <a class="button" href="/pages/gallery">Gallery Search</a>
+                <div id="card" class="card">
+                    <h1 class="card-name">Maya Malavasi</h1>
+                    <p class="card-tagline">
+                        Artist, Engineer, Computer Scientist, Proud Generalist
+                    </p>
+                    <a class="button" href="/pages/gallery">Gallery Search</a>
+                </div>
             </div>
+        </main>
+
+        <div id="menu-scrim"></div>
+
+        <!-- Standard drawer. The teal rail sits behind the button. -->
+        <nav id="menu" class="menu">
+            <button
+                id="menu-toggle"
+                class="menu-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="menu-panel"
+                aria-label="Open menu"
+            >
+                <span class="menu-bars" aria-hidden="true"></span>
+            </button>
+
+            <div id="menu-panel" class="menu-panel">
+                <ul>
+                    <li><a href="/pages/gallery">Gallery Search</a></li>
+                    <li><a href="/pages/about">About</a></li>
+                    <li><a href="/pages/contact">Contact</a></li>
+                    <!-- Shown only when /api/session says this visitor may upload. -->
+                    <li class="menu-private" hidden><a href="/pages/upload">Upload</a></li>
+                    <li class="menu-private" hidden><a href="/pages/edit">Edit</a></li>
+                    <li class="menu-private" hidden><a href="/pages/messages">Messages</a></li>
+                    <li class="menu-private" hidden>
+                        <a href="/pages/thumbnails">Small copies</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="view-controls">
+            <button
+                id="zoom-out"
+                class="button button-quiet button-icon"
+                type="button"
+                aria-label="Zoom out"
+            >
+                −
+            </button>
+            <button
+                id="zoom-in"
+                class="button button-quiet button-icon"
+                type="button"
+                aria-label="Zoom in"
+            >
+                +
+            </button>
+            <button id="recenter" class="button button-quiet is-hidden" type="button">
+                Recenter
+            </button>
         </div>
-    </main>
 
-    <div id="menu-scrim"></div>
-
-    <!-- Standard drawer. The teal rail sits behind the button. -->
-    <nav id="menu" class="menu">
-        <button id="menu-toggle" class="menu-toggle" type="button"
-                aria-expanded="false" aria-controls="menu-panel" aria-label="Open menu">
-            <span class="menu-bars" aria-hidden="true"></span>
-        </button>
-
-        <div id="menu-panel" class="menu-panel">
-            <ul>
-                <li><a href="/pages/gallery">Gallery Search</a></li>
-                <li><a href="/pages/about">About</a></li>
-                <li><a href="/pages/contact">Contact</a></li>
-                <!-- Shown only when /api/session says this visitor may upload. -->
-                <li class="menu-private" hidden><a href="/upload">Upload</a></li>
-                <li class="menu-private" hidden><a href="/edit">Edit</a></li>
-                <li class="menu-private" hidden><a href="/messages">Messages</a></li>
-                <li class="menu-private" hidden><a href="/thumbnails">Small copies</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <div class="view-controls">
-        <button id="zoom-out" class="button button-quiet button-icon" type="button"
-                aria-label="Zoom out">−</button>
-        <button id="zoom-in" class="button button-quiet button-icon" type="button"
-                aria-label="Zoom in">+</button>
-        <button id="recenter" class="button button-quiet is-hidden" type="button">Recenter</button>
-    </div>
-
-    <script type="module" src="js/home.js"></script>
-</body>
+        <script type="module" src="js/home.js"></script>
+    </body>
 </html>

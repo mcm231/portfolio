@@ -12,16 +12,17 @@
 // of distance from the center, which grows the wall outward from the title.
 
 import { buildCodeBlock } from './code-tile.js';
-import { readImages, previewKey } from './row.js';
+import { readImages, previewKey } from './shared/row.js';
+import { api } from './api.js';
 
-const CELL = 118;          // px, one grid unit
-const GAP = 3;             // px of page showing between two tiles
+const CELL = 118; // px, one grid unit
+const GAP = 3; // px of page showing between two tiles
 const FIELD_SCALE_X = 2.4; // field width, in screens
 const FIELD_SCALE_Y = 2.8; // field height, in screens
 const MAX_TILES = 900;
-const OFFLINE_TILES = 90;  // panels drawn when the API does not answer
+const OFFLINE_TILES = 90; // panels drawn when the API does not answer
 const EDGE_OPACITY = 0.72; // opacity of the outermost tiles
-const LARGE_FIRST = 3;     // tiles nearest the card that prefer a big shape
+const LARGE_FIRST = 3; // tiles nearest the card that prefer a big shape
 
 // Tile footprints in cells, [cols, rows], grouped by the shape of the image
 // they can hold. A photo only ever lands in a tile of its own orientation, so
@@ -31,27 +32,41 @@ const LARGE_FIRST = 3;     // tiles nearest the card that prefer a big shape
 // two to one, because a longer band reads as a strip rather than a picture.
 const SHAPES = {
     landscape: [
-        [2, 1], [2, 1],
-        [3, 2], [3, 2], [3, 2],
-        [4, 3], [4, 3],
-        [4, 2]
+        [2, 1],
+        [2, 1],
+        [3, 2],
+        [3, 2],
+        [3, 2],
+        [4, 3],
+        [4, 3],
+        [4, 2],
     ],
     portrait: [
-        [1, 2], [1, 2],
-        [2, 3], [2, 3], [2, 3],
-        [3, 4], [3, 4],
-        [2, 4]
+        [1, 2],
+        [1, 2],
+        [2, 3],
+        [2, 3],
+        [2, 3],
+        [3, 4],
+        [3, 4],
+        [2, 4],
     ],
     square: [
-        [1, 1], [1, 1], [1, 1],
-        [2, 2], [2, 2], [2, 2],
-        [3, 3]
+        [1, 1],
+        [1, 1],
+        [1, 1],
+        [2, 2],
+        [2, 2],
+        [2, 2],
+        [3, 3],
     ],
     // A block of code needs room to read, so one cell is too small.
     code: [
-        [2, 2], [2, 2], [2, 2],
-        [3, 3]
-    ]
+        [2, 2],
+        [2, 2],
+        [2, 2],
+        [3, 3],
+    ],
 };
 
 // An image inside these ratios reads as square, so a square tile suits it.
@@ -60,8 +75,10 @@ const SQUARE_HIGH = 1.1;
 
 // Biggest first, for the few tiles closest to the card.
 const LARGE_SHAPES = Object.fromEntries(
-    Object.entries(SHAPES).map(([kind, list]) =>
-        [kind, [...list].sort((a, b) => b[0] * b[1] - a[0] * a[1])])
+    Object.entries(SHAPES).map(([kind, list]) => [
+        kind,
+        [...list].sort((a, b) => b[0] * b[1] - a[0] * a[1]),
+    ])
 );
 
 const KINDS = ['landscape', 'portrait', 'square'];
@@ -91,7 +108,7 @@ function shapeKind(entry, random) {
     return 'square';
 }
 
-// Panel colors live in css/styles.css as --blank-1 .. --blank-N. A row may
+// Panel colors live in css/tokens.css as --blank-1 .. --blank-N. A row may
 // name one with a `panelColor` number. Otherwise the wall picks one.
 const PANEL_COLORS = 8;
 
@@ -123,23 +140,22 @@ function createGrid(cols, rows) {
         cols,
         rows,
         isFree(col, row) {
-            return col >= 0 && row >= 0 && col < cols && row < rows
-                && taken[row * cols + col] === 0;
+            return (
+                col >= 0 && row >= 0 && col < cols && row < rows && taken[row * cols + col] === 0
+            );
         },
         fits(col, row, w, h) {
             if (col + w > cols || row + h > rows) return false;
 
             for (let r = row; r < row + h; r++)
-                for (let c = col; c < col + w; c++)
-                    if (taken[r * cols + c]) return false;
+                for (let c = col; c < col + w; c++) if (taken[r * cols + c]) return false;
 
             return true;
         },
         occupy(col, row, w, h) {
             for (let r = row; r < row + h; r++)
-                for (let c = col; c < col + w; c++)
-                    taken[r * cols + c] = 1;
-        }
+                for (let c = col; c < col + w; c++) taken[r * cols + c] = 1;
+        },
     };
 }
 
@@ -147,7 +163,7 @@ function createGrid(cols, rows) {
 function cardSpan(cardRect) {
     return {
         cols: Math.max(1, Math.ceil(cardRect.w / CELL)),
-        rows: Math.max(1, Math.ceil(cardRect.h / CELL))
+        rows: Math.max(1, Math.ceil(cardRect.h / CELL)),
     };
 }
 
@@ -164,7 +180,7 @@ function placeCard(grid, span) {
         x: (col - grid.cols / 2) * CELL,
         y: (row - grid.rows / 2) * CELL,
         w: span.cols * CELL - GAP,
-        h: span.rows * CELL - GAP
+        h: span.rows * CELL - GAP,
     };
 }
 
@@ -177,8 +193,7 @@ function cellsByDistance(cols, rows) {
             cells.push({
                 col,
                 row,
-                distance: Math.hypot((col + 0.5 - cols / 2) * CELL,
-                                     (row + 0.5 - rows / 2) * CELL)
+                distance: Math.hypot((col + 0.5 - cols / 2) * CELL, (row + 0.5 - rows / 2) * CELL),
             });
 
     return cells.sort((a, b) => a.distance - b.distance);
@@ -221,8 +236,10 @@ function layOutTiles(grid, random, kinds) {
             y: (cell.row - rows / 2) * CELL,
             w: w * CELL - GAP,
             h: h * CELL - GAP,
-            distance: Math.hypot((cell.col + w / 2 - cols / 2) * CELL,
-                                 (cell.row + h / 2 - rows / 2) * CELL)
+            distance: Math.hypot(
+                (cell.col + w / 2 - cols / 2) * CELL,
+                (cell.row + h / 2 - rows / 2) * CELL
+            ),
         });
     };
 
@@ -232,8 +249,14 @@ function layOutTiles(grid, random, kinds) {
         if (tiles.length >= kinds.length) break;
         if (!grid.isFree(cell.col, cell.row)) continue;
 
-        const shape = chooseShape(grid, cell.col, cell.row, random,
-            tiles.length, kinds[tiles.length]);
+        const shape = chooseShape(
+            grid,
+            cell.col,
+            cell.row,
+            random,
+            tiles.length,
+            kinds[tiles.length]
+        );
         if (shape) place(cell, shape[0], shape[1]);
     }
 
@@ -268,7 +291,7 @@ function buildTile(tile, entry, maxDistance, random) {
         `--y:${Math.round(tile.y)}px`,
         `--w:${tile.w}px`,
         `--h:${tile.h}px`,
-        `--o:${opacity.toFixed(2)}`
+        `--o:${opacity.toFixed(2)}`,
     ].join(';');
 
     const kind = tileKind(entry);
@@ -277,7 +300,7 @@ function buildTile(tile, entry, maxDistance, random) {
         // The small copy, when the row has one. The wall never needs more.
         const cover = readImages(entry)[0];
         const img = document.createElement('img');
-        img.src = `/api/images?id=${encodeURIComponent(previewKey(cover))}`;
+        img.src = api.imageUrl(previewKey(cover));
         img.alt = entry.name || '';
         img.loading = 'lazy';
         img.decoding = 'async';
@@ -295,9 +318,10 @@ function buildTile(tile, entry, maxDistance, random) {
 
     // A panel. The row may name a color, or the wall picks one.
     const named = Number(entry && entry.panelColor);
-    const index = Number.isInteger(named) && named >= 1 && named <= PANEL_COLORS
-        ? named
-        : Math.floor(random() * PANEL_COLORS) + 1;
+    const index =
+        Number.isInteger(named) && named >= 1 && named <= PANEL_COLORS
+            ? named
+            : Math.floor(random() * PANEL_COLORS) + 1;
 
     figure.classList.add('is-panel');
     figure.style.setProperty('--panel', `var(--blank-${index})`);
@@ -310,10 +334,7 @@ function buildTile(tile, entry, maxDistance, random) {
 // a dead API mean different things, so they must not look alike.
 async function loadEntries() {
     try {
-        const response = await fetch('/api/image-metadata');
-        if (!response.ok) return null;
-
-        const entries = await response.json();
+        const entries = await api.rows();
         return Array.isArray(entries) ? entries.filter(Boolean) : null;
     } catch {
         return null;
@@ -325,8 +346,8 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
     const cardBox = card.getBoundingClientRect();
     const span = cardSpan({ w: cardBox.width, h: cardBox.height });
 
-    let cols = Math.ceil(window.innerWidth * FIELD_SCALE_X / CELL);
-    let rows = Math.ceil(window.innerHeight * FIELD_SCALE_Y / CELL);
+    let cols = Math.ceil((window.innerWidth * FIELD_SCALE_X) / CELL);
+    let rows = Math.ceil((window.innerHeight * FIELD_SCALE_Y) / CELL);
 
     // Match the parity of the card span, so the card lands dead center.
     if ((cols - span.cols) % 2 !== 0) cols += 1;
@@ -341,9 +362,10 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
 
     // No answer means the real count is unknown, so the wall fills with
     // panels. An empty database is different: it shows nothing.
-    const shown = entries === null
-        ? Array.from({ length: OFFLINE_TILES }, () => ({}))
-        : entries.slice(0, MAX_TILES);
+    const shown =
+        entries === null
+            ? Array.from({ length: OFFLINE_TILES }, () => ({}))
+            : entries.slice(0, MAX_TILES);
 
     const kinds = shown.map(entry => shapeKind(entry, random));
 
@@ -369,6 +391,6 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
         images: shown.filter(entry => tileKind(entry) === 'image').length,
         code: shown.filter(entry => tileKind(entry) === 'code').length,
         panels: shown.filter(entry => tileKind(entry) === 'panel').length,
-        card: cardRect
+        card: cardRect,
     };
 }

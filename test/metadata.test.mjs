@@ -1,58 +1,71 @@
 // The read path of /api/image-metadata, and what the size backfill writes
 // back. The backfill must never turn a stored field into a guessed one.
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
-const { onRequest } = await import(`${ROOT}/src/api/image-metadata.js`);
+const { readRows } = await import(`${ROOT}/src/api/image-metadata.js`);
 
 const results = [];
-const check = (label, got, want) => results.push([label, JSON.stringify(got), JSON.stringify(want)]);
+const check = (label, got, want) =>
+    results.push([label, JSON.stringify(got), JSON.stringify(want)]);
 
 // 8 byte signature, then an IHDR chunk that says 4 by 3 pixels.
 const PNG_HEADER = new Uint8Array([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-  0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52,
-  0, 0, 0, 4, 0, 0, 0, 3,
-  8, 2, 0, 0, 0, 0, 0, 0
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 4,
+    0, 0, 0, 3, 8, 2, 0, 0, 0, 0, 0, 0,
 ]);
 
 // A code project that carries a picture, and no stored size. Reading it runs
 // the backfill, which is where the kind used to disappear.
 const CODE_ROW = {
-  kind: 'code',
-  name: 'Portfolio site',
-  tags: ['javascript'],
-  mediums: [],
-  language: 'javascript',
-  snippet: 'const a = 1;',
-  images: [{ key: 'portfolio.png' }]
+    kind: 'code',
+    name: 'Portfolio site',
+    tags: ['javascript'],
+    mediums: [],
+    language: 'javascript',
+    snippet: 'const a = 1;',
+    images: [{ key: 'portfolio.png' }],
 };
 
 // A row written before the lists: one medium string, one filename, no kind.
 const OLD_ROW = {
-  name: 'Piece One',
-  filename: 'piece-one.jpg',
-  medium: 'Ink',
-  tags: ['watercolor']
+    name: 'Piece One',
+    filename: 'piece-one.jpg',
+    medium: 'Ink',
+    tags: ['watercolor'],
 };
 
 function stubEnv(rows) {
-  const kv = new Map(Object.entries(rows).map(([k, v]) => [k, JSON.stringify(v)]));
-  return {
-    kv,
-    IMAGE_METADATA: {
-      async get(k) { return kv.get(k) ?? null; },
-      async put(k, v) { kv.set(k, v); },
-      async list() { return { keys: [...kv.keys()].map(name => ({ name })), list_complete: true }; }
-    },
-    IMAGES: {
-      async head() { return {}; },
-      async get() { return { async arrayBuffer() { return PNG_HEADER.buffer; } }; }
-    }
-  };
+    const kv = new Map(Object.entries(rows).map(([k, v]) => [k, JSON.stringify(v)]));
+    return {
+        kv,
+        IMAGE_METADATA: {
+            async get(k) {
+                return kv.get(k) ?? null;
+            },
+            async put(k, v) {
+                kv.set(k, v);
+            },
+            async list() {
+                return { keys: [...kv.keys()].map(name => ({ name })), list_complete: true };
+            },
+        },
+        IMAGES: {
+            async head() {
+                return {};
+            },
+            async get() {
+                return {
+                    async arrayBuffer() {
+                        return PNG_HEADER.buffer;
+                    },
+                };
+            },
+        },
+    };
 }
 
 async function read(env, path) {
-  const res = await onRequest({ request: new Request(`https://portfolio.example${path}`), env });
-  return { status: res.status, body: await res.json() };
+    const res = await readRows(new Request(`https://portfolio.example${path}`), env);
+    return { status: res.status, body: await res.json() };
 }
 
 // One row, by id.
@@ -95,9 +108,11 @@ check('the stored row invents no kind', saved.kind, undefined);
 
 let failed = 0;
 for (const [label, got, want] of results) {
-  const pass = got === want;
-  if (!pass) failed++;
-  console.log(`${pass ? 'PASS' : 'FAIL'}  ${label.padEnd(38)} ${got}${pass ? '' : `  want ${want}`}`);
+    const pass = got === want;
+    if (!pass) failed++;
+    console.log(
+        `${pass ? 'PASS' : 'FAIL'}  ${label.padEnd(38)} ${got}${pass ? '' : `  want ${want}`}`
+    );
 }
 console.log(failed === 0 ? '\nall cases pass' : `\n${failed} case(s) failed`);
 process.exit(failed === 0 ? 0 : 1);

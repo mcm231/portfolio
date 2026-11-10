@@ -7,53 +7,77 @@ const kv = new Map();
 const r2 = new Map();
 
 const env = {
-  ACCESS_LOCAL_BYPASS: 'true',           // host below is localhost
-  IMAGE_METADATA: {
-    async get(k) { return kv.get(k) ?? null; },
-    async put(k, v) { kv.set(k, v); },
-    async delete(k) { kv.delete(k); },
-    async list() { return { keys: [...kv.keys()].map(name => ({ name })), list_complete: true }; }
-  },
-  IMAGES: {
-    async head(k) { return r2.has(k) ? {} : null; },
-    async put(k, v) { r2.set(k, v); },
-    async delete(k) { r2.delete(k); }
-  },
-  ASSETS: { async fetch() { return new Response('asset'); } }
+    ACCESS_LOCAL_BYPASS: 'true', // host below is localhost
+    IMAGE_METADATA: {
+        async get(k) {
+            return kv.get(k) ?? null;
+        },
+        async put(k, v) {
+            kv.set(k, v);
+        },
+        async delete(k) {
+            kv.delete(k);
+        },
+        async list() {
+            return { keys: [...kv.keys()].map(name => ({ name })), list_complete: true };
+        },
+    },
+    IMAGES: {
+        async head(k) {
+            return r2.has(k) ? {} : null;
+        },
+        async put(k, v) {
+            r2.set(k, v);
+        },
+        async delete(k) {
+            r2.delete(k);
+        },
+    },
+    ASSETS: {
+        async fetch() {
+            return new Response('asset');
+        },
+    },
 };
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
 
 async function upload(fields = {}) {
-  const body = new FormData();
-  if (!fields.noFile) {
-    const names = fields.fileNames ?? [fields.fileName ?? 'shot.png'];
-    for (const fileName of names) {
-      body.append('file', new File([PNG], fileName, { type: 'image/png' }));
-      // The browser sends a small copy beside each picture. An empty part
-      // means it could not read that one.
-      body.append('thumb', fields.noThumbs
-        ? new Blob([])
-        : new Blob([new Uint8Array(32)], { type: 'image/webp' }));
+    const body = new FormData();
+    if (!fields.noFile) {
+        const names = fields.fileNames ?? [fields.fileName ?? 'shot.png'];
+        for (const fileName of names) {
+            body.append('file', new File([PNG], fileName, { type: 'image/png' }));
+            // The browser sends a small copy beside each picture. An empty part
+            // means it could not read that one.
+            body.append(
+                'thumb',
+                fields.noThumbs
+                    ? new Blob([])
+                    : new Blob([new Uint8Array(32)], { type: 'image/webp' })
+            );
+        }
     }
-  }
-  const defaults = { name: 'Piece', dateCreated: '2026-01-01' };
-  for (const [k, v] of Object.entries({ ...defaults, ...fields })) {
-    if (['fileName', 'fileNames', 'tags', 'mediums', 'noFile', 'noThumbs'].includes(k)) continue;
-    if (v !== undefined) body.set(k, String(v));
-  }
-  for (const tag of fields.tags ?? ['watercolor']) body.append('tags', tag);
-  for (const medium of fields.mediums ?? ['ink']) body.append('mediums', medium);
+    const defaults = { name: 'Piece', dateCreated: '2026-01-01' };
+    for (const [k, v] of Object.entries({ ...defaults, ...fields })) {
+        if (['fileName', 'fileNames', 'tags', 'mediums', 'noFile', 'noThumbs'].includes(k))
+            continue;
+        if (v !== undefined) body.set(k, String(v));
+    }
+    for (const tag of fields.tags ?? ['watercolor']) body.append('tags', tag);
+    for (const medium of fields.mediums ?? ['ink']) body.append('mediums', medium);
 
-  const res = await worker.fetch(
-    new Request('http://localhost/api/upload', { method: 'POST', body }),
-    env, { waitUntil() {} }
-  );
-  return { status: res.status, json: await res.json() };
+    const res = await worker.fetch(
+        new Request('http://localhost/api/upload', { method: 'POST', body }),
+        env,
+        { waitUntil() {} }
+    );
+    return { status: res.status, json: await res.json() };
 }
 
 const results = [];
-const check = (label, got, want) => results.push([label, JSON.stringify(got), JSON.stringify(want)]);
+const check = (label, got, want) =>
+    results.push([label, JSON.stringify(got), JSON.stringify(want)]);
 
 const first = await upload();
 check('first upload keeps the id', first.json.id, 'piece');
@@ -80,7 +104,13 @@ check('overwrite wrote the entry', JSON.parse(kv.get('piece')).description, 'new
 const fresh = await upload({ name: 'Other Work', id: '' });
 check('a new name is untouched', fresh.json.id, 'other-work');
 
-check('five ids exist', [...kv.keys()].sort(), ['other-work', 'piece', 'piece-2', 'piece-3', 'piece-4']);
+check('five ids exist', [...kv.keys()].sort(), [
+    'other-work',
+    'piece',
+    'piece-2',
+    'piece-3',
+    'piece-4',
+]);
 // Each row writes two objects: the picture, and its small copy.
 check('r2 holds two per row', r2.size, kv.size * 2);
 
@@ -91,8 +121,11 @@ check('the id comes from the file', noName.json.id, 'quiet-study');
 check('the stored name is empty', JSON.parse(kv.get('quiet-study')).name, '');
 
 const noNameNoFile = await upload({ name: '', noFile: true, id: '', overwrite: 'true' });
-check('nothing to build an id fails', noNameNoFile.json.error,
-  'Type an id. Nothing else gives one.');
+check(
+    'nothing to build an id fails',
+    noNameNoFile.json.error,
+    'Type an id. Nothing else gives one.'
+);
 
 const beforeReject = r2.size;
 const missingTag = await upload({ tags: [] });
@@ -102,15 +135,14 @@ check('a rejected upload adds nothing', r2.size, beforeReject);
 const missingMedium = await upload({ mediums: [] });
 check('no medium is rejected', missingMedium.json.error, 'Name at least one medium.');
 
-
 // Any term is allowed. It is cleaned, not checked against a list.
 const freeTerms = await upload({
-  id: 'free-terms', name: 'Free Terms',
-  tags: ['Brand New Tag', 'brand new tag', '  SECOND  '],
-  mediums: ['Oil Paint', 'oil_paint']
+    id: 'free-terms',
+    name: 'Free Terms',
+    tags: ['Brand New Tag', 'brand new tag', '  SECOND  '],
+    mediums: ['Oil Paint', 'oil_paint'],
 });
-check('a new tag is kept', JSON.parse(kv.get('free-terms')).tags,
-  ['brand-new-tag', 'second']);
+check('a new tag is kept', JSON.parse(kv.get('free-terms')).tags, ['brand-new-tag', 'second']);
 check('a new medium is kept', JSON.parse(kv.get('free-terms')).mediums, ['oil-paint']);
 
 // ---------- Edit mode: a save with no new file ----------
@@ -118,8 +150,12 @@ check('a new medium is kept', JSON.parse(kv.get('free-terms')).mediums, ['oil-pa
 const before = JSON.parse(kv.get('piece'));
 const beforeEdit = r2.size;
 const edited = await upload({
-  noFile: true, id: 'piece', overwrite: 'true',
-  name: 'Renamed Piece', mediums: ['Charcoal'], tags: ['charcoal']
+    noFile: true,
+    id: 'piece',
+    overwrite: 'true',
+    name: 'Renamed Piece',
+    mediums: ['Charcoal'],
+    tags: ['charcoal'],
 });
 const after = JSON.parse(kv.get('piece'));
 
@@ -149,29 +185,42 @@ check('an unreadable picture stores none', JSON.parse(kv.get('no-copy')).images[
 check('and writes no object', r2.has('thumbs/no-copy.png.webp'), false);
 
 // A delete takes the copy with the original.
-await worker.fetch(new Request('http://localhost/api/upload?id=with-copy',
-  { method: 'DELETE' }), env, { waitUntil() {} });
+await worker.fetch(
+    new Request('http://localhost/api/upload?id=with-copy', { method: 'DELETE' }),
+    env,
+    { waitUntil() {} }
+);
 check('a delete clears the original', r2.has('with-copy.png'), false);
 check('a delete clears the copy', r2.has('thumbs/with-copy.png.webp'), false);
 
 // ---------- Several pictures on one row ----------
 
 const many = await upload({
-  id: 'three-shots', name: 'Three shots',
-  fileNames: ['one.png', 'two.png', 'three.png']
+    id: 'three-shots',
+    name: 'Three shots',
+    fileNames: ['one.png', 'two.png', 'three.png'],
 });
 const manyRow = JSON.parse(kv.get('three-shots'));
 
 check('all three are stored', manyRow.images.length, 3);
 check('the cover takes the plain id', manyRow.images[0].key, 'three-shots.png');
-check('the rest are numbered',
-  manyRow.images.slice(1).map(i => i.key), ['three-shots-2.png', 'three-shots-3.png']);
-check('all three objects exist',
-  manyRow.images.every(i => r2.has(i.key)), true);
+check(
+    'the rest are numbered',
+    manyRow.images.slice(1).map(i => i.key),
+    ['three-shots-2.png', 'three-shots-3.png']
+);
+check(
+    'all three objects exist',
+    manyRow.images.every(i => r2.has(i.key)),
+    true
+);
 
 // An edit with no new file keeps every picture.
 const keptAll = await upload({
-  noFile: true, id: 'three-shots', overwrite: 'true', name: 'Three shots, renamed'
+    noFile: true,
+    id: 'three-shots',
+    overwrite: 'true',
+    name: 'Three shots, renamed',
 });
 check('an edit keeps all three', JSON.parse(kv.get('three-shots')).images.length, 3);
 check('an edit adds no object', keptAll.status, 200);
@@ -182,20 +231,27 @@ check('a new set replaces the old', JSON.parse(kv.get('three-shots')).images.len
 
 // A delete takes every picture.
 const beforeDelete = r2.size;
-await worker.fetch(new Request('http://localhost/api/upload?id=three-shots',
-  { method: 'DELETE' }), env, { waitUntil() {} });
+await worker.fetch(
+    new Request('http://localhost/api/upload?id=three-shots', { method: 'DELETE' }),
+    env,
+    { waitUntil() {} }
+);
 check('a delete clears the row', kv.has('three-shots'), false);
 check('a delete clears both objects', r2.size, beforeDelete - 2);
 
 // ---------- A code project ----------
 
 const project = await upload({
-  noFile: true, kind: 'code', id: 'portfolio-site', name: 'Portfolio site',
-  tags: ['javascript'], mediums: ['web'],
-  repoUrl: 'https://github.com/maya/portfolio',
-  liveUrl: 'https://portfolio.example',
-  language: 'JavaScript',
-  snippet: 'export const hello = () => "hi";'
+    noFile: true,
+    kind: 'code',
+    id: 'portfolio-site',
+    name: 'Portfolio site',
+    tags: ['javascript'],
+    mediums: ['web'],
+    repoUrl: 'https://github.com/maya/portfolio',
+    liveUrl: 'https://portfolio.example',
+    language: 'JavaScript',
+    snippet: 'export const hello = () => "hi";',
 });
 const codeRow = JSON.parse(kv.get('portfolio-site'));
 
@@ -209,19 +265,28 @@ check('it keeps the snippet', codeRow.snippet, 'export const hello = () => "hi";
 
 // The stored snippet keeps every indent, so the shape of the code survives.
 const indented = await upload({
-  noFile: true, kind: 'code', id: 'indented', name: 'Indented',
-  snippet: '\n    def go():\n        return 1   \n\n'
+    noFile: true,
+    kind: 'code',
+    id: 'indented',
+    name: 'Indented',
+    snippet: '\n    def go():\n        return 1   \n\n',
 });
 check('the stored indent survives', indented.status, 201);
-check('the first line keeps its spaces',
-  JSON.parse(kv.get('indented')).snippet, '    def go():\n        return 1');
+check(
+    'the first line keeps its spaces',
+    JSON.parse(kv.get('indented')).snippet,
+    '    def go():\n        return 1'
+);
 check('a code row has no picture', codeRow.images, []);
 check('a code row has no medium', codeRow.mediums, []);
 
 // A medium sent with a code row is dropped, not stored.
 const sentMedium = await upload({
-  noFile: true, kind: 'code', id: 'ignores-medium', name: 'Ignores medium',
-  mediums: ['web', 'tooling']
+    noFile: true,
+    kind: 'code',
+    id: 'ignores-medium',
+    name: 'Ignores medium',
+    mediums: ['web', 'tooling'],
 });
 check('a code row needs no medium', sentMedium.status, 201);
 check('a sent medium is dropped', JSON.parse(kv.get('ignores-medium')).mediums, []);
@@ -232,8 +297,11 @@ check('an image row still needs one', noMediumImage.json.error, 'Name at least o
 
 // A link that is not http or https is refused.
 const unsafe = await upload({
-  noFile: true, kind: 'code', id: 'unsafe-link', name: 'Unsafe',
-  repoUrl: 'javascript:alert(1)'
+    noFile: true,
+    kind: 'code',
+    id: 'unsafe-link',
+    name: 'Unsafe',
+    repoUrl: 'javascript:alert(1)',
 });
 check('a javascript url is dropped', JSON.parse(kv.get('unsafe-link')).repoUrl, '');
 
@@ -243,10 +311,16 @@ check('an image row still needs art', noPicture.json.error, 'Choose an image fil
 
 // A code project with a screenshot keeps it.
 const withShot = await upload({
-  kind: 'code', id: 'with-shot', name: 'With a shot', fileName: 'shot.png'
+    kind: 'code',
+    id: 'with-shot',
+    name: 'With a shot',
+    fileName: 'shot.png',
 });
-check('a code row may carry a picture',
-  JSON.parse(kv.get('with-shot')).images[0].key, 'with-shot.png');
+check(
+    'a code row may carry a picture',
+    JSON.parse(kv.get('with-shot')).images[0].key,
+    'with-shot.png'
+);
 
 // A kind the form never sends falls back to image.
 const odd = await upload({ kind: 'nonsense', id: 'odd-kind', name: 'Odd' });
@@ -255,11 +329,14 @@ check('an unknown kind becomes image', JSON.parse(kv.get('odd-kind')).kind, 'ima
 // ---------- Delete ----------
 
 async function remove(id) {
-  const res = await worker.fetch(
-    new Request(`http://localhost/api/upload?id=${encodeURIComponent(id)}`, { method: 'DELETE' }),
-    env, { waitUntil() {} }
-  );
-  return { status: res.status, json: await res.json() };
+    const res = await worker.fetch(
+        new Request(`http://localhost/api/upload?id=${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+        }),
+        env,
+        { waitUntil() {} }
+    );
+    return { status: res.status, json: await res.json() };
 }
 
 const gone = await remove('piece');
@@ -275,14 +352,19 @@ const noId = await remove('');
 check('delete needs an id', noId.status, 400);
 
 const methodCheck = await worker.fetch(
-  new Request('http://localhost/api/upload', { method: 'PUT' }), env, { waitUntil() {} });
+    new Request('http://localhost/api/upload', { method: 'PUT' }),
+    env,
+    { waitUntil() {} }
+);
 check('PUT is rejected', methodCheck.status, 405);
 
 let failed = 0;
 for (const [label, got, want] of results) {
-  const pass = got === want;
-  if (!pass) failed++;
-  console.log(`${pass ? 'PASS' : 'FAIL'}  ${label.padEnd(30)} ${got}${pass ? '' : `  want ${want}`}`);
+    const pass = got === want;
+    if (!pass) failed++;
+    console.log(
+        `${pass ? 'PASS' : 'FAIL'}  ${label.padEnd(30)} ${got}${pass ? '' : `  want ${want}`}`
+    );
 }
 console.log(failed === 0 ? '\nall cases pass' : `\n${failed} case(s) failed`);
 process.exit(failed === 0 ? 0 : 1);

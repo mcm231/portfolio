@@ -165,3 +165,13 @@ messages and small copies should be gated behind the same permissions as edit an
 this codebase has been coded mostly by claude, with minimal human review. In other words, it's very likely a spaghetti mess. I have created a file called ARCHITECTURE_GUIDE.md. Ask me questions to help me fill it out. Areas of interest: comments, file connections, back-end layers, back-end access (through specific files), UI component organization, splitting pages into organized sections, reusing components, using libraries, front-end layers, name conventions, and any other pertinent areas to specify
 Go for it. But please also write/rewrite the Architecture guide and all previous files using the /no-ai-slop skill
 yes, fix the backfillSizes that strips the stored kind
+Big change: go through this entire code repository and fix everything to align with the architecture guide and the data model guide.
+Big change: go through this entire code repository and fix everything to align with the architecture guide and the data model guide. Test several times to ensure nothing breaks, and I will manually test the visual gate myself
+continue the refactor
+<task-notification>
+<task-id>bg4oo3t87</task-id>
+<task-id>btheyd3g3</task-id>
+<task-id>__orphan_summary__:shell</task-id>
+<status>stopped</status>
+<summary>2 background shell command task(s) from the previous session have no completion record. They may have been stopped (via the UI, Monitor timeout, or agent teardown — these leave no transcript marker), or they may have been running when the previous Claude Code process exited. They have been marked stopped. Task ids: bg4oo3t87, btheyd3g3. Task ids in this notification beginning with "__orphan_summary" are internal scan markers, not tasks.</summary>
+</task-notification>
