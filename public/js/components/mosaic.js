@@ -12,8 +12,8 @@
 // of distance from the center, which grows the wall outward from the title.
 
 import { buildCodeBlock } from './code-tile.js';
-import { readImages, previewKey } from './shared/row.js';
-import { api } from './api.js';
+import { readImages, previewKey } from '../shared/row.js';
+import { api } from '../api.js';
 
 const CELL = 118; // px, one grid unit
 const GAP = 3; // px of page showing between two tiles

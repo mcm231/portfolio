@@ -127,7 +127,7 @@ One 4px scale. Every margin, padding, and gap uses a step.
 `--space-5` 24px, `--space-6` 32px, `--space-7` 48px, `--space-8` 64px.
 
 The photo wall is the one place with a fixed pixel gutter. It is 3px, and
-`js/mosaic.js` owns it.
+`js/components/mosaic.js` owns it.
 
 ## Side menu
 
@@ -146,8 +146,9 @@ button when the drawer closes. The button carries `aria-expanded` and
 
 ## Loading
 
-A page that shows pictures opens behind a cover. `js/loading-screen.js` builds
-it, and `css/components.css` holds the look. The rules:
+A page that shows pictures opens behind a cover.
+`js/components/loading-screen.js` builds it, and `css/components.css` holds the
+look. The rules:
 
 1. The cover fills the window and hides the page under it.
 2. A block of 16 squares fills from the middle outward.

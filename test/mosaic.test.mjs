@@ -42,7 +42,7 @@ function stubDom() {
 }
 stubDom();
 
-const { renderMosaic } = await import(`${ROOT}/public/js/mosaic.js`);
+const { renderMosaic } = await import(`${ROOT}/public/js/components/mosaic.js`);
 
 const CELL = 118,
     GAP = 3;

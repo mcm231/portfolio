@@ -35,14 +35,14 @@ the same commit that moves the code.
 
 ### The front end
 
-| Layer       | Lives in                | Owns                    |
-| ----------- | ----------------------- | ----------------------- |
-| Page        | `public/pages/*.html`   | The markup of one page  |
-| Page script | `public/js/<page>.js`   | The DOM of one page     |
-| Component   | `public/js/*.js`        | One reusable behavior   |
-| Client      | `public/js/api.js`      | Every call to `/api/*`  |
-| Shared rule | `public/js/shared/*.js` | A rule both sides apply |
-| Style       | `public/css/*.css`      | The look                |
+| Layer       | Lives in                    | Owns                    |
+| ----------- | --------------------------- | ----------------------- |
+| Page        | `public/pages/*.html`       | The markup of one page  |
+| Page script | `public/js/<page>.js`       | The DOM of one page     |
+| Component   | `public/js/components/*.js` | One reusable behavior   |
+| Client      | `public/js/api.js`          | Every call to `/api/*`  |
+| Shared rule | `public/js/shared/*.js`     | A rule both sides apply |
+| Style       | `public/css/*.css`          | The look                |
 
 ### One direction
 
@@ -195,20 +195,25 @@ takes the name of its file.
 
 ### Components
 
-A component exports a factory or a render function. It takes its elements and
-its data as arguments, and it returns a value or a handle.
+`public/js/components/` holds every component. A component exports a factory or
+a render function. It takes its elements and its data as arguments, and it
+returns a value or a handle.
 
-| Module              | Exports                       |
-| ------------------- | ----------------------------- |
-| `pan.js`            | `createPan`                   |
-| `term-field.js`     | `createTermField`             |
-| `mosaic.js`         | `renderMosaic`                |
-| `code-tile.js`      | `buildCodeBlock`              |
-| `gallery-page.js`   | `mountGallery`, `GalleryPage` |
-| `loading-screen.js` | `createLoadingScreen`         |
+| Module                         | Exports                       |
+| ------------------------------ | ----------------------------- |
+| `components/pan.js`            | `createPan`                   |
+| `components/term-field.js`     | `createTermField`             |
+| `components/mosaic.js`         | `renderMosaic`                |
+| `components/code-tile.js`      | `buildCodeBlock`              |
+| `components/gallery-page.js`   | `mountGallery`, `GalleryPage` |
+| `components/loading-screen.js` | `createLoadingScreen`         |
 
 A behavior that two pages use becomes a component. A behavior that one page uses
 stays in the page script until a second page needs it.
+
+A page script imports a component with `./components/<name>.js`. A component
+imports a sibling component with `./<name>.js`, and it reaches the client or a
+shared rule with `../`.
 
 ### The API client
 

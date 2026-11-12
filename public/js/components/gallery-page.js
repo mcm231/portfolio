@@ -8,8 +8,8 @@
 // the exception. The page loads it, so React and ReactDOM are globals here.
 // Everything else arrives as an import.
 import { buildCodeBlock } from './code-tile.js';
-import { readImages, readParagraphs, previewKey } from './shared/row.js';
-import { api } from './api.js';
+import { readImages, readParagraphs, previewKey } from '../shared/row.js';
+import { api } from '../api.js';
 
 // The first entry is the default filter type. A `vocabulary` key names the
 // list of used terms that suggests values for that type.
@@ -51,8 +51,9 @@ function panelColor(entry) {
 //   title     heading text, default "Gallery Search"
 //   onSelect  what a click on a tile does, default: open the modal
 //   action    an optional top right link, { label, href }
-//   loader    an optional loading cover from js/loading-screen.js. The page
-//             hands it every card picture, and seals it after the first grid.
+//   loader    an optional loading cover from components/loading-screen.js.
+//             The page hands it every card picture, and seals it after the
+//             first grid.
 export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader } = {}) {
     const { useState, useEffect, useMemo, useCallback } = React;
 

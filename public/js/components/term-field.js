@@ -3,7 +3,7 @@
 // You type a term and press Enter, or pick one from the suggestion list. The
 // list holds the terms already in the database, so an old term is one click
 // away and a new term is just typing. Each chosen term shows as a chip.
-import { normalizeTerm, MAX_TERMS } from './shared/taxonomy.js';
+import { normalizeTerm, MAX_TERMS } from '../shared/taxonomy.js';
 
 export function createTermField({ input, datalist, addButton, chips, label, onChange }) {
     const chosen = [];

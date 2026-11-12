@@ -53,7 +53,7 @@ function stubDom() {
 const make = stubDom();
 
 const { createLoadingScreen, fillOrder, litCells, onFirstScreen } = await import(
-    `${ROOT}/public/js/loading-screen.js`
+    `${ROOT}/public/js/components/loading-screen.js`
 );
 
 const results = [];

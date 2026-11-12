@@ -39,7 +39,9 @@ function make(tag) {
 }
 globalThis.document = { createElement: make };
 
-const { codeFor, buildCodeBlock, SAMPLES } = await import(`${ROOT}/public/js/code-tile.js`);
+const { codeFor, buildCodeBlock, SAMPLES } = await import(
+    `${ROOT}/public/js/components/code-tile.js`
+);
 const { readSnippet } = await import(`${ROOT}/public/js/shared/row.js`);
 const { languageOf, KNOWN_LANGUAGES } = await import(`${ROOT}/public/js/shared/taxonomy.js`);
 

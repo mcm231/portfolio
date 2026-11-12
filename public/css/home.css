@@ -68,7 +68,8 @@ body.home {
 }
 
 /* The card is one more cell of the wall. Before the layout runs it centers on
-   its own size; afterwards mosaic.js snaps it to its reserved cells. */
+   its own size; afterwards components/mosaic.js snaps it to its reserved
+   cells. */
 .card {
     position: absolute;
     left: 0;

@@ -4,8 +4,8 @@
 // then a short sample of its language. The sample is decoration. It is never
 // presented as the project's own code.
 
-import { languageOf, DEFAULT_LANGUAGE } from './shared/taxonomy.js';
-import { readSnippet } from './shared/row.js';
+import { languageOf, DEFAULT_LANGUAGE } from '../shared/taxonomy.js';
+import { readSnippet } from '../shared/row.js';
 
 // The card decides what fits. CSS clips the block, both down and across, so
 // the code is never cut in the middle by this file. The cap below is only a

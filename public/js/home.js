@@ -1,7 +1,7 @@
 // Home page wiring: the pannable plane, the photo wall, and the side drawer.
-import { createPan } from './pan.js';
-import { renderMosaic } from './mosaic.js';
-import { createLoadingScreen } from './loading-screen.js';
+import { createPan } from './components/pan.js';
+import { renderMosaic } from './components/mosaic.js';
+import { createLoadingScreen } from './components/loading-screen.js';
 import { api } from './api.js';
 
 const CENTERED_PX = 0.5; // distance from origin still counted as centered

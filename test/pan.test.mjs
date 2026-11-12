@@ -24,7 +24,7 @@ globalThis.performance = { now: () => clock };
 globalThis.requestAnimationFrame = () => 0;
 globalThis.cancelAnimationFrame = () => {};
 
-const { createPan } = await import(`${ROOT}/public/js/pan.js`);
+const { createPan } = await import(`${ROOT}/public/js/components/pan.js`);
 
 let view = { x: 0, y: 0, scale: 1 };
 const pan = createPan({

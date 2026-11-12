@@ -1,7 +1,7 @@
 // The edit page. It mounts the same browsing grid as the gallery search page,
 // and a click opens the upload form for that row.
-import { mountGallery } from './gallery-page.js';
-import { createLoadingScreen } from './loading-screen.js';
+import { mountGallery } from './components/gallery-page.js';
+import { createLoadingScreen } from './components/loading-screen.js';
 
 // The cover hides the grid until its first screen of pictures arrives.
 const loader = createLoadingScreen();

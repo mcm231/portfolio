@@ -265,3 +265,4 @@ I have already run the deploy and updated the AUD. I have already done all the a
 how can I add www to the same path functionality? I already added the subdomain paths as extra lines in the Access permissions
 why do the images flicker in the gallery page on first load? What would the best way to fix this be? Plan first, let me approve the chane
 fix this merge
+Another refactor: I want the js files for components to live in js/components directory. Update architecture file and pathing

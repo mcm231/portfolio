@@ -304,9 +304,9 @@ body.about {
 }
 
 /* The cover over a whole page, while its first screen of pictures loads.
-   js/loading-screen.js turns one square on for each answered request, so the
-   block reports the network. The squares fill from the middle outward, the
-   shape of the photo wall they stand for. */
+   js/components/loading-screen.js turns one square on for each answered
+   request, so the block reports the network. The squares fill from the middle
+   outward, the shape of the photo wall they stand for. */
 .loading-screen {
     position: fixed;
     inset: 0;

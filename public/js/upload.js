@@ -3,7 +3,7 @@
 // R2 and the metadata entry to KV.
 
 import { slugify, freeIdSync } from './shared/id-rules.js';
-import { createTermField } from './term-field.js';
+import { createTermField } from './components/term-field.js';
 import { KNOWN_LANGUAGES } from './shared/taxonomy.js';
 import { readImages, readSnippet } from './shared/row.js';
 import { makeThumbnail } from './shared/thumbnail.js';
