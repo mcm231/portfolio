@@ -50,7 +50,7 @@ the same commit that moves the code.
 entry        -> route -> repository -> binding
 route        -> reply, shared rule
 page script  -> component, client, shared rule
-component    -> shared rule
+component    -> component, client, shared rule
 shared rule  -> nothing
 ```
 
@@ -186,12 +186,17 @@ components it needs. It never reads a module off `window`.
 | Page                 | Script          |
 | -------------------- | --------------- |
 | `index.html`         | `js/home.js`    |
+| `pages/about.html`   | `js/about.js`   |
 | `pages/gallery.html` | `js/gallery.js` |
 | `pages/edit.html`    | `js/edit.js`    |
 | `pages/upload.html`  | `js/upload.js`  |
 
 `index.html` is the home page, so its script is `home.js`. Every other page
 takes the name of its file.
+
+Every page carries a script, because every page mounts the side drawer. One
+page is the exception, and it is the editor of one row: `/pages/upload?id=KEY`
+hides the drawer and shows the Edit list button alone.
 
 ### Components
 
@@ -208,6 +213,7 @@ returns a value or a handle.
 | `components/gallery-page.js`   | `mountGallery`, `GalleryPage` |
 | `components/loading-screen.js` | `createLoadingScreen`         |
 | `components/detail-modal.js`   | `openDetail`                  |
+| `components/menu.js`           | `mountMenu`, `linkOf`         |
 
 A behavior that two pages use becomes a component. A behavior that one page uses
 stays in the page script until a second page needs it.

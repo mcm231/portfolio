@@ -10,7 +10,22 @@
         <link rel="stylesheet" href="../css/contact.css" />
     </head>
     <body class="about">
-        <a class="button button-quiet back-link" href="/">← Home</a>
+        <!-- The drawer shell, so the button paints with the document.
+             js/components/menu.js fills the panel and marks this page. -->
+        <nav id="menu" class="menu">
+            <button
+                id="menu-toggle"
+                class="menu-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="menu-panel"
+                aria-label="Open menu"
+            >
+                <span class="menu-bars" aria-hidden="true"></span>
+            </button>
+
+            <div id="menu-panel" class="menu-panel"></div>
+        </nav>
 
         <main class="about-page contact-page">
             <header class="hero contact-hero">

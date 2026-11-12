@@ -295,8 +295,6 @@ export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader
     }
 
     return h('div', { className: 'page' }, [
-        h('a', { key: 'back', className: 'button button-quiet back-link', href: '/' }, '← Home'),
-
         action
             ? h(
                   'a',

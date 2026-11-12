@@ -1,5 +1,9 @@
 // The contact inbox. The Access gate protects every call this page makes.
+import { mountMenu } from './components/menu.js';
 import { api } from './api.js';
+
+// The side drawer. One file holds the links, and marks this page.
+mountMenu(document.getElementById('menu'));
 
 const list = document.getElementById('message-list');
 const count = document.getElementById('message-count');

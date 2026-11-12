@@ -14,16 +14,28 @@ body.gallery {
     margin-bottom: var(--space-4);
 }
 
+/* Five cards to a row. The grid caps at the width of the filter bar above it,
+   so the two share one left and one right edge. A card is then 167px wide and
+   180px tall, three quarters of the size it was. */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--space-4);
     width: 100%;
-    max-width: 1400px;
+    max-width: 900px;
+}
+
+/* A phone has no room for five across, so the count drops instead of the
+   card shrinking to nothing. */
+@media (max-width: 760px) {
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
 }
 
 .grid-item {
     position: relative;
+    height: 180px;
     border: 1px solid var(--color-line-strong);
     background: var(--color-surface);
     overflow: hidden;
@@ -69,7 +81,7 @@ body.gallery {
 .grid-item-panel {
     display: block;
     width: 100%;
-    height: 240px;
+    height: 100%;
     object-fit: cover;
 }
 

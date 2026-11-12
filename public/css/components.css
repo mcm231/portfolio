@@ -57,8 +57,16 @@ body.about {
 .about-page {
     max-width: 1080px;
     margin: 0 auto;
-    /* The top clears the fixed Home link. */
+    /* The top clears the drawer button. */
     padding: calc(var(--space-8) + var(--space-6)) var(--space-7) var(--space-8);
+}
+
+/* Room for the drawer rail. css/base.css does the same for .page. */
+@media (min-width: 900px) {
+    .about-page {
+        padding-left: calc(var(--menu-rail) + var(--space-4));
+        padding-right: calc(var(--menu-rail) + var(--space-4));
+    }
 }
 
 /* Hero */
@@ -270,8 +278,9 @@ body.about {
     background: var(--color-code-bg);
 }
 
+/* A code card fills the card box. css/gallery.css sets that height. */
 .grid-item-code {
-    height: 240px;
+    height: 100%;
 }
 
 .modal-code {

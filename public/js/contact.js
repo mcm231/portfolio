@@ -4,7 +4,11 @@
 // The two outside links live here, in one place. Leave a url empty and that
 // card stays hidden, so the page never shows a dead link.
 
+import { mountMenu } from './components/menu.js';
 import { api, ApiError } from './api.js';
+
+// The side drawer. One file holds the links, and marks this page.
+mountMenu(document.getElementById('menu'));
 
 const LINKS = {
     instagram: { handle: '@_maymala', url: 'https://instagram.com/_maymala' },

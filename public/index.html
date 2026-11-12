@@ -40,9 +40,8 @@
             </div>
         </main>
 
-        <div id="menu-scrim"></div>
-
-        <!-- Standard drawer. The teal rail sits behind the button. -->
+        <!-- The drawer shell, so the button paints with the document.
+             js/components/menu.js fills the panel and marks this page. -->
         <nav id="menu" class="menu">
             <button
                 id="menu-toggle"
@@ -55,20 +54,7 @@
                 <span class="menu-bars" aria-hidden="true"></span>
             </button>
 
-            <div id="menu-panel" class="menu-panel">
-                <ul>
-                    <li><a href="/pages/gallery">Gallery Search</a></li>
-                    <li><a href="/pages/about">About</a></li>
-                    <li><a href="/pages/contact">Contact</a></li>
-                    <!-- Shown only when /api/session says this visitor may upload. -->
-                    <li class="menu-private" hidden><a href="/pages/upload">Upload</a></li>
-                    <li class="menu-private" hidden><a href="/pages/edit">Edit</a></li>
-                    <li class="menu-private" hidden><a href="/pages/messages">Messages</a></li>
-                    <li class="menu-private" hidden>
-                        <a href="/pages/thumbnails">Small copies</a>
-                    </li>
-                </ul>
-            </div>
+            <div id="menu-panel" class="menu-panel"></div>
         </nav>
 
         <div class="view-controls">

@@ -270,3 +270,6 @@ Proceed with those changes, and cache for 1 day. Also figure out why my API conn
 remove the loading screen on the home page
 no, add the loading page back to the homepage. However, make sure it shows on top of everything on the page, because I'm still seeing a flicker of the title and gallery buttons on first load
 I want the ability to click on mosaic tiles and see the same pop-up as in the gallery page. Use the same component so updates to the component reflect across both pages
+I want the side nav hamburger menu on all pages (except the Edit page for a specific item, which should just have the back to edit button) instead of the "Back to home" button. Include a link to the Home page in the menu. highlight the current page in the side menu, following the style guide.
+reduce the size of the gallery panels to 2/3 of their size. Keep it 5 to a row
+the caret in the dropdown in this screenshot is too close to the right '/Users/mayamalavasi/Desktop/Screenshot 2026-11-12 at 2.13.44 PM.png'

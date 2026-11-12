@@ -10,6 +10,23 @@
         <link rel="stylesheet" href="../css/gallery.css" />
     </head>
     <body class="gallery">
+        <!-- The drawer shell, so the button paints with the document.
+             js/components/menu.js fills the panel and marks this page. -->
+        <nav id="menu" class="menu">
+            <button
+                id="menu-toggle"
+                class="menu-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="menu-panel"
+                aria-label="Open menu"
+            >
+                <span class="menu-bars" aria-hidden="true"></span>
+            </button>
+
+            <div id="menu-panel" class="menu-panel"></div>
+        </nav>
+
         <div id="app"></div>
 
         <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>

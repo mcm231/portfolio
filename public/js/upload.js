@@ -7,6 +7,7 @@ import { createTermField } from './components/term-field.js';
 import { KNOWN_LANGUAGES } from './shared/taxonomy.js';
 import { readImages, readSnippet } from './shared/row.js';
 import { makeThumbnail } from './shared/thumbnail.js';
+import { mountMenu } from './components/menu.js';
 import { api, ApiError } from './api.js';
 
 const form = document.getElementById('upload-form');
@@ -61,6 +62,16 @@ let takenIds = new Set();
 let editingId = new URLSearchParams(window.location.search).get('id');
 // The object key the edited row already points at.
 let editingImages = [];
+
+// A fresh upload is an ordinary page, so it carries the side drawer. The
+// editor of one row shows the Edit list button alone, and the drawer stays
+// hidden. The page starts hidden either way, so the button never flashes on
+// a row this page is about to edit.
+if (!editingId) {
+    const menu = document.getElementById('menu');
+    menu.hidden = false;
+    mountMenu(menu);
+}
 
 function splitList(value) {
     return value

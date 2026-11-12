@@ -2,6 +2,7 @@
 // and a click opens the upload form for that row.
 import { mountGallery } from './components/gallery-page.js';
 import { createLoadingScreen } from './components/loading-screen.js';
+import { mountMenu } from './components/menu.js';
 
 // The cover hides the grid until its first screen of pictures arrives.
 const loader = createLoadingScreen();
@@ -14,3 +15,6 @@ mountGallery(document.getElementById('app'), {
         window.location.href = `/pages/upload?id=${encodeURIComponent(entry.id)}`;
     },
 });
+
+// The side drawer. One file holds the links, and marks this page.
+mountMenu(document.getElementById('menu'));

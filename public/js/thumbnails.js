@@ -6,7 +6,11 @@
 
 import { readImages } from './shared/row.js';
 import { makeThumbnail } from './shared/thumbnail.js';
+import { mountMenu } from './components/menu.js';
 import { api } from './api.js';
+
+// The side drawer. One file holds the links, and marks this page.
+mountMenu(document.getElementById('menu'));
 
 const startButton = document.getElementById('start');
 const status = document.getElementById('status');

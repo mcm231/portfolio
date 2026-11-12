@@ -11,7 +11,22 @@
         <link rel="stylesheet" href="../css/upload.css" />
     </head>
     <body class="admin">
-        <a class="button button-quiet back-link" href="/">← Home</a>
+        <!-- The drawer shell, hidden until js/upload.js knows the mode. The
+             editor of one row shows the Edit list button alone. -->
+        <nav id="menu" class="menu" hidden>
+            <button
+                id="menu-toggle"
+                class="menu-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="menu-panel"
+                aria-label="Open menu"
+            >
+                <span class="menu-bars" aria-hidden="true"></span>
+            </button>
+
+            <div id="menu-panel" class="menu-panel"></div>
+        </nav>
         <a class="button button-quiet forward-link" id="edit-link" href="/pages/edit"
             >Edit images</a
         >

@@ -210,6 +210,17 @@ input,
     opacity: 1;
 }
 
+/* The page a visitor stands on. A bar on the left edge and full strength text
+   mark it at rest, so it never reads as a hover. Teal carries the site, and
+   STYLE_GUIDE.md keeps amethyst for the one Add button. */
+.menu-panel a[aria-current='page'] {
+    border-left: 3px solid var(--color-on-brand);
+    padding-left: calc(var(--space-6) - 3px);
+    background: var(--veil-on-brand);
+    opacity: 1;
+    font-weight: 600;
+}
+
 #menu-scrim {
     position: fixed;
     inset: 0;
@@ -233,6 +244,17 @@ input,
     padding: var(--space-7) var(--space-7) var(--space-8);
 }
 
+/* The teal rail of the drawer is fixed and 80px wide, so a wide page keeps
+   room for it. The padding stays even, or a centered page would sit off
+   center. On a narrow screen the button covers the corner, which the centered
+   header leaves clear. css/components.css does the same for .about-page. */
+@media (min-width: 900px) {
+    .page {
+        padding-left: calc(var(--menu-rail) + var(--space-4));
+        padding-right: calc(var(--menu-rail) + var(--space-4));
+    }
+}
+
 .page-header {
     margin-bottom: var(--space-7);
     text-align: center;
@@ -252,14 +274,8 @@ input,
     font-size: var(--text-sm);
 }
 
-.back-link {
-    position: fixed;
-    left: var(--space-5);
-    top: var(--space-5);
-    z-index: 10;
-}
-
-/* The mirror of .back-link, for the next step rather than the previous one. */
+/* The one fixed corner link left. The drawer holds every other way out, so
+   this marks the next step of a tool: the list a form came from. */
 .forward-link {
     position: fixed;
     right: var(--space-5);
