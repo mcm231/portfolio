@@ -9,6 +9,7 @@
 // other row fills the view with the picture, and a handle slides the words
 // out beside it. css/components.css holds both layouts.
 import { buildCodeBlock } from './code-tile.js';
+import { buildTermPill } from './term-pill.js';
 import { readImages, readParagraphs, panelColor } from '../shared/row.js';
 import { api } from '../api.js';
 
@@ -85,8 +86,9 @@ function buildName(entry) {
     return entry.name ? element('h2', 'detail-name', entry.name) : null;
 }
 
-// The date reads as plain text. A medium and a tag each get a pill, one color
-// for each, so the three never blur together.
+// The date reads as plain text. A medium and a tag each get a pill from
+// components/term-pill.js, one color for each, so the three never blur
+// together. A click on a pill opens the gallery, filtered by that term.
 function buildMeta(entry) {
     const mediums = entry.mediums || [];
     const tags = entry.tags || [];
@@ -96,8 +98,14 @@ function buildMeta(entry) {
 
     if (mediums.length > 0 || tags.length > 0) {
         const terms = element('ul', 'detail-terms');
-        mediums.forEach(term => terms.appendChild(element('li', 'pill pill-medium', term)));
-        tags.forEach(term => terms.appendChild(element('li', 'pill pill-tag', term)));
+        const carry = (kind, term) => {
+            const item = element('li');
+            item.appendChild(buildTermPill(kind, term));
+            terms.appendChild(item);
+        };
+
+        mediums.forEach(term => carry('medium', term));
+        tags.forEach(term => carry('tag', term));
         parts.push(terms);
     }
 

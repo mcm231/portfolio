@@ -108,6 +108,9 @@ const PAIRS = [
     ['a hover edge on a card', '--color-mark-line', '--color-surface', 'ui'],
     ['the section rule, page', '--color-mark-line', '--color-bg', 'ui'],
     ['a chip border on the page', '--color-mark-line', '--color-bg', 'ui'],
+
+    ['a medium pill, hovered', '--color-ink', '--pill-medium-line', 'normal'],
+    ['a tag pill, hovered', '--color-ink', '--pill-tag-line', 'normal'],
 ];
 
 // A divider carries no meaning on its own, so WCAG sets no floor for it.

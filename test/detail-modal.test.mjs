@@ -141,6 +141,18 @@ check('a blank line starts a paragraph', find(piece.element, 'detail-text').chil
 check('a medium takes a pill', Boolean(find(piece.element, 'pill-medium')), true);
 check('a tag takes its own pill', Boolean(find(piece.element, 'pill-tag')), true);
 
+// A click on a pill opens the gallery, filtered by that term.
+check(
+    'a medium pill filters the gallery',
+    find(piece.element, 'pill-medium').href,
+    '/pages/gallery?medium=watercolor'
+);
+check(
+    'a tag pill filters the gallery',
+    find(piece.element, 'pill-tag').href,
+    '/pages/gallery?tag=landscape'
+);
+
 // The detail view shows the full picture, never the small copy.
 const picture = find(piece.element, 'slides-image');
 check('the first picture shows', picture.src, '/api/images?id=one.jpg');

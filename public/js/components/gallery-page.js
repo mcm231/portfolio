@@ -25,6 +25,27 @@ const FILTER_TYPES = [
 
 const DEFAULT_FILTER_TYPE = FILTER_TYPES[0].value;
 
+// The filters the address bar asks for. A pill in a detail view links here,
+// so a click on a medium or a tag opens this page with that term applied.
+// components/term-pill.js writes those urls, and the query key is the filter
+// type value above. The same key may repeat, so two tags can arrive together.
+export function filtersFromQuery(search) {
+    const query = new URLSearchParams(search || '');
+    const filters = [];
+
+    for (const type of FILTER_TYPES) {
+        for (const asked of query.getAll(type.value)) {
+            const value = asked.trim();
+            if (!value) continue;
+            if (filters.some(f => f.type === type.value && f.value === value)) continue;
+
+            filters.push({ type: type.value, value, label: type.label });
+        }
+    }
+
+    return filters;
+}
+
 const h = React.createElement;
 
 function cardKind(entry) {
@@ -54,7 +75,7 @@ export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader
 
     const [filterType, setFilterType] = useState(DEFAULT_FILTER_TYPE);
     const [inputValue, setInputValue] = useState('');
-    const [activeFilters, setActiveFilters] = useState([]);
+    const [activeFilters, setActiveFilters] = useState(() => filtersFromQuery(location.search));
     // A card shows nothing until its own picture arrives, so a tile never
     // snaps from the surface color to the photo. css/gallery.css holds the
     // fade. A broken picture also counts as ready, or its alt text would

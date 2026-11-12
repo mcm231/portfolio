@@ -680,6 +680,24 @@ body.is-loading {
     background: var(--pill-tag-fill);
 }
 
+/* A pill opens the gallery search, filtered by that term. The fill deepens to
+   its own border color, so each kind keeps its color on the way. */
+a.pill {
+    display: inline-block;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+a.pill-medium:hover,
+a.pill-medium:focus-visible {
+    background: var(--pill-medium-line);
+}
+
+a.pill-tag:hover,
+a.pill-tag:focus-visible {
+    background: var(--pill-tag-line);
+}
+
 /* The date is plain, so it never reads as a term. */
 .detail-date {
     margin: 0 0 var(--space-3);

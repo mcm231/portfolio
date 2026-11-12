@@ -274,3 +274,4 @@ I want the side nav hamburger menu on all pages (except the Edit page for a spec
 reduce the size of the gallery panels to 2/3 of their size. Keep it 5 to a row
 the caret in the dropdown in this screenshot is too close to the right '/Users/mayamalavasi/Desktop/Screenshot 2026-11-12 at 2.13.44 PM.png'
 add a green Success banner over the submission button in the single item edit and the upload pages to notify the user when an image has successfully been edited/uploaded. Add a red error banner if it failed.
+The mediums and tags boxes in the detail view of an image, when clicked, should load the gallery page with the tag/medium automatically added to the filters.
