@@ -2,8 +2,9 @@
 import { createPan } from './pan.js';
 import { renderMosaic } from './mosaic.js';
 import { createLoadingScreen } from './loading-screen.js';
+import { api } from './api.js';
 
-const CENTERED_PX = 0.5;      // distance from origin still counted as centered
+const CENTERED_PX = 0.5; // distance from origin still counted as centered
 const CENTERED_SCALE = 0.005; // zoom gap still counted as 100 percent
 const BUTTON_ZOOM_STEP = 1.25;
 
@@ -25,13 +26,13 @@ const menuPrivateItems = document.querySelectorAll('.menu-private');
 const pan = createPan({ surface: viewport, onChange: applyPan });
 
 function applyPan(view) {
-    plane.style.transform =
-        `translate3d(${view.x}px, ${view.y}px, 0) scale(${view.scale})`;
+    plane.style.transform = `translate3d(${view.x}px, ${view.y}px, 0) scale(${view.scale})`;
 
     // Recenter shows once the view sits away from the origin, or off 100%.
-    const atRest = Math.abs(view.x) < CENTERED_PX
-        && Math.abs(view.y) < CENTERED_PX
-        && Math.abs(view.scale - 1) < CENTERED_SCALE;
+    const atRest =
+        Math.abs(view.x) < CENTERED_PX &&
+        Math.abs(view.y) < CENTERED_PX &&
+        Math.abs(view.scale - 1) < CENTERED_SCALE;
 
     recenterButton.classList.toggle('is-hidden', atRest);
 }
@@ -41,11 +42,15 @@ zoomInButton.addEventListener('click', () => pan.zoomBy(BUTTON_ZOOM_STEP));
 zoomOutButton.addEventListener('click', () => pan.zoomBy(1 / BUTTON_ZOOM_STEP));
 
 // A drag that happens to end on the gallery link must not follow it.
-plane.addEventListener('click', event => {
-    if (!pan.wasDragged()) return;
-    event.preventDefault();
-    event.stopPropagation();
-}, true);
+plane.addEventListener(
+    'click',
+    event => {
+        if (!pan.wasDragged()) return;
+        event.preventDefault();
+        event.stopPropagation();
+    },
+    true
+);
 
 /* ---------- Drawer ---------- */
 
@@ -79,11 +84,10 @@ document.addEventListener('keydown', event => {
 // visitor who unhides an item still lands on the Access login page.
 async function showPrivateLinksIfAllowed() {
     try {
-        const response = await fetch('/api/session', { cache: 'no-store' });
-        if (!response.ok) return;
-
-        const { allowed } = await response.json();
-        menuPrivateItems.forEach(item => { item.hidden = !allowed; });
+        const { allowed } = await api.session();
+        menuPrivateItems.forEach(item => {
+            item.hidden = !allowed;
+        });
     } catch {
         // Leave the link hidden.
     }

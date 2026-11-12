@@ -1,44 +1,50 @@
 // The Worker. It gates the private routes, routes the API, and hands every
 // other request to the static assets in public/.
 import { guard } from './gate.js';
-import { onRequest as imageMetadata } from './api/image-metadata.js';
-import { onRequest as images } from './api/images.js';
-import { onRequest as files } from './api/files.js';
-import { onRequest as vocabulary } from './api/vocabulary.js';
-import { onRequest as upload } from './api/upload.js';
-import { onRequest as session } from './api/session.js';
-import { onRequest as contact } from './api/contact.js';
-import { onRequest as messages } from './api/messages.js';
-import { onRequest as thumbnail } from './api/thumbnail.js';
+import { methodNotAllowed } from './api/_reply.js';
+import { readRows } from './api/image-metadata.js';
+import { readImage } from './api/images.js';
+import { readFile } from './api/files.js';
+import { readVocabulary } from './api/vocabulary.js';
+import { saveRow, deleteRow } from './api/upload.js';
+import { readSession } from './api/session.js';
+import { sendMessage } from './api/contact.js';
+import { listMessages, deleteMessage } from './api/messages.js';
+import { saveThumbnail } from './api/thumbnail.js';
 
-// Each handler keeps the Pages Functions signature, so it reads context.request
-// and context.env and nothing else.
-const API_ROUTES = {
-  '/api/image-metadata': imageMetadata,
-  '/api/images': images,
-  '/api/files': files,
-  '/api/vocabulary': vocabulary,
-  '/api/upload': upload,
-  '/api/session': session,
-  '/api/contact': contact,
-  '/api/messages': messages,
-  '/api/thumbnail': thumbnail
+// One path, one method, one handler. A handler takes (request, env, ctx) and
+// nothing else. A method missing here answers 405.
+const ROUTES = {
+    '/api/image-metadata': { GET: readRows },
+    '/api/images': { GET: readImage, HEAD: readImage },
+    '/api/files': { GET: readFile, HEAD: readFile },
+    '/api/vocabulary': { GET: readVocabulary },
+    '/api/upload': { POST: saveRow, DELETE: deleteRow },
+    '/api/session': { GET: readSession },
+    '/api/contact': { POST: sendMessage },
+    '/api/messages': { GET: listMessages, DELETE: deleteMessage },
+    '/api/thumbnail': { POST: saveThumbnail },
 };
 
 export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
+    async fetch(request, env, ctx) {
+        const url = new URL(request.url);
 
-    const blocked = await guard(request, env);
-    if (blocked) return blocked;
+        const blocked = await guard(request, env);
+        if (blocked) return blocked;
 
-    const handler = API_ROUTES[url.pathname];
-    if (handler) return handler({ request, env, waitUntil: ctx.waitUntil.bind(ctx) });
+        const route = ROUTES[url.pathname];
 
-    if (url.pathname.startsWith('/api/')) {
-      return new Response('Not found', { status: 404 });
-    }
+        if (route) {
+            const handler = route[request.method];
+            if (!handler) return methodNotAllowed(Object.keys(route));
+            return handler(request, env, ctx);
+        }
 
-    return env.ASSETS.fetch(request);
-  }
+        if (url.pathname.startsWith('/api/')) {
+            return new Response('Not found', { status: 404 });
+        }
+
+        return env.ASSETS.fetch(request);
+    },
 };

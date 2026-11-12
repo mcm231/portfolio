@@ -5,26 +5,28 @@
 // shows now, and nothing else: a lazy picture below the fold never starts a
 // request, so waiting for one would hold the cover forever.
 //
-// Styling lives in css/styles.css per STYLE_GUIDE.md. This file sets class
+// Styling lives in css/components.css per STYLE_GUIDE.md. This file sets class
 // names only. The block carries the progress, so the cover shows one word and
 // no count.
 
-const SIDE = 4;              // squares across the block
+const SIDE = 4; // squares across the block
 const CELLS = SIDE * SIDE;
-const TINTS = 3;             // teal shades, as .tint-0 .. .tint-2
-const LEAST_MS = 300;        // the cover stays this long, so it never blinks
-const GIVE_UP_MS = 10000;    // a stalled picture must not trap a visitor
-const FADE_MS = 260;         // matches .loading-screen in css/styles.css
-const MARGIN = 120;          // px past the window edge still counted as shown
-const LABEL = 'Loading';     // every page shows this one word, and no count
+const TINTS = 3; // teal shades, as .tint-0 .. .tint-2
+const LEAST_MS = 300; // the cover stays this long, so it never blinks
+const GIVE_UP_MS = 10000; // a stalled picture must not trap a visitor
+const FADE_MS = 260; // matches .loading-screen in css/components.css
+const MARGIN = 120; // px past the window edge still counted as shown
+const LABEL = 'Loading'; // every page shows this one word, and no count
 
 // Fill order of the squares: nearest the middle first. The block grows
 // outward from its center, the way the photo wall grows from the title card.
 export function fillOrder(side = SIDE) {
     return Array.from({ length: side * side }, (_, index) => ({
         index,
-        distance: Math.hypot(index % side + 0.5 - side / 2,
-                             Math.floor(index / side) + 0.5 - side / 2)
+        distance: Math.hypot(
+            (index % side) + 0.5 - side / 2,
+            Math.floor(index / side) + 0.5 - side / 2
+        ),
     }))
         .sort((a, b) => a.distance - b.distance)
         .map(cell => cell.index);
@@ -43,8 +45,12 @@ export function litCells(done, total, cells = CELLS) {
 
 // True when the window shows this rectangle now, give or take a margin.
 export function onFirstScreen(rect, view, margin = MARGIN) {
-    return rect.bottom > -margin && rect.top < view.height + margin
-        && rect.right > -margin && rect.left < view.width + margin;
+    return (
+        rect.bottom > -margin &&
+        rect.top < view.height + margin &&
+        rect.right > -margin &&
+        rect.left < view.width + margin
+    );
 }
 
 // Opens the cover at once and returns the handle a page drives:
@@ -87,7 +93,9 @@ export function createLoadingScreen({ root = document.body } = {}) {
 
     const bornAt = now();
     let settle;
-    const finished = new Promise(resolve => { settle = resolve; });
+    const finished = new Promise(resolve => {
+        settle = resolve;
+    });
 
     root.appendChild(screen);
     document.body.classList.add('is-loading');
@@ -159,14 +167,17 @@ export function createLoadingScreen({ root = document.body } = {}) {
         fill();
 
         // A fast answer must still show the block, or the cover blinks.
-        setTimeout(() => {
-            screen.classList.add('is-gone');
-            document.body.classList.remove('is-loading');
-            setTimeout(() => {
-                screen.remove();
-                settle();
-            }, FADE_MS);
-        }, Math.max(0, LEAST_MS - (now() - bornAt)));
+        setTimeout(
+            () => {
+                screen.classList.add('is-gone');
+                document.body.classList.remove('is-loading');
+                setTimeout(() => {
+                    screen.remove();
+                    settle();
+                }, FADE_MS);
+            },
+            Math.max(0, LEAST_MS - (now() - bornAt))
+        );
 
         return finished;
     }

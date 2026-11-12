@@ -1,85 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact - Maya Malavasi</title>
-    <link rel="stylesheet" href="../css/styles.css">
-</head>
-<body class="about">
-    <a class="button button-quiet back-link" href="/">← Home</a>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Contact - Maya Malavasi</title>
+        <link rel="stylesheet" href="../css/tokens.css" />
+        <link rel="stylesheet" href="../css/base.css" />
+        <link rel="stylesheet" href="../css/components.css" />
+        <link rel="stylesheet" href="../css/contact.css" />
+    </head>
+    <body class="about">
+        <a class="button button-quiet back-link" href="/">← Home</a>
 
-    <main class="about-page contact-page">
-        <header class="hero contact-hero">
-            <div class="hero-text">
-                <p class="eyebrow">Contact</p>
-                <h1 class="hero-heading">Contact Me</h1>
-                <p class="contact-lead">
-                    Want to reach out? Send me a direct message with the form
-                    below. I will reply from my email address.
-                </p>
-            </div>
-        </header>
-
-        <!-- The form. The address stays off the page. -->
-        <section class="section">
-            <p class="section-number">01</p>
-            <h2 class="section-heading">Send a message</h2>
-
-            <form id="contact-form" class="form contact-form" novalidate>
-                <div class="form-row">
-                    <label class="form-label" for="name">Your name <span class="required" aria-hidden="true">*</span></label>
-                    <input class="field" id="name" name="name" type="text" autocomplete="name" required>
+        <main class="about-page contact-page">
+            <header class="hero contact-hero">
+                <div class="hero-text">
+                    <p class="eyebrow">Contact</p>
+                    <h1 class="hero-heading">Contact Me</h1>
+                    <p class="contact-lead">
+                        Want to reach out? Send me a direct message with the form below. I will
+                        reply from my email address.
+                    </p>
                 </div>
+            </header>
 
-                <div class="form-row">
-                    <label class="form-label" for="email">Your email <span class="required" aria-hidden="true">*</span></label>
-                    <input class="field" id="email" name="email" type="email" autocomplete="email" required>
+            <!-- The form. The address stays off the page. -->
+            <section class="section">
+                <p class="section-number">01</p>
+                <h2 class="section-heading">Send a message</h2>
+
+                <form id="contact-form" class="form contact-form" novalidate>
+                    <div class="form-row">
+                        <label class="form-label" for="name"
+                            >Your name <span class="required" aria-hidden="true">*</span></label
+                        >
+                        <input
+                            class="field"
+                            id="name"
+                            name="name"
+                            type="text"
+                            autocomplete="name"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="email"
+                            >Your email <span class="required" aria-hidden="true">*</span></label
+                        >
+                        <input
+                            class="field"
+                            id="email"
+                            name="email"
+                            type="email"
+                            autocomplete="email"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="subject">Subject</label>
+                        <input class="field" id="subject" name="subject" type="text" />
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="message"
+                            >Message <span class="required" aria-hidden="true">*</span></label
+                        >
+                        <textarea
+                            class="field"
+                            id="message"
+                            name="message"
+                            rows="7"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <!-- A trap for a crawler. A person never sees it. -->
+                    <div class="honeypot" aria-hidden="true">
+                        <label for="website">Leave this empty</label>
+                        <input
+                            id="website"
+                            name="website"
+                            type="text"
+                            tabindex="-1"
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <button id="contact-submit" class="button" type="submit">Send</button>
+                    <p id="contact-status" class="form-status" role="status"></p>
+                </form>
+            </section>
+
+            <!-- The two places to find me. -->
+            <section class="section">
+                <p class="section-number">02</p>
+                <h2 class="section-heading">Find me on&hellip;</h2>
+
+                <!-- js/contact.js fills these in, and hides a card with no link. -->
+                <div class="link-cards">
+                    <a
+                        class="link-card"
+                        id="instagram-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        hidden
+                    >
+                        <span class="link-card-label">Instagram</span>
+                        <span class="link-card-value" id="instagram-handle"></span>
+                        <span class="link-card-note">Work in progress, and finished pieces.</span>
+                    </a>
+
+                    <a
+                        class="link-card"
+                        id="commissions-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        hidden
+                    >
+                        <span class="link-card-label">Commissions</span>
+                        <span class="link-card-value">Open a commission</span>
+                        <span class="link-card-note">Rates, the process, and what I take on.</span>
+                    </a>
                 </div>
+            </section>
+        </main>
 
-                <div class="form-row">
-                    <label class="form-label" for="subject">Subject</label>
-                    <input class="field" id="subject" name="subject" type="text">
-                </div>
-
-                <div class="form-row">
-                    <label class="form-label" for="message">Message <span class="required" aria-hidden="true">*</span></label>
-                    <textarea class="field" id="message" name="message" rows="7" required></textarea>
-                </div>
-
-                <!-- A trap for a crawler. A person never sees it. -->
-                <div class="honeypot" aria-hidden="true">
-                    <label for="website">Leave this empty</label>
-                    <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
-                </div>
-
-                <button id="contact-submit" class="button" type="submit">Send</button>
-                <p id="contact-status" class="form-status" role="status"></p>
-            </form>
-        </section>
-
-        <!-- The two places to find me. -->
-        <section class="section">
-            <p class="section-number">02</p>
-            <h2 class="section-heading">Find me on&hellip;</h2>
-
-            <!-- js/contact.js fills these in, and hides a card with no link. -->
-            <div class="link-cards">
-                <a class="link-card" id="instagram-link" target="_blank" rel="noopener noreferrer" hidden>
-                    <span class="link-card-label">Instagram</span>
-                    <span class="link-card-value" id="instagram-handle"></span>
-                    <span class="link-card-note">Work in progress, and finished pieces.</span>
-                </a>
-
-                <a class="link-card" id="commissions-link" target="_blank" rel="noopener noreferrer" hidden>
-                    <span class="link-card-label">Commissions</span>
-                    <span class="link-card-value">Open a commission</span>
-                    <span class="link-card-note">Rates, the process, and what I take on.</span>
-                </a>
-            </div>
-        </section>
-    </main>
-
-    <script type="module" src="../js/contact.js"></script>
-</body>
+        <script type="module" src="../js/contact.js"></script>
+    </body>
 </html>

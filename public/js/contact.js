@@ -4,9 +4,11 @@
 // The two outside links live here, in one place. Leave a url empty and that
 // card stays hidden, so the page never shows a dead link.
 
+import { api, ApiError } from './api.js';
+
 const LINKS = {
     instagram: { handle: '@_maymala', url: 'https://instagram.com/_maymala' },
-    commissions: { url: '' }
+    commissions: { url: '' },
 };
 
 function showLink(id, url, fill) {
@@ -67,21 +69,15 @@ form.addEventListener('submit', async event => {
     setStatus('Sending…');
 
     try {
-        const response = await fetch('/api/contact', {
-            method: 'POST',
-            body: new FormData(form)
-        });
-        const result = await response.json();
-
-        if (!response.ok) {
-            setStatus(result.error || 'The message did not go through. Try again.', 'error');
-            return;
-        }
-
+        await api.sendMessage(new FormData(form));
         form.reset();
         setStatus('Thank you. Your message reached me, and I will answer soon.', 'ok');
-    } catch {
-        setStatus('The message did not go through. Check the network and try again.', 'error');
+    } catch (error) {
+        const sentence =
+            error instanceof ApiError
+                ? error.message
+                : 'The message did not go through. Try again.';
+        setStatus(sentence, 'error');
     } finally {
         submitButton.disabled = false;
     }

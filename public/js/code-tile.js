@@ -4,8 +4,8 @@
 // then a short sample of its language. The sample is decoration. It is never
 // presented as the project's own code.
 
-import { languageOf, DEFAULT_LANGUAGE } from './taxonomy.js';
-import { readSnippet } from './row.js';
+import { languageOf, DEFAULT_LANGUAGE } from './shared/taxonomy.js';
+import { readSnippet } from './shared/row.js';
 
 // The card decides what fits. CSS clips the block, both down and across, so
 // the code is never cut in the middle by this file. The cap below is only a
@@ -159,13 +159,30 @@ echo "every file parses"`,
   height: var(--h);
   transform: translate(var(--x), var(--y));
   background: var(--color-surface);
-}`
+}`,
 };
 
 // Words that read as structure, per family. A short list beats a parser here.
 const KEYWORDS = {
-    common: ['return', 'if', 'else', 'for', 'while', 'break', 'continue', 'new',
-        'class', 'try', 'catch', 'throw', 'import', 'export', 'from', 'in', 'of'],
+    common: [
+        'return',
+        'if',
+        'else',
+        'for',
+        'while',
+        'break',
+        'continue',
+        'new',
+        'class',
+        'try',
+        'catch',
+        'throw',
+        'import',
+        'export',
+        'from',
+        'in',
+        'of',
+    ],
     javascript: ['const', 'let', 'var', 'function', 'async', 'await', 'typeof'],
     typescript: ['const', 'let', 'function', 'type', 'interface', 'async', 'await'],
     python: ['def', 'None', 'True', 'False', 'not', 'and', 'or', 'elif', 'self', 'raise'],
@@ -182,12 +199,17 @@ const KEYWORDS = {
     sql: ['select', 'from', 'where', 'join', 'group', 'order', 'by', 'on', 'as', 'count', 'desc'],
     bash: ['set', 'for', 'do', 'done', 'echo', 'exit'],
     css: [],
-    html: []
+    html: [],
 };
 
 // Comment openers, per language.
 const LINE_COMMENT = {
-    python: '#', ruby: '#', bash: '#', sql: '--', r: '#', yaml: '#'
+    python: '#',
+    ruby: '#',
+    bash: '#',
+    sql: '--',
+    r: '#',
+    yaml: '#',
 };
 
 function keywordsFor(language) {
@@ -203,7 +225,7 @@ function paintLine(line, language, words) {
     if (commentAt === 0 || (commentAt > 0 && !insideString(line, commentAt))) {
         return [
             ...paintCode(line.slice(0, commentAt), words),
-            { kind: 'comment', text: line.slice(commentAt) }
+            { kind: 'comment', text: line.slice(commentAt) },
         ];
     }
 

@@ -2,47 +2,81 @@
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 
 function stubDom() {
-  const make = () => {
-    const node = {
-      className: '', textContent: '', children: [], attrs: {}, listeners: {},
-      style: { setProperty() {} },
-      appendChild(child) { this.children.push(child); return child; },
-      append(...kids) { kids.forEach(kid => this.children.push(kid)); },
-      remove() { node.removed = true; },
-      setAttribute(key, value) { this.attrs[key] = value; },
-      addEventListener(name, fn) { (this.listeners[name] ||= []).push(fn); },
-      getBoundingClientRect: () => ({ top: 0, left: 0, bottom: 100, right: 100 }),
-      classList: {
-        add(name) { if (!node.className.includes(name)) node.className += ` ${name}`; },
-        remove(name) { node.className = node.className.replace(name, '').trim(); },
-        toggle(name, on) { on ? this.add(name) : this.remove(name); },
-        contains(name) { return node.className.includes(name); }
-      }
+    const make = () => {
+        const node = {
+            className: '',
+            textContent: '',
+            children: [],
+            attrs: {},
+            listeners: {},
+            style: { setProperty() {} },
+            appendChild(child) {
+                this.children.push(child);
+                return child;
+            },
+            append(...kids) {
+                kids.forEach(kid => this.children.push(kid));
+            },
+            remove() {
+                node.removed = true;
+            },
+            setAttribute(key, value) {
+                this.attrs[key] = value;
+            },
+            addEventListener(name, fn) {
+                (this.listeners[name] ||= []).push(fn);
+            },
+            getBoundingClientRect: () => ({ top: 0, left: 0, bottom: 100, right: 100 }),
+            classList: {
+                add(name) {
+                    if (!node.className.includes(name)) node.className += ` ${name}`;
+                },
+                remove(name) {
+                    node.className = node.className.replace(name, '').trim();
+                },
+                toggle(name, on) {
+                    on ? this.add(name) : this.remove(name);
+                },
+                contains(name) {
+                    return node.className.includes(name);
+                },
+            },
+        };
+        return node;
     };
-    return node;
-  };
 
-  globalThis.document = { createElement: make, body: make() };
-  globalThis.window = { innerWidth: 1512, innerHeight: 864 };
-  globalThis.performance = { now: () => 0 };
-  return make;
+    globalThis.document = { createElement: make, body: make() };
+    globalThis.window = { innerWidth: 1512, innerHeight: 864 };
+    globalThis.performance = { now: () => 0 };
+    return make;
 }
 const make = stubDom();
 
-const { createLoadingScreen, fillOrder, litCells, onFirstScreen } =
-  await import(`${ROOT}/public/js/loading-screen.js`);
+const { createLoadingScreen, fillOrder, litCells, onFirstScreen } = await import(
+    `${ROOT}/public/js/loading-screen.js`
+);
 
 const results = [];
-const check = (label, got, want) => results.push([label, JSON.stringify(got), JSON.stringify(want)]);
+const check = (label, got, want) =>
+    results.push([label, JSON.stringify(got), JSON.stringify(want)]);
 
 // The block fills from the middle outward, the shape of the photo wall.
 const order = fillOrder(4);
-check('the order covers every square', [...order].sort((a, b) => a - b),
-  Array.from({ length: 16 }, (_, i) => i));
-check('the four middle squares come first', order.slice(0, 4).sort((a, b) => a - b),
-  [5, 6, 9, 10]);
-check('the four corners come last', order.slice(12).sort((a, b) => a - b),
-  [0, 3, 12, 15]);
+check(
+    'the order covers every square',
+    [...order].sort((a, b) => a - b),
+    Array.from({ length: 16 }, (_, i) => i)
+);
+check(
+    'the four middle squares come first',
+    order.slice(0, 4).sort((a, b) => a - b),
+    [5, 6, 9, 10]
+);
+check(
+    'the four corners come last',
+    order.slice(12).sort((a, b) => a - b),
+    [0, 3, 12, 15]
+);
 
 // The count drives the block. An unknown total must not look finished.
 check('no total lights nothing', litCells(0, 0), 0);
@@ -64,14 +98,14 @@ check('a card scrolled past does not', onFirstScreen(rect(-900, -660), view), fa
 
 // The cover opens at once, counts each answer, and goes after the last one.
 function picture({ complete = false } = {}) {
-  const img = make();
-  img.complete = complete;
-  return img;
+    const img = make();
+    img.complete = complete;
+    return img;
 }
 
 function litCount(cover) {
-  return cover.element.children[0].children
-    .filter(cell => cell.className.includes('is-on')).length;
+    return cover.element.children[0].children.filter(cell => cell.className.includes('is-on'))
+        .length;
 }
 
 const cover = createLoadingScreen({ root: make() });
@@ -123,9 +157,11 @@ check('a page with no pictures clears', bare.element.className.includes('is-gone
 
 let failed = 0;
 for (const [label, got, want] of results) {
-  const pass = got === want;
-  if (!pass) failed++;
-  console.log(`${pass ? 'PASS' : 'FAIL'}  ${label.padEnd(38)} ${got}${pass ? '' : `  want ${want}`}`);
+    const pass = got === want;
+    if (!pass) failed++;
+    console.log(
+        `${pass ? 'PASS' : 'FAIL'}  ${label.padEnd(38)} ${got}${pass ? '' : `  want ${want}`}`
+    );
 }
 console.log(failed === 0 ? '\nall cases pass' : `\n${failed} case(s) failed`);
 process.exit(failed === 0 ? 0 : 1);

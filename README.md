@@ -3,341 +3,107 @@
 A Cloudflare Worker with static assets. `src/index.js` gates the private
 routes, routes `/api/*`, and hands every other request to `public/`.
 
-| Path | Holds |
-|---|---|
-| `public/` | Every file the browser downloads. The asset directory. |
-| `src/index.js` | The Worker entry point and the route table. |
-| `src/gate.js` | The Cloudflare Access check for the private routes. |
-| `src/api/` | One module per API route. |
-| `test/` | The gate test. |
+| Path                | Holds                                                 |
+| ------------------- | ----------------------------------------------------- |
+| `public/`           | Every file the browser downloads. The asset directory |
+| `src/index.js`      | The Worker entry point and the route table            |
+| `src/gate.js`       | The Cloudflare Access check for the private routes    |
+| `src/api/`          | One handler for each API route                        |
+| `src/repositories/` | Every read and write of KV and R2                     |
+| `test/`             | The test files that `npm test` runs                   |
 
-| Command | Does |
-|---|---|
-| `npm install` | Installs the pinned wrangler, once |
-| `npm run dev` | Runs the site at `http://localhost:8787` |
+Nothing outside `public/` reaches the browser.
+
+| Document                | Covers                                               |
+| ----------------------- | ---------------------------------------------------- |
+| `ARCHITECTURE_GUIDE.md` | Layers, imports, naming, comments, tests             |
+| `DATA_MODEL.md`         | The row fields, the three kinds, the bucket prefixes |
+| `STYLE_GUIDE.md`        | Color, type, space, and the look of a component      |
+
+## Commands
+
+| Command          | Does                                               |
+| ---------------- | -------------------------------------------------- |
+| `npm install`    | Installs the pinned wrangler and prettier, once    |
+| `npm run dev`    | Runs the site at `http://localhost:8787`           |
 | `npm run deploy` | Deploys to `portfolio.mayacollege2020.workers.dev` |
-| `npm run check` | Builds the bundle without deploying |
-| `npm test` | Runs both test files |
+| `npm run check`  | Builds the bundle without deploying                |
+| `npm test`       | Runs every test file in `test/`                    |
+| `npm run format` | Formats every file with prettier                   |
 
-`package.json` pins wrangler to one version. Two different versions write
-incompatible files into `.wrangler/state`, and the second one then fails to
-start. If that happens, run `rm -rf .wrangler/state`. The directory holds only
-local simulator data, so nothing of yours lives there.
+`package.json` pins wrangler to one version. Two versions write incompatible
+files into `.wrangler/state`, and the second one then fails to start. If that
+happens, run `rm -rf .wrangler/state`. That directory holds local simulator data
+only.
 
-Nothing outside `public/` reaches the browser. `wrangler.jsonc` stays local,
-and git ignores it.
+`wrangler.jsonc` carries the bindings and the Access variables. Git ignores it.
+Copy `wrangler.example.jsonc` to start.
 
-## Image Metadata (Key-Value Database)
+## Run it locally
 
-### To test KV Remote
-
-Run `npm run dev`
-
-To get the KV namespace ID, run:
 ```
-npx wrangler kv namespace list
-```
-
-To put a test entry into Remote KV:
-```
-npx wrangler kv key put --namespace-id=<YOUR ID HERE> "test-image-1" \
-  '{"name":"Test Piece","filename":"test-image-1.jpg","description":"A test","medium":"watercolor","tags":["traditional-art","watercolor"],"dateCreated":"2025-01-01","galleries":["Gallery1"]}' --remote
-  ```
-
-Head over to Cloudflare to watch the data being updated in real time.
-
-### To test KV Local
-
-With live local KV binding, run: `npm run dev`
-
-To get the KV namespace ID, run 
-```
-npx wrangler kv namespace list
-```
-
-Put a test entry into Local KV:
-```
-npx wrangler kv key put --namespace-id=<YOUR ID HERE> "test-image-1" \
-  '{"name":"Test Piece","filename":"test-image-1.jpg","description":"A test","medium":"watercolor","tags":["traditional-art","watercolor"],"dateCreated":"2025-01-01","galleries":["Gallery1"]}'
-  ```
-
-`name` and `filename` are both required on every entry. `filename` is the key of the
-corresponding object in the `IMAGES` R2 bucket, used to fetch the actual image bytes.
-If an entry is missing `filename`, or `filename` doesn't match any object in R2, the
-API defensively skips that entry rather than failing the whole request.
-
-Run dev server with KV bound:
-```
+npm install
 npm run dev
 ```
-This spins up a local server (usually at `http://localhost:8787`) with your real KV namespace connected.
 
-Hit the endpoints to verify:
-- All metadata: `curl http://localhost:8787/api/image-metadata`
-- By tag: `curl "http://localhost:8787/api/image-metadata?tag=watercolor"`
-- The words in use: `curl http://localhost:8787/api/vocabulary`
-- Single entry by ID: `curl "http://localhost:8787/api/image-metadata?id=test-image-1"`
+Cloudflare Access does not run on localhost, so a private page needs a bypass.
+Create a `.dev.vars` file:
 
-
-## Images (R2 Object Storage)
-
-### To test R2 Remote
-
-Run `npm run dev`
-
-To get the R2 bucket name, run:
 ```
+ACCESS_LOCAL_BYPASS=true
+```
+
+The bypass needs two conditions: the flag and a localhost hostname. The flag
+alone cannot open a route on a deployed site. Keep `.dev.vars` out of git.
+
+Then open `http://localhost:8787/pages/upload`.
+
+## The bindings
+
+| Binding          | Kind          | Holds                                      |
+| ---------------- | ------------- | ------------------------------------------ |
+| `IMAGE_METADATA` | KV namespace  | One row for each piece of work             |
+| `IMAGES`         | R2 bucket     | Artwork, small copies, downloads, messages |
+| `ASSETS`         | Static assets | Everything in `public/`                    |
+| `EMAIL`          | Send email    | Optional. See below                        |
+
+Read the ids:
+
+```
+npx wrangler kv namespace list
 npx wrangler r2 bucket list
 ```
 
-To put a test object into Remote R2 (the object key must match the `filename` field
-of a KV metadata entry):
-```
-npx wrangler r2 object put portfolio/test-image-1.jpg --file ./path/to/test-image.jpg --remote
-```
+A wrangler write goes to the local simulator by default. Add `--remote` to write
+to the live namespace or bucket. `DATA_MODEL.md` holds the row shape and the
+example commands that write one.
 
-Head over to Cloudflare to watch the object appear in the bucket.
-
-### To test R2 Local
-
-With live local R2 binding, run: `npm run dev`
-
-To get the R2 bucket name, run
-```
-npx wrangler r2 bucket list
-```
-
-Put a test object into Local R2:
-```
-npx wrangler r2 object put portfolio/[IMAGE NAME HERE] --file ./path/to/test-image.jpg
-```
-
-Run dev server with R2 bound:
-```
-npm run dev
-```
-This spins up a local server (usually at `http://localhost:8787`) with your real R2 bucket connected.
-
-Hit the endpoint to verify (note: `id` here is the R2 object key, i.e. the metadata
-entry's `filename`, not the KV key):
-- Fetch image bytes: `curl "http://localhost:8787/api/images?id=[FILENAME HERE]" --output [FILENAME HERE]`
-
-## Tags and mediums
-
-There is no fixed list. A term is whatever you type. It is cleaned to one
-steady form first, so `Oil Paint`, `oil paint` and `OIL-PAINT` all become
-`oil-paint`. `public/js/taxonomy.js` holds that rule, and the browser and the
-Worker both import it.
-
-Two categories work the same way:
-
-| Field | Holds |
-|---|---|
-| `tags` | A list of terms. What the piece is about |
-| `mediums` | A list of terms. What the piece is made of |
-
-`GET /api/vocabulary` returns every term already in use, with a count, most
-used first:
+Check that the data is readable:
 
 ```
-{"tags":[{"value":"watercolor","count":3}],"mediums":[{"value":"ink","count":2}]}
+curl http://localhost:8787/api/image-metadata
+curl http://localhost:8787/api/vocabulary
 ```
 
-The upload page feeds that list into a suggestion box. Type to narrow it, pick
-a used term, or type a new one and press Enter. Gallery Search uses the same
-list to suggest filter values, for Tag and for Medium.
+## Cloudflare Access
 
-An older row holds one `medium` string. The read path promotes it into
-`mediums` on the way out, so nothing needs a migration. A row saved again
-keeps only the list.
-
-Both filters also work straight on the API:
+Four pages and three routes are private:
 
 ```
-curl "http://localhost:8787/api/image-metadata?tag=watercolor"
-curl "http://localhost:8787/api/image-metadata?medium=ink"
+/pages/upload  /pages/edit  /pages/messages  /pages/thumbnails
+/api/upload    /api/messages  /api/thumbnail
 ```
 
-## Contact form
+`src/gate.js` holds that list in `PROTECTED_PATHS`. Each path also appears in
+`run_worker_first` in `wrangler.jsonc`, or the asset answers before the gate
+runs.
 
-`/pages/contact` carries a form, an Instagram link, and a commissions link.
-The email address never appears on the page.
+Two checks protect each one. Cloudflare Access blocks the route at the edge and
+shows the login page. Then `src/gate.js` verifies the token and checks the email
+against the allow list. A signed-in person outside the list lands back on the
+home page.
 
-### Where a message goes
-
-Every message is written to the R2 bucket, under `messages/`. That prefix sits
-apart from the artwork, so the gallery never sees it. A message is kept even
-when email is not set up, so nothing is lost.
-
-Read the messages at `/messages`. The page is private, behind the same Access
-gate as `/upload`. Each card shows the sender, the date, and the text, with a
-reply link and a Delete button.
-
-### Turning on email
-
-Email needs a domain. A `workers.dev` subdomain cannot send, so this waits
-until you point a domain at the site.
-
-1. Run `npx wrangler email sending enable yourdomain.com`.
-2. Add the binding to `wrangler.jsonc`: `"send_email": [{ "name": "EMAIL" }]`.
-3. Add two variables: `CONTACT_TO`, your own address, and `CONTACT_FROM`, an
-   address on the onboarded domain.
-4. Deploy.
-
-With all three in place, each message is also mailed to you, with the sender
-set as the reply address. Without them the message is still stored, and the
-visitor still sees the same answer.
-
-### What stops spam
-
-| Guard | What it does |
-|---|---|
-| A honeypot field | A crawler fills it in. The reply looks normal, and nothing is stored |
-| A rate limit | Three messages a minute per address |
-| Length caps | 120 for a name, 160 for a subject, 5000 for the body |
-
-The rate limit lives in the Worker isolate, so it slows a flood rather than
-stopping one. Add Cloudflare Turnstile when the form draws real traffic.
-
-## Three kinds of row
-
-The `IMAGE_METADATA` namespace holds three kinds of row. The upload page
-stores the kind. A row written before that field gets one worked out: a
-picture means `image`, no picture means `panel`.
-
-| Kind | Needs a picture | Needs a medium | The home page draws |
-|---|---|---|---|
-| `image` | yes | yes | The photo, in a tile matching its orientation |
-| `code` | no | no | Its own picture. With none, its snippet. With neither, a sample of its language |
-| `panel` | no | no | A color block |
-
-A code project has no medium. The upload form hides the field, and the server
-stores an empty list even if one is sent.
-
-A code tile is always square, and never smaller than two cells, so the code
-reads. A click opens the detail view, which holds the description, the
-snippet, the links, and the download.
-
-### Every field
-
-```jsonc
-{
-  "kind": "code",             // image | code | panel
-  "name": "Portfolio site",   // optional. Empty shows as untitled
-  "description": "Para one.\n\nPara two.",  // a blank line starts a paragraph
-  "mediums": [],              // a list of terms. Always empty on a code row
-  "tags": ["javascript"],     // a list of terms
-  "dateCreated": "2026-11-05",
-  "galleries": [],
-
-  // Pictures, in order. The first one is the cover, and the mosaic tile
-  // shows it. The size is read from each image header on upload.
-  "images": [
-    { "key": "portfolio.png",   "width": 1600, "height": 900 },
-    { "key": "portfolio-2.png", "width": 900,  "height": 1600 }
-  ],
-  "sizeVersion": 2,
-
-  // Code fields. Every one is optional, and an image row leaves them empty.
-  "repoUrl": "https://github.com/you/project",
-  "liveUrl": "https://project.example",
-  "language": "javascript",   // empty reads a tag, then falls back to javascript
-  "snippet": "...",           // up to 2000 characters, shown on the tile
-  "download": {
-    "key": "files/portfolio-site-notes.pdf",
-    "name": "notes.pdf",
-    "size": 184320,
-    "type": "application/pdf"
-  },
-
-  // Panel fields. Optional, and only a panel reads them.
-  "shape": "landscape",       // landscape | portrait | square
-  "panelColor": 3             // 1 to 8
-}
-```
-
-A link must start with `http:` or `https:`. Anything else is dropped on save.
-
-A row written before the list held one `filename`, with `width` and `height`
-beside it. The read path promotes that into a one item `images` list, exactly
-as `medium` became `mediums`. Nothing in the database needs rewriting. A row
-saved again keeps only the list.
-
-Up to 12 pictures fit on one row. The cover takes the plain id, and the rest
-are numbered: `piece.png`, `piece-2.png`, `piece-3.png`.
-
-### Small copies
-
-The wall never draws a tile wider than 469px, but a stored photo is three to
-four times that. Each picture therefore carries a 938px copy, and the wall and
-the gallery cards load that instead. The detail view loads the original.
-
-```jsonc
-{ "key": "piece.png", "thumb": "thumbs/piece.png.webp", "width": 3024, "height": 4032 }
-```
-
-The browser makes the copy. You pick one file, and the upload page draws it
-small on a canvas before sending, so both go up in the same submit. A picture
-the browser cannot read stores no copy, and `thumb` stays null. The wall then
-loads the original.
-
-Cloudflare resizes at the edge only for a zone you own. A workers.dev
-subdomain has none, so the canvas does the work until a domain points here.
-
-To fill in the copies for rows uploaded before this, open `/thumbnails`. The
-page lists every picture with no copy, makes one for each, and stores it. It
-is private, behind the same Access gate as `/upload`. Running it twice is
-safe, because a row with a copy is skipped.
-
-### The detail view
-
-A click opens one of two layouts.
-
-| Kind | Layout |
-|---|---|
-| `code` | A document. The pictures rotate at the top, then the title, the words, the links and the download |
-| anything else | The picture fills the view. A button on its right slides a panel out with the title, the date, the terms and the words |
-
-With more than one picture, arrows and dots appear. A description keeps its
-paragraphs, because a blank line in the box starts a new one.
-
-### Where the bytes go
-
-One bucket, three prefixes. Each one stays out of the others' way.
-
-| Prefix | Holds | Served by |
-|---|---|---|
-| no prefix | An artwork image | `/api/images?id=<filename>` |
-| `thumbs/` | A 938px copy of a picture | `/api/images?id=thumbs/...` |
-| `files/` | A project download | `/api/files?key=files/...` |
-| `messages/` | A contact message | `/api/messages`, behind the gate |
-
-`/api/files` refuses any key outside `files/`, so it can never hand out an
-artwork or a message.
-
-### Writing a panel row
-
-The upload page writes `image` and `code` rows. Write a panel with wrangler:
-
-```
-npx wrangler kv key put --namespace-id=<YOUR ID HERE> "first-story" \
-  '{"name":"A Story","mediums":["writing"],"tags":["storytelling"],"dateCreated":"2026-11-05","shape":"landscape","panelColor":3}'
-```
-
-## Upload page (/upload)
-
-`/upload` is a private page. It writes one image to the `IMAGES` R2 bucket and
-one metadata entry to the `IMAGE_METADATA` KV namespace. No page on the site
-links to it.
-
-Two gates protect it:
-
-1. Cloudflare Access blocks the route at the edge and shows the login page.
-2. `functions/_middleware.js` verifies the Access token and checks the email.
-
-A signed-in person who is not on the email list goes back to the home page.
-
-### Set up Cloudflare Access
+### Set up the application
 
 Do not use the Access tab on the Worker. It offers All traffic or Previews
 only, and All traffic puts a login in front of the whole site, including the
@@ -346,14 +112,15 @@ home page and the public API. Use a self-hosted application per path instead.
 1. Open the Cloudflare dashboard. Go to Zero Trust, then Access, then
    Applications. Add a self-hosted application.
 2. Give it these seven paths, on `portfolio.mayacollege2020.workers.dev`:
-   `/upload`, `/edit`, `/messages`, `/thumbnails`, `/api/upload`,
-   `/api/messages`, `/api/thumbnail`. Use your own domain instead if you have
-   one. A path with children needs a second entry ending in `/*`.
+   `/pages/upload`, `/pages/edit`, `/pages/messages`, `/pages/thumbnails`,
+   `/api/upload`, `/api/messages`, `/api/thumbnail`. Use your own domain
+   instead if you have one. A path with children needs a second entry ending
+   in `/*`.
 3. Add a policy of action Allow, with an Emails rule that lists your email.
 4. Open the application Overview tab. Copy the Application Audience (AUD) tag.
 5. Read your team domain in Zero Trust, under Settings, then Custom Pages. It
-   looks like `yourteam.cloudflareaccess.com`. It carries the team name only.
-   It never carries the application name.
+   looks like `yourteam.cloudflareaccess.com`. It carries the team name only,
+   never the application name.
 
 Check the team domain before you deploy. This must return JSON:
 
@@ -366,71 +133,65 @@ resolve.
 
 ### Set the variables
 
-Put the three values in the `vars` block of `wrangler.jsonc`, then deploy:
+Put the three values in the `vars` block of `wrangler.jsonc`, then run
+`npm run deploy`.
 
-```
-npm run deploy
-```
+| Variable                | Example                         | Purpose                               |
+| ----------------------- | ------------------------------- | ------------------------------------- |
+| `ACCESS_TEAM_DOMAIN`    | `yourteam.cloudflareaccess.com` | Where the gate reads the signing keys |
+| `ACCESS_AUD`            | The AUD tag from step 4         | The application the token must name   |
+| `ACCESS_ALLOWED_EMAILS` | `you@example.com`               | The allow list, separated by commas   |
 
-| Variable | Example | Purpose |
-|---|---|---|
-| `ACCESS_TEAM_DOMAIN` | `yourteam.cloudflareaccess.com` | Where the middleware reads the signing keys |
-| `ACCESS_AUD` | the AUD tag from step 4 | The application the token must name |
-| `ACCESS_ALLOWED_EMAILS` | `you@example.com` | The allow list, separated by commas |
+None of the three is a secret. The AUD tag is a public identifier, and Access
+itself blocks a stranger. Git ignores `wrangler.jsonc`, so the values stay off
+GitHub.
 
-`wrangler.jsonc` is gitignored, so the values stay off GitHub. None of the
-three is a secret. The AUD tag is a public identifier, and Access itself is
-what blocks a stranger.
+Without `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD`, a private route returns 503. It
+never serves the page unprotected.
 
-Without `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD`, the route returns 503. It never
-serves the page unprotected.
+The dashboard accepts these variables once a deploy carries Worker code. Before
+that it says _variables cannot be added to a worker that only has static
+assets_.
 
-The dashboard works too, once a deploy carries Worker code. Before that it
-says *variables cannot be added to a worker that only has static assets*.
-
-To confirm the Worker runs in production, request a public route:
+### Confirm the deploy
 
 ```
 curl -i https://portfolio.mayacollege2020.workers.dev/api/vocabulary
 ```
 
-A JSON array means the Worker is live. HTML, or a 404, means the deploy
-shipped the assets without `src/index.js`.
+JSON means the Worker is live. HTML, or a 404, means the deploy shipped the
+assets without `src/index.js`.
 
-### Test the upload locally
+Then open `/pages/upload` on the deployed site. Access shows the login page.
+Sign in with an email from the list.
 
-Cloudflare Access does not run on localhost. Create a `.dev.vars` file:
+## Email
 
-```
-ACCESS_LOCAL_BYPASS=true
-```
+Email needs a domain. A `workers.dev` subdomain cannot send, so this waits until
+you point a domain at the site.
 
-Then run the dev server with both bindings:
+1. Run `npx wrangler email sending enable yourdomain.com`.
+2. Add the binding to `wrangler.jsonc`: `"send_email": [{ "name": "EMAIL" }]`.
+3. Add two variables: `CONTACT_TO`, your own address, and `CONTACT_FROM`, an
+   address on the onboarded domain.
+4. Run `npm run deploy`.
 
-```
-npm run dev
-```
+With all three in place, each contact message is also mailed to you, with the
+sender set as the reply address. Without them the message is still stored in the
+bucket, and the visitor sees the same answer.
 
-Open `http://localhost:8787/upload`. The bypass needs two conditions: the
-`ACCESS_LOCAL_BYPASS` flag and a localhost hostname. The flag alone cannot open
-the route on a deployed site. Keep `.dev.vars` out of git.
-
-### Test the gate
+## Tests
 
 ```
 npm test
 ```
 
-The first test signs real RS256 tokens with a throwaway key and runs the gate
-against them. It covers a forged signature, a wrong audience, a wrong issuer,
-an unknown key id, an expired token, a wrong email, and the localhost bypass.
+No test needs a Cloudflare login. Three of them carry the most weight:
 
-The second test routes the Worker with stub bindings. It proves that the
-assets serve, that each API route answers, and that both private routes stay
-closed. Neither test needs a Cloudflare login.
+| Test                     | Proves                                                                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `test/access.test.mjs`   | The gate rejects a forged signature, a wrong audience, a wrong issuer, an unknown key id, an expired token, and an unlisted email        |
+| `test/router.test.mjs`   | The assets serve, each API route answers, every private route stays closed, and `/api/images` refuses a key outside the artwork prefixes |
+| `test/metadata.test.mjs` | A stored field survives a read, and an old row is promoted without a guessed kind                                                        |
 
-### Test the upload remotely
-
-Deploy, then open `https://<your-site>/upload`. Cloudflare Access shows the
-login page. Sign in with an email from the list. An email outside the list
-lands back on the home page.
+`ARCHITECTURE_GUIDE.md` says which change needs a test.

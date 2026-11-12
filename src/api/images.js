@@ -1,20 +1,19 @@
-export async function onRequest(context) {
-  const url = new URL(context.request.url);
-  const imageId = url.searchParams.get("id");
+// Serves an artwork image, or the small copy of one.
+//
+// The key comes from the visitor, so this route checks it before it reads the
+// bucket. A project download and a contact message sit under their own
+// prefixes, and neither one is reachable here.
+import { imageRepository } from '../repositories/imageRepository.js';
+import { badRequest, notFound, objectResponse } from './_reply.js';
 
-  if (!imageId) {
-    return new Response(JSON.stringify({ error: "Missing required 'id' parameter" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
+export async function readImage(request, env) {
+    const key = new URL(request.url).searchParams.get('id');
 
-  const object = await context.env.IMAGES.get(imageId);
-  if (!object) return new Response("Not found", { status: 404 });
+    if (!key) return badRequest("Missing required 'id' parameter");
+    if (!imageRepository.isPublicKey(key)) return notFound();
 
-  const headers = new Headers();
-  object.writeHttpMetadata(headers);
-  headers.set("etag", object.httpEtag);
+    const object = await imageRepository.get(env, key);
+    if (!object) return notFound();
 
-  return new Response(object.body, { headers });
+    return objectResponse(object);
 }

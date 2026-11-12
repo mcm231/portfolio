@@ -1,0 +1,379 @@
+/* The reset, the controls, and the page shell every page shares.
+   A rule here must apply to more than one page. */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    border-radius: var(--radius);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* A display rule must never beat the hidden attribute. */
+[hidden] {
+    display: none !important;
+}
+
+body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+}
+
+h1,
+h2,
+h3,
+button,
+select,
+input,
+.menu-panel a {
+    font-family: var(--font-display);
+}
+
+.button {
+    display: inline-block;
+    padding: var(--space-4) var(--space-6);
+    border: none;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.button:hover {
+    background: var(--color-accent-hover);
+}
+
+/* The one filled use of amethyst. The filter focus ring matches it. */
+.button-mark {
+    background: var(--color-mark-fill);
+    color: var(--color-on-brand);
+}
+
+.button-mark:hover {
+    background: var(--color-mark-fill-hover);
+}
+
+.button-quiet {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+.button-quiet:hover {
+    background: var(--color-brand-soft);
+    border-color: var(--color-brand);
+    color: var(--color-ink);
+}
+
+.menu {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    width: calc(var(--menu-rail) + var(--menu-fade));
+    pointer-events: none;
+}
+
+/* The rail: a solid teal core, then a fade out to the right. The fade lives on
+   this pseudo-element so it never touches the open drawer. */
+.menu::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(165deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+    /* The mask reads alpha only. Black here means keep, not a color. */
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 var(--menu-rail), transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 var(--menu-rail), transparent 100%);
+}
+
+/* The rail shows an even margin on every side of the button. */
+.menu-toggle {
+    position: absolute;
+    left: var(--space-4);
+    top: var(--space-4);
+    z-index: 3;
+    width: calc(var(--menu-rail) - var(--space-4) * 2);
+    height: calc(var(--menu-rail) - var(--space-4) * 2);
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+/* Three bars, drawn from one element plus its two pseudo-elements. */
+.menu-bars,
+.menu-bars::before,
+.menu-bars::after {
+    position: absolute;
+    left: 11px;
+    width: 26px;
+    height: 3px;
+    background: var(--color-on-brand);
+    transition:
+        transform 0.24s ease,
+        background 0.2s ease;
+}
+
+.menu-bars {
+    top: 22px;
+}
+
+.menu-bars::before,
+.menu-bars::after {
+    content: '';
+    left: 0;
+}
+
+.menu-bars::before {
+    top: -8px;
+}
+
+.menu-bars::after {
+    top: 8px;
+}
+
+.menu.is-open .menu-bars {
+    background: transparent;
+}
+
+.menu.is-open .menu-bars::before {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.menu.is-open .menu-bars::after {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+/* A standard drawer: it slides in from the left, over a scrim. */
+.menu-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    width: min(var(--menu-drawer), 80vw);
+    padding: calc(var(--menu-rail) + var(--space-5)) 0 var(--space-6);
+    background: linear-gradient(165deg, var(--color-brand-deep) 0%, var(--color-brand-dark) 100%);
+    pointer-events: auto;
+    overflow-y: auto;
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition:
+        transform 0.24s ease,
+        visibility 0.24s;
+}
+
+.menu.is-open .menu-panel {
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.menu-panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.menu-panel a {
+    display: block;
+    padding: var(--space-3) var(--space-6);
+    color: var(--color-on-brand);
+    font-size: var(--text-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    opacity: 0.86;
+    transition:
+        background 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.menu-panel a:hover {
+    background: var(--veil-on-brand);
+    opacity: 1;
+}
+
+#menu-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: var(--color-overlay);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.24s ease;
+}
+
+#menu-scrim.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: var(--space-7) var(--space-7) var(--space-8);
+}
+
+.page-header {
+    margin-bottom: var(--space-7);
+    text-align: center;
+}
+
+.page-title {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.page-count {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+.back-link {
+    position: fixed;
+    left: var(--space-5);
+    top: var(--space-5);
+    z-index: 10;
+}
+
+/* The mirror of .back-link, for the next step rather than the previous one. */
+.forward-link {
+    position: fixed;
+    right: var(--space-5);
+    top: var(--space-5);
+    z-index: 10;
+}
+
+.field {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    outline: none;
+}
+
+.field:focus {
+    border-color: var(--color-mark-line);
+    outline: 1px solid var(--color-mark-line);
+}
+
+.field-grow {
+    flex: 1;
+}
+
+.message {
+    margin-top: var(--space-7);
+    color: var(--color-ink-muted);
+}
+
+body.admin {
+    min-height: 100vh;
+}
+
+.page-narrow {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.form {
+    width: 100%;
+}
+
+.form-row {
+    margin-bottom: var(--space-5);
+}
+
+.form-row-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.form-row-inline .form-label {
+    margin-bottom: 0;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+}
+
+.form-row .field,
+.form-row textarea.field {
+    width: 100%;
+}
+
+.form-hint {
+    margin: var(--space-2) 0 0;
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+}
+
+.form-row .chips {
+    margin: var(--space-3) 0 0;
+}
+
+.form-row .chips:empty {
+    display: none;
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+.form-status {
+    margin: var(--space-4) 0 0;
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+.required {
+    color: var(--color-error);
+    font-weight: 700;
+}
+
+.field.is-invalid,
+.tag-list.is-invalid {
+    border-color: var(--color-error);
+    outline: 1px solid var(--color-error);
+}

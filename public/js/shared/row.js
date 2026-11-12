@@ -17,18 +17,20 @@ export function readImages(entry) {
                 key: String(image.key),
                 thumb: image.thumb ? String(image.thumb) : null,
                 width: Number(image.width) || null,
-                height: Number(image.height) || null
+                height: Number(image.height) || null,
             }));
     }
 
     if (!entry.filename) return [];
 
-    return [{
-        key: String(entry.filename),
-        thumb: null,
-        width: Number(entry.width) || null,
-        height: Number(entry.height) || null
-    }];
+    return [
+        {
+            key: String(entry.filename),
+            thumb: null,
+            width: Number(entry.width) || null,
+            height: Number(entry.height) || null,
+        },
+    ];
 }
 
 // The object a wall or a card should load. The small copy when one exists,

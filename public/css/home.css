@@ -1,0 +1,138 @@
+/* The home page: the pannable plane and the photo wall. */
+
+/* The home page runs on the card color, so the wall gutters read as white.
+   Every other page keeps the alice blue page color. */
+body.home {
+    height: 100vh;
+    overflow: hidden;
+    background: var(--color-surface);
+}
+
+#viewport {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+}
+
+#viewport.is-dragging {
+    cursor: grabbing;
+}
+
+/* Origin of the pannable plane. Children position against this point. */
+#plane {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    will-change: transform;
+}
+
+#mosaic {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+}
+
+/* --x and --y are the top-left corner, in plane coordinates. */
+.tile {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--w);
+    height: var(--h);
+    margin: 0;
+    overflow: hidden;
+    background: var(--color-surface);
+    opacity: var(--o);
+    transform: translate(var(--x), var(--y));
+}
+
+.tile img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* A piece with no picture. The color stands in for the artwork. */
+.tile.is-panel {
+    background: var(--panel);
+}
+
+/* The card is one more cell of the wall. Before the layout runs it centers on
+   its own size; afterwards mosaic.js snaps it to its reserved cells. */
+.card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: var(--w, min(630px, 84vw));
+    height: var(--h, auto);
+    padding: var(--space-7) var(--space-7);
+    transform: translate(var(--x, -50%), var(--y, -50%));
+    background: var(--color-surface);
+    text-align: center;
+}
+
+.card-name {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-display);
+    font-weight: 300;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.view-controls {
+    position: fixed;
+    right: var(--space-5);
+    bottom: var(--space-5);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.button-icon {
+    width: 38px;
+    padding: 0;
+    height: 38px;
+    font-size: var(--text-lg);
+    line-height: 1;
+}
+
+.card-tagline {
+    margin: 0 0 var(--space-6);
+    color: var(--color-mark-text);
+    font-family: var(--font-display);
+    font-size: clamp(0.7rem, 1.25vw, 0.88rem);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+#recenter {
+    transition:
+        opacity 0.25s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+#recenter.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
