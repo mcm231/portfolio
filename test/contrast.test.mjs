@@ -97,6 +97,8 @@ const PAIRS = [
     ['error text on the page', '--color-error', '--color-bg', 'normal'],
     ['error text on a card', '--color-error', '--color-surface', 'normal'],
     ['danger button text', '--color-on-brand', '--color-error', 'normal'],
+    ['the failed banner', '--color-on-brand', '--color-error', 'normal'],
+    ['the stored banner', '--color-on-brand', '--color-ok', 'normal'],
 
     ['a control border, page', '--color-line-strong', '--color-bg', 'ui'],
     ['a control border, card', '--color-line-strong', '--color-surface', 'ui'],

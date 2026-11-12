@@ -315,12 +315,12 @@ form.addEventListener('submit', async event => {
         const result = await api.saveRow(body);
 
         const note = editingId
-            ? `Saved "${result.id}".`
+            ? `Success. Saved "${result.id}".`
             : result.replaced
-              ? `Replaced "${result.id}".`
+              ? `Success. Replaced "${result.id}".`
               : result.renamedFrom
-                ? `"${result.renamedFrom}" was taken. Stored as "${result.id}".`
-                : `Stored "${result.id}".`;
+                ? `Success. "${result.renamedFrom}" was taken, so the row is "${result.id}".`
+                : `Success. Stored "${result.id}".`;
 
         setStatus(note, 'ok');
         entryPreview.textContent = `${result.id}\n${JSON.stringify(result.entry, null, 2)}`;

@@ -30,7 +30,7 @@
     --color-brand-dark: #126a76; /* teal, darkened, carries text */
     --color-brand-deep: #0e545e; /* teal, darkest, a hover */
     --color-brand-soft: #d3e9ec; /* teal over alice blue */
-    --color-on-brand: #f6fafe; /* text on a dark teal or on the error red */
+    --color-on-brand: #f6fafe; /* text on a dark teal, the error red or the ok green */
     --veil-on-brand: rgba(246, 250, 254, 0.16);
     --veil-on-brand-strong: rgba(246, 250, 254, 0.38);
 
@@ -48,6 +48,7 @@
     --color-mark-soft: #e7d9e6; /* a chip fill, with ink text */
 
     --color-error: #b23a48; /* a brick red, cool enough for alice blue */
+    --color-ok: #19734a; /* a sea green, as strong on white text as the red */
     --color-overlay: rgba(25, 42, 81, 0.6); /* space indigo, see through */
     /* A caption sits over a photo of any color. At this alpha the lightest
        possible photo still gives white text 5.2 to 1. */

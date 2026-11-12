@@ -50,34 +50,35 @@ is too light to carry text. Pick the shade by the job, never by the look:
 
 Never read a palette token in a component. Read a role token:
 
-| Role token                 | Value                     | Use                                            |
-| -------------------------- | ------------------------- | ---------------------------------------------- |
-| `--color-bg`               | Alice Blue                | The page behind everything                     |
-| `--color-surface`          | Alice Blue, lightened     | A card, a tile, a panel, an input              |
-| `--color-surface-alt`      | Alice Blue, darkened      | A quiet block                                  |
-| `--color-ink`              | Space Indigo              | Body text and headings                         |
-| `--color-ink-muted`        | Space Indigo, lightened   | A caption, a date, a count                     |
-| `--color-line`             | Alice Blue, darkened      | A divider. Decoration only                     |
-| `--color-line-strong`      | Space Indigo, lightened   | A control boundary                             |
-| `--color-brand`            | Teal                      | The rail gradient, dark end                    |
-| `--color-brand-light`      | Teal, lightened           | The rail gradient, light end                   |
-| `--color-brand-dark`       | Teal, darkened            | The drawer, the band, text on light            |
-| `--color-brand-deep`       | Teal, darkest             | A hover                                        |
-| `--color-brand-soft`       | Teal over Alice Blue      | A quiet hover fill                             |
-| `--color-on-brand`         | Alice Blue, lightened     | Text on a dark teal or on the error red        |
-| `--veil-on-brand`          | Alice Blue, see through   | A hover fill on teal                           |
-| `--color-accent`           | `--color-brand-dark`      | The primary action                             |
-| `--color-accent-hover`     | `--color-brand-deep`      | That action, hovered                           |
-| `--color-on-accent`        | `--color-on-brand`        | Text on the primary action                     |
-| `--color-mark`             | Amethyst Smoke            | The About accent block                         |
-| `--color-mark-line`        | Amethyst, darkened        | A border, a rule, a focus ring                 |
-| `--color-mark-text`        | Amethyst, darker          | A tagline, an eyebrow, a number                |
-| `--color-mark-fill`        | Amethyst, darker          | The gallery Add button                         |
-| `--color-mark-fill-hover`  | Amethyst, darkest         | That button, hovered                           |
-| `--color-mark-soft`        | Amethyst over Alice Blue  | A chip fill, with ink text                     |
-| `--color-error`            | A brick red               | A required marker, an invalid field            |
-| `--color-overlay`          | Space Indigo, see through | A scrim behind a drawer or a modal             |
-| `--blank-1` .. `--blank-8` | Tints of the four         | A placeholder tile, when the image API is down |
+| Role token                 | Value                     | Use                                             |
+| -------------------------- | ------------------------- | ----------------------------------------------- |
+| `--color-bg`               | Alice Blue                | The page behind everything                      |
+| `--color-surface`          | Alice Blue, lightened     | A card, a tile, a panel, an input               |
+| `--color-surface-alt`      | Alice Blue, darkened      | A quiet block                                   |
+| `--color-ink`              | Space Indigo              | Body text and headings                          |
+| `--color-ink-muted`        | Space Indigo, lightened   | A caption, a date, a count                      |
+| `--color-line`             | Alice Blue, darkened      | A divider. Decoration only                      |
+| `--color-line-strong`      | Space Indigo, lightened   | A control boundary                              |
+| `--color-brand`            | Teal                      | The rail gradient, dark end                     |
+| `--color-brand-light`      | Teal, lightened           | The rail gradient, light end                    |
+| `--color-brand-dark`       | Teal, darkened            | The drawer, the band, text on light             |
+| `--color-brand-deep`       | Teal, darkest             | A hover                                         |
+| `--color-brand-soft`       | Teal over Alice Blue      | A quiet hover fill                              |
+| `--color-on-brand`         | Alice Blue, lightened     | Text on a dark teal, the error red or the green |
+| `--veil-on-brand`          | Alice Blue, see through   | A hover fill on teal                            |
+| `--color-accent`           | `--color-brand-dark`      | The primary action                              |
+| `--color-accent-hover`     | `--color-brand-deep`      | That action, hovered                            |
+| `--color-on-accent`        | `--color-on-brand`        | Text on the primary action                      |
+| `--color-mark`             | Amethyst Smoke            | The About accent block                          |
+| `--color-mark-line`        | Amethyst, darkened        | A border, a rule, a focus ring                  |
+| `--color-mark-text`        | Amethyst, darker          | A tagline, an eyebrow, a number                 |
+| `--color-mark-fill`        | Amethyst, darker          | The gallery Add button                          |
+| `--color-mark-fill-hover`  | Amethyst, darkest         | That button, hovered                            |
+| `--color-mark-soft`        | Amethyst over Alice Blue  | A chip fill, with ink text                      |
+| `--color-error`            | A brick red               | A required marker, an invalid field             |
+| `--color-ok`               | A sea green               | The banner of a stored row                      |
+| `--color-overlay`          | Space Indigo, see through | A scrim behind a drawer or a modal              |
+| `--blank-1` .. `--blank-8` | Tints of the four         | A placeholder tile, when the image API is down  |
 
 Rules:
 

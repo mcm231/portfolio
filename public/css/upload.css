@@ -71,12 +71,26 @@
     font-weight: 600;
 }
 
+/* The outcome of a submit, as a banner over the button that made it. Green
+   says the row is stored, red says it is not. A message with no outcome stays
+   a quiet line, because it only reports progress. */
+.form-status.is-ok,
 .form-status.is-error {
-    color: var(--color-error);
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-on-brand);
     font-weight: 600;
+    text-align: center;
 }
 
 .form-status.is-ok {
-    color: var(--color-ink);
-    font-weight: 600;
+    background: var(--color-ok);
+}
+
+.form-status.is-error {
+    background: var(--color-error);
+}
+
+/* The status stands over the buttons, so its gap goes under it. */
+#status.form-status {
+    margin: var(--space-5) 0 var(--space-4);
 }
