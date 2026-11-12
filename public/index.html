@@ -57,26 +57,40 @@
             <div id="menu-panel" class="menu-panel"></div>
         </nav>
 
-        <div class="view-controls">
-            <button
-                id="zoom-out"
-                class="button button-quiet button-icon"
-                type="button"
-                aria-label="Zoom out"
-            >
-                −
-            </button>
-            <button
-                id="zoom-in"
-                class="button button-quiet button-icon"
-                type="button"
-                aria-label="Zoom in"
-            >
-                +
-            </button>
-            <button id="recenter" class="button button-quiet is-hidden" type="button">
-                Recenter
-            </button>
+        <div class="view-tools">
+            <!-- How many tiles the wall draws. js/home.js sets the range from
+                 js/components/mosaic.js, so no number lives in this file. -->
+            <div class="view-size">
+                <input
+                    id="wall-size"
+                    class="view-size-range"
+                    type="range"
+                    aria-label="How many pieces the wall draws"
+                />
+                <output id="wall-size-count" class="view-size-count" for="wall-size"></output>
+            </div>
+
+            <div class="view-controls">
+                <button
+                    id="zoom-out"
+                    class="button button-quiet button-icon"
+                    type="button"
+                    aria-label="Zoom out"
+                >
+                    −
+                </button>
+                <button
+                    id="zoom-in"
+                    class="button button-quiet button-icon"
+                    type="button"
+                    aria-label="Zoom in"
+                >
+                    +
+                </button>
+                <button id="recenter" class="button button-quiet is-hidden" type="button">
+                    Recenter
+                </button>
+            </div>
         </div>
 
         <script type="module" src="js/home.js"></script>

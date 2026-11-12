@@ -275,3 +275,7 @@ reduce the size of the gallery panels to 2/3 of their size. Keep it 5 to a row
 the caret in the dropdown in this screenshot is too close to the right '/Users/mayamalavasi/Desktop/Screenshot 2026-11-12 at 2.13.44 PM.png'
 add a green Success banner over the submission button in the single item edit and the upload pages to notify the user when an image has successfully been edited/uploaded. Add a red error banner if it failed.
 The mediums and tags boxes in the detail view of an image, when clicked, should load the gallery page with the tag/medium automatically added to the filters.
+I want a max images slider on homepage, sitting above the - + RECENTER buttons. Min 20 items, max 150. If there are fewer items than panels, fill in rest with the randomly sized empty panels. Follow the style guide. Make sure images fill in from the center outward, so empty panels land on the outskirts of the circle
+the central card shoudl always stay the same size.
+remove "pieces" from the slider. the left edge of the slider should align with the left edge of the - button, and the right edge with the right edge of the RECENTER button
+I want the slider button to be a circle. No background box for the slider, just the number on the right.

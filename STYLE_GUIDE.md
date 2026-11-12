@@ -13,11 +13,11 @@ Corners are sharp. `border-radius` stays at `0`.
 
 Three exceptions exist, and each one is named here:
 
-| Exception        | Token             | Where               |
-| ---------------- | ----------------- | ------------------- |
-| A circle         | `--radius-circle` | The loading spinner |
-| A pill           | `--radius-pill`   | None at present     |
-| A hairline round | `--radius-soft`   | None at present     |
+| Exception        | Token             | Where                                      |
+| ---------------- | ----------------- | ------------------------------------------ |
+| A circle         | `--radius-circle` | The loading spinner, the wall slider thumb |
+| A pill           | `--radius-pill`   | None at present                            |
+| A hairline round | `--radius-soft`   | None at present                            |
 
 To add an exception, add the element to this table first.
 

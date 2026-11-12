@@ -10,6 +10,10 @@
 // Every tile snaps to a square grid and spans a whole number of cells, so the
 // edges line up and the gutter stays the same everywhere. Cells fill in order
 // of distance from the center, which grows the wall outward from the title.
+//
+// The order of the tiles is the order of the cells, so the rows of the
+// database take the cells nearest the card. A wall wider than the database
+// fills the rest with empty panels, and those land on the outside.
 
 import { buildCodeBlock } from './code-tile.js';
 import { readImages, previewKey } from '../shared/row.js';
@@ -19,10 +23,16 @@ const CELL = 118; // px, one grid unit
 const GAP = 3; // px of page showing between two tiles
 const FIELD_SCALE_X = 2.4; // field width, in screens
 const FIELD_SCALE_Y = 2.8; // field height, in screens
-const MAX_TILES = 900;
-const OFFLINE_TILES = 90; // panels drawn when the API does not answer
 const EDGE_OPACITY = 0.72; // opacity of the outermost tiles
 const LARGE_FIRST = 3; // tiles nearest the card that prefer a big shape
+
+// How many tiles the wall may draw. js/home.js puts a slider on these three
+// numbers, so index.html carries none of them.
+//
+// A wall below the minimum reads as a handful of pictures rather than a wall.
+// A wall above the maximum asks the browser to lay out more tiles than a
+// visitor can look at.
+export const TILE_RANGE = { min: 20, max: 150, start: 75 };
 
 // Tile footprints in cells, [cols, rows], grouped by the shape of the image
 // they can hold. A photo only ever lands in a tile of its own orientation, so
@@ -160,6 +170,10 @@ function createGrid(cols, rows) {
 }
 
 // Cell span the title card needs, rounded up so its content always fits.
+//
+// The wall writes the snapped size back onto the card, so this must answer
+// the same span when it reads that size again. It does: a span of N cells
+// measures N * CELL - GAP, and that rounds up to N.
 function cardSpan(cardRect) {
     return {
         cols: Math.max(1, Math.ceil(cardRect.w / CELL)),
@@ -380,11 +394,33 @@ async function loadEntries() {
 //
 //   onSelect  what a click on a tile does. It takes the row of that tile.
 //             Without it the wall is a picture, and a click does nothing.
+//   count     how many tiles to draw, inside TILE_RANGE. The rows of the
+//             database come first, and empty panels make up the rest.
+//   entries   rows the caller already holds, so a redraw asks the API for
+//             nothing. Leave it out and the wall loads them itself. A null
+//             means the API did not answer.
 //   seed      fixes the layout, so the wall looks the same on every visit.
-export async function renderMosaic({ container, card, onSelect = null, seed = 20260102 }) {
+export async function renderMosaic({
+    container,
+    card,
+    onSelect = null,
+    count = TILE_RANGE.start,
+    entries,
+    seed = 20260102,
+}) {
+    // TILE_RANGE is the contract of the slider, and js/home.js holds it there.
+    // This guard only stops an absurd count from laying out forever.
+    const asked = Number(count);
+    const wanted = Math.max(
+        0,
+        Math.min(TILE_RANGE.max, Math.round(Number.isFinite(asked) ? asked : TILE_RANGE.start))
+    );
+
     const random = mulberry32(seed);
-    const cardBox = card.getBoundingClientRect();
-    const span = cardSpan({ w: cardBox.width, h: cardBox.height });
+    // offsetWidth and offsetHeight are layout values, so the zoom of the plane
+    // never reaches them. getBoundingClientRect would answer with the scaled
+    // size, and the card would take more cells on every redraw.
+    const span = cardSpan({ w: card.offsetWidth, h: card.offsetHeight });
 
     let cols = Math.ceil((window.innerWidth * FIELD_SCALE_X) / CELL);
     let rows = Math.ceil((window.innerHeight * FIELD_SCALE_Y) / CELL);
@@ -396,16 +432,17 @@ export async function renderMosaic({ container, card, onSelect = null, seed = 20
     const grid = createGrid(cols, rows);
     const cardRect = placeCard(grid, span);
 
-    // One tile per row in the database. No image repeats. Blanks appear only
-    // when the API is unreachable, because then the real count is unknown.
-    const entries = await loadEntries();
+    // One tile per row in the database. No image repeats.
+    const loaded = entries === undefined ? await loadEntries() : entries;
 
-    // No answer means the real count is unknown, so the wall fills with
-    // panels. An empty database is different: it shows nothing.
-    const shown =
-        entries === null
-            ? Array.from({ length: OFFLINE_TILES }, () => ({}))
-            : entries.slice(0, MAX_TILES);
+    // A null means the API did not answer, so the real count is unknown and
+    // the wall shows panels alone.
+    const pieces = loaded === null ? [] : loaded.slice(0, wanted);
+
+    // A wall wider than the database fills the rest with empty panels. They
+    // come last, so they take the cells furthest from the card.
+    const fillers = Array.from({ length: Math.max(0, wanted - pieces.length) }, () => ({}));
+    const shown = [...pieces, ...fillers];
 
     const kinds = shown.map(entry => shapeKind(entry, random));
 
@@ -430,6 +467,9 @@ export async function renderMosaic({ container, card, onSelect = null, seed = 20
     card.style.setProperty('--h', `${cardRect.h}px`);
 
     return {
+        // The rows the wall read, so a caller can hand them back on a redraw
+        // instead of asking the API again. A null means no answer.
+        entries: loaded,
         // The picture elements the first screen shows. js/home.js hands these
         // to the loading cover, which waits for them and nothing else.
         covers,

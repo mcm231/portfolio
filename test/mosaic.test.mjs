@@ -50,10 +50,31 @@ const { renderMosaic } = await import(`${ROOT}/public/js/components/mosaic.js`);
 
 const CELL = 118,
     GAP = 3;
-const card = {
-    getBoundingClientRect: () => ({ width: 630, height: 300 }),
-    style: { setProperty() {} },
-};
+// A card that answers with what the wall wrote on it, the way the DOM does.
+// The size must settle on the first draw and never move again.
+function liveCard() {
+    const node = {
+        offsetWidth: 630,
+        offsetHeight: 300,
+        // The zoom of the plane. A rect carries it and a layout size does
+        // not, so the wall must read the layout size.
+        scale: 1,
+        getBoundingClientRect: () => ({
+            width: node.offsetWidth * node.scale,
+            height: node.offsetHeight * node.scale,
+        }),
+        style: {
+            setProperty(name, value) {
+                if (name === '--w') node.offsetWidth = parseFloat(value);
+                if (name === '--h') node.offsetHeight = parseFloat(value);
+            },
+        },
+    };
+
+    return node;
+}
+
+const card = liveCard();
 
 // Runs the real render against a database of `count` rows. `sizes` gives the
 // pixel size of each row, cycled.
@@ -81,6 +102,7 @@ async function wall(count, sizes = [{ width: 1600, height: 1200 }], onSelect = n
         },
         card,
         onSelect,
+        count,
     });
 
     const rects = fragment.children.map(n => {
@@ -245,6 +267,7 @@ async function mixedWall(rows) {
             },
         },
         card,
+        count: rows.length,
     });
     const nodes = fragment.children.map(n => ({
         isPanel: n.className.includes('is-panel'),
@@ -294,6 +317,110 @@ check(
 const asPanels = await wall(0);
 check('an empty database shows nothing', asPanels.result.tiles, 0);
 
+// The slider sets how many tiles the wall draws. A database smaller than the
+// ask fills the rest with empty panels, and those take the cells furthest
+// from the card.
+async function sized(rowCount, tileCount, entries) {
+    globalThis.fetch = async () => ({
+        ok: true,
+        status: 200,
+        text: async () =>
+            JSON.stringify(
+                Array.from({ length: rowCount }, (_, i) => ({
+                    id: `piece-${i}`,
+                    name: `Piece ${i}`,
+                    images: [{ key: `piece-${i}.jpg`, width: 1600, height: 1200 }],
+                }))
+            ),
+    });
+
+    let fragment;
+    const result = await renderMosaic({
+        container: {
+            replaceChildren(f) {
+                fragment = f;
+            },
+        },
+        card,
+        count: tileCount,
+        ...(entries === undefined ? {} : { entries }),
+    });
+
+    return {
+        result,
+        pictures: fragment.children.filter(n => !n.className.includes('is-panel')),
+        panels: fragment.children.filter(n => n.className.includes('is-panel')),
+    };
+}
+
+// Distance of a tile center from the card, in px.
+function farFromCard(node) {
+    const g = Object.fromEntries(node.style.cssText.split(';').map(p => p.split(':')));
+    return Math.hypot(
+        parseFloat(g['--x']) + parseFloat(g['--w']) / 2,
+        parseFloat(g['--y']) + parseFloat(g['--h']) / 2
+    );
+}
+
+const mean = nodes => nodes.reduce((sum, node) => sum + farFromCard(node), 0) / nodes.length;
+
+const wide = await sized(12, 40);
+check('the wall draws what the slider asks', wide.result.tiles, 40);
+check('every row draws a picture', wide.pictures.length, 12);
+check('empty panels make up the rest', wide.panels.length, 28);
+check('the wall counts the fillers as panels', wide.result.panels, 28);
+check('the pictures sit nearer the card', mean(wide.pictures) < mean(wide.panels), true);
+
+const narrow = await sized(40, 25);
+check('a smaller ask trims the rows', narrow.result.tiles, 25);
+check('a smaller ask draws no panel', narrow.panels.length, 0);
+
+// A redraw hands the rows back, so moving the slider costs no request.
+check('the wall hands the rows back', wide.result.entries.length, 12);
+
+globalThis.fetch = async () => {
+    throw new Error('A wall given its rows must ask for nothing.');
+};
+const again = await sized(0, 30, wide.result.entries);
+check('given rows, the wall asks for nothing', again.result.tiles, 30);
+check('given rows, every picture still draws', again.pictures.length, 12);
+
+// The card keeps one size. The wall writes the snapped size back onto it, so
+// a second draw must read that size and answer with the same cells.
+const steady = liveCard();
+
+async function drawOn(node, count) {
+    globalThis.fetch = async () => ({
+        ok: true,
+        status: 200,
+        text: async () =>
+            JSON.stringify([
+                { id: 'one', images: [{ key: 'one.jpg', width: 1600, height: 1200 }] },
+            ]),
+    });
+
+    const result = await renderMosaic({
+        container: { replaceChildren() {} },
+        card: node,
+        count,
+    });
+
+    return result.card;
+}
+
+const firstDraw = await drawOn(steady, 20);
+const secondDraw = await drawOn(steady, 150);
+
+check('the card keeps its width', secondDraw.w, firstDraw.w);
+check('the card keeps its height', secondDraw.h, firstDraw.h);
+check('the card stays on the center', [secondDraw.x, secondDraw.y], [firstDraw.x, firstDraw.y]);
+
+// A zoomed plane scales what getBoundingClientRect answers. The wall reads
+// offsetWidth instead, so a zoom cannot grow the card.
+steady.scale = 2.5;
+const zoomedDraw = await drawOn(steady, 80);
+check('a zoom never grows the card', [zoomedDraw.w, zoomedDraw.h], [firstDraw.w, firstDraw.h]);
+
 // A dead API cannot know the row count, so it falls back to panels.
 globalThis.fetch = async () => {
     throw new Error('offline');
@@ -306,11 +433,12 @@ const offline = await renderMosaic({
         },
     },
     card,
+    count: 60,
     onSelect: () => {
         throw new Error('A placeholder must open nothing.');
     },
 });
-check('an offline wall still fills', offline.tiles > 40, true);
+check('an offline wall fills to the count', offline.tiles, 60);
 check('an offline wall has no images', offline.images, 0);
 check('an offline wall is all panels', offline.panels, offline.tiles);
 check('an offline wall names no picture', offline.covers.length, 0);

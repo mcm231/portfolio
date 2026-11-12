@@ -102,6 +102,7 @@ const PAIRS = [
 
     ['a control border, page', '--color-line-strong', '--color-bg', 'ui'],
     ['a control border, card', '--color-line-strong', '--color-surface', 'ui'],
+    ['the wall slider thumb', '--color-accent', '--color-surface', 'ui'],
     ['a divider, decoration only', '--color-line', '--color-bg', 'decor'],
     ['a focus ring on a card', '--color-mark-line', '--color-surface', 'ui'],
     ['a focus ring on the page', '--color-mark-line', '--color-bg', 'ui'],

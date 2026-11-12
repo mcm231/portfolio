@@ -97,20 +97,110 @@ body.home {
     user-select: none;
 }
 
-.view-controls {
+/* The wall controls, in one fixed column at the bottom right. The slider sits
+   over the zoom buttons. */
+.view-tools {
     position: fixed;
     right: var(--space-5);
     bottom: var(--space-5);
     z-index: 40;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    /* The widest child sets the column width, and every child takes it. So
+       the slider box runs from the left edge of the zoom out button to the
+       right edge of Recenter. */
+    align-items: stretch;
     gap: var(--space-2);
 }
 
+.view-controls {
+    display: flex;
+    /* Every button takes the height of the tallest, which is Recenter. */
+    align-items: stretch;
+    gap: var(--space-2);
+}
+
+/* How many pieces the wall draws. No box: the rail and the count sit straight
+   on the plane, so the rail runs the width of the button row below it. */
+.view-size {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* The count holds its width, so the row never shifts as the number grows. */
+.view-size-count {
+    min-width: 3ch;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-align: right;
+}
+
+/* A round thumb on a thin rail. STYLE_GUIDE.md names this one in its table of
+   circle exceptions, beside the loading spinner. */
+.view-size-range {
+    /* The rail takes the room the count leaves. A width of zero keeps the
+       default width of the control out of the column measurement, so the
+       button row below decides how wide this box is. */
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    height: 16px;
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    cursor: pointer;
+}
+
+.view-size-range::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: var(--radius);
+    background: var(--color-line-strong);
+}
+
+.view-size-range::-moz-range-track {
+    height: 3px;
+    border-radius: var(--radius);
+    background: var(--color-line-strong);
+}
+
+/* The thumb straddles the rail: half its height, less half the rail. */
+.view-size-range::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+    margin-top: -6px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    border-radius: var(--radius-circle); /* named exception */
+    background: var(--color-accent);
+}
+
+.view-size-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: none;
+    border-radius: var(--radius-circle); /* named exception */
+    background: var(--color-accent);
+}
+
+.view-size-range:hover::-webkit-slider-thumb,
+.view-size-range:focus-visible::-webkit-slider-thumb {
+    background: var(--color-accent-hover);
+}
+
+.view-size-range:hover::-moz-range-thumb,
+.view-size-range:focus-visible::-moz-range-thumb {
+    background: var(--color-accent-hover);
+}
+
+/* The row sets the height, so the zoom buttons stand as tall as Recenter. */
 .button-icon {
     width: 38px;
     padding: 0;
-    height: 38px;
     font-size: var(--text-lg);
     line-height: 1;
 }
