@@ -72,6 +72,17 @@ body.gallery {
     object-fit: cover;
 }
 
+/* A card fades in with its own picture. components/gallery-page.js adds the
+   class on load, so a tile below the fold settles instead of snapping. */
+.grid-item img {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.grid-item img.is-ready {
+    opacity: 1;
+}
+
 /* The same color panel the home page wall uses, at thumbnail size. */
 .grid-item-panel {
     background: var(--panel);

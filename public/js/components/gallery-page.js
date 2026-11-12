@@ -69,11 +69,25 @@ export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader
     const [slide, setSlide] = useState(0); // which picture is showing
     const [panelOpen, setPanelOpen] = useState(false);
 
-    // The cover counts a card picture, so its block follows the real requests.
-    // It keeps the cards of the first screen and ignores the rest.
+    // A card shows nothing until its own picture arrives, so a tile never
+    // snaps from the surface color to the photo. css/gallery.css holds the
+    // fade. A broken picture also counts as ready, or its alt text would
+    // never show.
+    //
+    // The same ref hands the picture to the cover, which counts a card of the
+    // first screen and ignores the rest.
     const trackImage = useCallback(
         node => {
-            if (node && loader) loader.track(node);
+            if (!node) return;
+
+            if (node.complete) node.classList.add('is-ready');
+            else {
+                const show = () => node.classList.add('is-ready');
+                node.addEventListener('load', show, { once: true });
+                node.addEventListener('error', show, { once: true });
+            }
+
+            if (loader) loader.track(node);
         },
         [loader]
     );

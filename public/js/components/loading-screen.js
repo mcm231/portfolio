@@ -60,7 +60,12 @@ export function onFirstScreen(rect, view, margin = MARGIN) {
 //   seal()      no more pictures arrive. Returns a promise that resolves
 //               after the cover goes.
 //   finish()    drop the cover now, whatever is outstanding.
-export function createLoadingScreen({ root = document.body } = {}) {
+//
+// `screen` adopts the cover a page already carries in its markup. That cover
+// paints with the document, so nothing of the page shows before it. With no
+// element given, this builds one and adds it to `root`, which the browser
+// paints one frame after the page itself.
+export function createLoadingScreen({ root = document.body, screen: given = null } = {}) {
     const order = fillOrder();
     const cells = [];
 
@@ -79,7 +84,7 @@ export function createLoadingScreen({ root = document.body } = {}) {
     labelNode.className = 'loading-label';
     labelNode.textContent = LABEL;
 
-    const screen = document.createElement('div');
+    const screen = given ?? document.createElement('div');
     screen.className = 'loading-screen';
     screen.setAttribute('role', 'status');
     screen.append(block, labelNode);
@@ -97,7 +102,7 @@ export function createLoadingScreen({ root = document.body } = {}) {
         settle = resolve;
     });
 
-    root.appendChild(screen);
+    if (!given) root.appendChild(screen);
     document.body.classList.add('is-loading');
     paint();
 

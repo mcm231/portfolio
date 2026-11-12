@@ -32,8 +32,10 @@ const env = {
         async head() {
             return {};
         },
-        async get() {
-            return {
+        // The stub compares an etag the way R2 does. A match means the caller
+        // holds the bytes, so the object comes back with no body.
+        async get(key, options) {
+            const object = {
                 body: 'bytes',
                 httpEtag: '"e"',
                 writeHttpMetadata() {},
@@ -42,6 +44,9 @@ const env = {
                     return PNG_HEADER.buffer;
                 },
             };
+
+            const held = options && options.onlyIf && options.onlyIf.etagDoesNotMatch;
+            return held === 'e' ? { ...object, body: undefined } : object;
         },
         async put() {},
         async delete() {},
@@ -174,6 +179,25 @@ const cases = [
     [
         'images serves a small copy',
         await hit('/api/images?id=thumbs/piece-one.jpg.webp'),
+        r => r.status === 200,
+    ],
+    [
+        'images cache for a day',
+        await hit('/api/images?id=thumbs/piece-one.jpg.webp'),
+        r => r.cacheControl === 'public, max-age=86400',
+    ],
+    [
+        'images answer 304 to a held etag',
+        await hit('/api/images?id=thumbs/piece-one.jpg.webp', {
+            headers: { 'If-None-Match': '"e"' },
+        }),
+        r => r.status === 304 && r.full === '',
+    ],
+    [
+        'images resend after a changed etag',
+        await hit('/api/images?id=thumbs/piece-one.jpg.webp', {
+            headers: { 'If-None-Match': '"old"' },
+        }),
         r => r.status === 200,
     ],
     [

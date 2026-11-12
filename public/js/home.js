@@ -20,6 +20,7 @@ const menuToggle = document.getElementById('menu-toggle');
 const menuPanel = document.getElementById('menu-panel');
 const menuScrim = document.getElementById('menu-scrim');
 const menuPrivateItems = document.querySelectorAll('.menu-private');
+const loadingScreen = document.getElementById('loading-screen');
 
 /* ---------- Pan ---------- */
 
@@ -95,10 +96,11 @@ async function showPrivateLinksIfAllowed() {
 
 /* ---------- Photo wall ---------- */
 
-// The cover opens first, so nobody watches the tiles arrive one at a time. It
-// goes once every picture of the first screen answers, or after its own time
-// limit. A failure must not leave the cover up, so the catch drops it.
-const cover = createLoadingScreen();
+// index.html carries the cover, so it paints with the document and nobody
+// sees the title before it. The cover goes once every picture of the first
+// screen answers, or after its own time limit. A failure must not leave the
+// cover up, so the catch drops it.
+const cover = createLoadingScreen({ screen: loadingScreen });
 
 applyPan({ x: 0, y: 0, scale: 1 });
 showPrivateLinksIfAllowed();

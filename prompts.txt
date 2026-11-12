@@ -266,3 +266,7 @@ how can I add www to the same path functionality? I already added the subdomain 
 why do the images flicker in the gallery page on first load? What would the best way to fix this be? Plan first, let me approve the chane
 fix this merge
 Another refactor: I want the js files for components to live in js/components directory. Update architecture file and pathing
+Proceed with those changes, and cache for 1 day. Also figure out why my API connection is sending 404 -- it's probably due to the refactor, do I have to run another deploy?
+remove the loading screen on the home page
+no, add the loading page back to the homepage. However, make sure it shows on top of everything on the page, because I'm still seeing a flicker of the title and gallery buttons on first load
+I want the ability to click on mosaic tiles and see the same pop-up as in the gallery page. Use the same component so updates to the component reflect across both pages

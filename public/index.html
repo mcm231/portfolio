@@ -8,8 +8,23 @@
         <link rel="stylesheet" href="css/base.css" />
         <link rel="stylesheet" href="css/components.css" />
         <link rel="stylesheet" href="css/home.css" />
+
+        <!-- The cover waits for js/home.js. With no script there is no photo
+             wall either, so the page shows itself instead. -->
+        <noscript>
+            <style>
+                .loading-screen {
+                    display: none;
+                }
+            </style>
+        </noscript>
     </head>
     <body class="home">
+        <!-- The cover sits in the markup, so it paints with the document and
+             no title shows before it. js/components/loading-screen.js fills
+             it, and takes it away once the first pictures answer. -->
+        <div id="loading-screen" class="loading-screen"></div>
+
         <!-- Drag surface. Everything inside #plane pans together. -->
         <main id="viewport">
             <div id="plane">

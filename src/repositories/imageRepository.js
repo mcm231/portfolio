@@ -38,8 +38,17 @@ export const imageRepository = {
         return thumbKey(key);
     },
 
-    async get(env, key) {
-        return env.IMAGES.get(key);
+    // An object, or nothing when the key is gone.
+    //
+    // `unlessEtag` carries what a visitor already holds, straight from an
+    // If-None-Match header. The bucket then returns the object without a body
+    // when the etag still matches. R2 compares the bare etag, so the quotes
+    // and the weak marker of the header form come off first.
+    async get(env, key, { unlessEtag } = {}) {
+        if (!unlessEtag) return env.IMAGES.get(key);
+
+        const etag = unlessEtag.replace(/^W\//, '').replace(/"/g, '');
+        return env.IMAGES.get(key, { onlyIf: { etagDoesNotMatch: etag } });
     },
 
     async head(env, key) {

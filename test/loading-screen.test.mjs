@@ -155,6 +155,16 @@ const bare = createLoadingScreen({ root: make() });
 await bare.seal();
 check('a page with no pictures clears', bare.element.className.includes('is-gone'), true);
 
+// index.html carries the cover of the home page, so it paints with the
+// document. The component must fill that element, and must not add a second.
+const root = make();
+const carried = make();
+const adopted = createLoadingScreen({ root, screen: carried });
+check('it adopts the cover of the markup', adopted.element === carried, true);
+check('it names the adopted cover', carried.className.includes('loading-screen'), true);
+check('it fills the adopted cover', carried.children.length, 2);
+check('it adds no second cover', root.children.length, 0);
+
 let failed = 0;
 for (const [label, got, want] of results) {
     const pass = got === want;
