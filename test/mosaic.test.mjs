@@ -20,6 +20,10 @@ function stubDom() {
             setAttribute(k, v) {
                 this.attrs[k] = v;
             },
+            listeners: {},
+            addEventListener(name, fn) {
+                (this.listeners[name] ||= []).push(fn);
+            },
             classList: {
                 add(name) {
                     node.className += ` ${name}`;
@@ -53,7 +57,7 @@ const card = {
 
 // Runs the real render against a database of `count` rows. `sizes` gives the
 // pixel size of each row, cycled.
-async function wall(count, sizes = [{ width: 1600, height: 1200 }]) {
+async function wall(count, sizes = [{ width: 1600, height: 1200 }], onSelect = null) {
     // public/js/api.js reads the body as text, then parses it.
     globalThis.fetch = async () => ({
         ok: true,
@@ -76,6 +80,7 @@ async function wall(count, sizes = [{ width: 1600, height: 1200 }]) {
             },
         },
         card,
+        onSelect,
     });
 
     const rects = fragment.children.map(n => {
@@ -90,7 +95,7 @@ async function wall(count, sizes = [{ width: 1600, height: 1200 }]) {
             hasImage: n.children.length > 0,
         };
     });
-    return { result, rects };
+    return { result, rects, fragment };
 }
 
 const results = [];
@@ -301,11 +306,36 @@ const offline = await renderMosaic({
         },
     },
     card,
+    onSelect: () => {
+        throw new Error('A placeholder must open nothing.');
+    },
 });
 check('an offline wall still fills', offline.tiles > 40, true);
 check('an offline wall has no images', offline.images, 0);
 check('an offline wall is all panels', offline.panels, offline.tiles);
 check('an offline wall names no picture', offline.covers.length, 0);
+check(
+    'an offline tile answers no click',
+    offlineFragment.children.every(tile => !tile.listeners.click),
+    true
+);
+
+// A click on a tile opens that row. js/home.js passes openDetail here.
+const picked = [];
+const clickable = await wall(6, undefined, entry => picked.push(entry.id));
+clickable.fragment.children.forEach(tile =>
+    (tile.listeners.click || []).forEach(listener => listener())
+);
+check('every tile answers a click', picked.length, 6);
+check('a tile hands over its own row', picked[0], 'piece-0');
+
+// A wall with no handler stays a picture.
+const quiet = await wall(3);
+check(
+    'no handler leaves no listener',
+    quiet.fragment.children.every(tile => !tile.listeners.click),
+    true
+);
 
 let failed = 0;
 for (const [label, got, want] of results) {

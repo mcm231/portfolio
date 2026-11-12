@@ -33,6 +33,22 @@ export function readImages(entry) {
     ];
 }
 
+// How many stand-in colors a row with no picture can take. One of the
+// --blank-N tokens in css/tokens.css answers for each.
+export const PANEL_COLORS = 8;
+
+// A steady color for a row with no picture. The row may name one. Otherwise
+// the id picks it, so the same row keeps the same color on every visit, and
+// the grid and the detail view never disagree.
+export function panelColor(entry) {
+    const named = Number(entry && entry.panelColor);
+    if (Number.isInteger(named) && named >= 1 && named <= PANEL_COLORS) return named;
+
+    let hash = 0;
+    for (const char of String(entry && entry.id)) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+    return (hash % PANEL_COLORS) + 1;
+}
+
 // The object a wall or a card should load. The small copy when one exists,
 // and the original when it does not.
 export function previewKey(image) {

@@ -207,6 +207,7 @@ returns a value or a handle.
 | `components/code-tile.js`      | `buildCodeBlock`              |
 | `components/gallery-page.js`   | `mountGallery`, `GalleryPage` |
 | `components/loading-screen.js` | `createLoadingScreen`         |
+| `components/detail-modal.js`   | `openDetail`                  |
 
 A behavior that two pages use becomes a component. A behavior that one page uses
 stays in the page script until a second page needs it.
@@ -229,7 +230,7 @@ time, so the two can never drift apart.
 | Module                | Holds                                |
 | --------------------- | ------------------------------------ |
 | `shared/taxonomy.js`  | A term, a medium, a language         |
-| `shared/row.js`       | Reading one row                      |
+| `shared/row.js`       | Reading one row, and its panel color |
 | `shared/id-rules.js`  | A slug and a free id                 |
 | `shared/thumbnail.js` | The size and the key of a small copy |
 
@@ -248,17 +249,17 @@ To add a library, add a row to this table first.
 
 ### CSS files
 
-| File                 | Holds                                                                    |
-| -------------------- | ------------------------------------------------------------------------ |
-| `css/tokens.css`     | `:root`. The only file with a raw value                                  |
-| `css/base.css`       | Reset, buttons, the page shell, the forms, the menu                      |
-| `css/components.css` | A chip, a code tile, a caption, a placeholder, a hero, the loading cover |
-| `css/home.css`       | The pannable plane and the photo wall                                    |
-| `css/gallery.css`    | The grid, its detail view, its modal                                     |
-| `css/upload.css`     | The upload form                                                          |
-| `css/about.css`      | The about page                                                           |
-| `css/contact.css`    | The contact page                                                         |
-| `css/messages.css`   | The contact inbox                                                        |
+| File                 | Holds                                                                                     |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| `css/tokens.css`     | `:root`. The only file with a raw value                                                   |
+| `css/base.css`       | Reset, buttons, the page shell, the forms, the menu                                       |
+| `css/components.css` | A chip, a code tile, a caption, a placeholder, a hero, the loading cover, the detail view |
+| `css/home.css`       | The pannable plane and the photo wall                                                     |
+| `css/gallery.css`    | The grid and its filters                                                                  |
+| `css/upload.css`     | The upload form                                                                           |
+| `css/about.css`      | The about page                                                                            |
+| `css/contact.css`    | The contact page                                                                          |
+| `css/messages.css`   | The contact inbox                                                                         |
 
 A page links tokens, base, and components, then its own file. A rule used by
 two pages belongs in base or components, never in two page files.

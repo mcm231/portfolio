@@ -295,8 +295,15 @@ function onFirstScreen(tile) {
 }
 
 // `near` says the first screen shows this tile. `covers` collects the picture
-// elements of those tiles, so the loading cover can wait for them.
-function buildTile(tile, entry, maxDistance, random, { near = false, covers = null } = {}) {
+// elements of those tiles, so the loading cover can wait for them. `onSelect`
+// takes the row of a clicked tile.
+function buildTile(
+    tile,
+    entry,
+    maxDistance,
+    random,
+    { near = false, covers = null, onSelect = null } = {}
+) {
     const fade = Math.min(1, tile.distance / maxDistance);
     const opacity = 1 - fade * (1 - EDGE_OPACITY);
 
@@ -311,6 +318,15 @@ function buildTile(tile, entry, maxDistance, random, { near = false, covers = nu
     ].join(';');
 
     const kind = tileKind(entry);
+
+    // A tile stands for a row, so a click opens that row. An offline wall
+    // holds placeholders with no id, and those answer to nothing.
+    //
+    // #mosaic is aria-hidden, so the wall never enters the tab order. The
+    // gallery search page is the path a keyboard reaches.
+    if (onSelect && entry && entry.id) {
+        figure.addEventListener('click', () => onSelect(entry));
+    }
 
     if (kind === 'image') {
         // The small copy, when the row has one. The wall never needs more.
@@ -360,7 +376,12 @@ async function loadEntries() {
     }
 }
 
-export async function renderMosaic({ container, card, seed = 20260102 }) {
+// Draws the wall into `container`, around `card`.
+//
+//   onSelect  what a click on a tile does. It takes the row of that tile.
+//             Without it the wall is a picture, and a click does nothing.
+//   seed      fixes the layout, so the wall looks the same on every visit.
+export async function renderMosaic({ container, card, onSelect = null, seed = 20260102 }) {
     const random = mulberry32(seed);
     const cardBox = card.getBoundingClientRect();
     const span = cardSpan({ w: cardBox.width, h: cardBox.height });
@@ -397,7 +418,7 @@ export async function renderMosaic({ container, card, seed = 20260102 }) {
     const covers = [];
 
     tiles.forEach((tile, index) => {
-        const options = { near: onFirstScreen(tile), covers };
+        const options = { near: onFirstScreen(tile), covers, onSelect };
         fragment.appendChild(buildTile(tile, shown[index] ?? null, maxDistance, random, options));
     });
 

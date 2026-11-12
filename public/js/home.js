@@ -2,6 +2,7 @@
 import { createPan } from './components/pan.js';
 import { renderMosaic } from './components/mosaic.js';
 import { createLoadingScreen } from './components/loading-screen.js';
+import { openDetail } from './components/detail-modal.js';
 import { api } from './api.js';
 
 const CENTERED_PX = 0.5; // distance from origin still counted as centered
@@ -105,7 +106,8 @@ const cover = createLoadingScreen({ screen: loadingScreen });
 applyPan({ x: 0, y: 0, scale: 1 });
 showPrivateLinksIfAllowed();
 
-renderMosaic({ container: mosaic, card })
+// A click on a tile opens the same detail view the gallery grid opens.
+renderMosaic({ container: mosaic, card, onSelect: openDetail })
     .then(wall => {
         wall.covers.forEach(img => cover.track(img));
         return cover.seal();

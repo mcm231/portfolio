@@ -8,7 +8,7 @@
         "check": "wrangler deploy --dry-run --outdir .wrangler/tmp/dry-run",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "test": "node test/contrast.test.mjs && node test/id-rules.test.mjs && node test/image-size.test.mjs && node test/code.test.mjs && node test/thumbnail.test.mjs && node test/metadata.test.mjs && node test/pan.test.mjs && node test/mosaic.test.mjs && node test/loading-screen.test.mjs && node test/access.test.mjs && node test/router.test.mjs && node test/upload.test.mjs && node test/contact.test.mjs"
+        "test": "node test/contrast.test.mjs && node test/id-rules.test.mjs && node test/image-size.test.mjs && node test/code.test.mjs && node test/thumbnail.test.mjs && node test/metadata.test.mjs && node test/pan.test.mjs && node test/mosaic.test.mjs && node test/detail-modal.test.mjs && node test/loading-screen.test.mjs && node test/access.test.mjs && node test/router.test.mjs && node test/upload.test.mjs && node test/contact.test.mjs"
     },
     "devDependencies": {
         "prettier": "^3.9.10",
