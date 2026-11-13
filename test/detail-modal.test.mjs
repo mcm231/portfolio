@@ -175,16 +175,26 @@ check('the last picture wraps to the first', picture.src, '/api/images?id=one.jp
 click(find(piece.element, 'is-prev'));
 check('before the first wraps to the last', picture.src, '/api/images?id=three.jpg');
 
-// The handle pulls the words out, and pushes them back.
+// The handle pulls the words out, and pushes them back. It carries a caret
+// and a word, and the word names the action.
 const handle = find(piece.element, 'detail-handle');
+const caret = find(piece.element, 'detail-handle-caret');
+const word = find(piece.element, 'detail-handle-word');
+
+check('the handle names the panel', word.textContent, 'Description');
+check('the caret points at the words', caret.textContent, '‹');
+check('the caret is not read aloud', caret.attrs['aria-hidden'], 'true');
+
 click(handle);
 check('the handle opens the panel', stage.classList.contains('is-open'), true);
 check('the handle reports open', handle.attrs['aria-expanded'], 'true');
-check('the handle turns around', handle.textContent, '›');
+check('the handle turns around', caret.textContent, '›');
+check('the word stays put', word.textContent, 'Description');
 
 click(handle);
 check('the handle closes the panel', stage.classList.contains('is-open'), false);
 check('the handle reports closed', handle.attrs['aria-expanded'], 'false');
+check('the caret turns back', caret.textContent, '‹');
 
 /* ---------- Taking the view away ---------- */
 
@@ -197,8 +207,9 @@ click(backdrop.element);
 check('the backdrop closes the view', openCount(), 0);
 
 const shut = openDetail(PIECE);
-click(find(shut.element, 'button-quiet'));
-check('the Close button closes the view', openCount(), 0);
+check('the cross rides the backdrop', Boolean(find(shut.element, 'detail-close')), true);
+click(find(shut.element, 'detail-close'));
+check('the cross closes the view', openCount(), 0);
 
 // Two views must never stack.
 openDetail(PIECE);
@@ -229,7 +240,8 @@ check(
 );
 
 const actions = find(code.element, 'modal-actions');
-check('the actions hold repo, live, download and close', actions.children.length, 4);
+check('the actions hold repo, live and download', actions.children.length, 3);
+check('a code document shows the same cross', Boolean(find(code.element, 'detail-close')), true);
 check('an outside link tells the new tab nothing', actions.children[0].rel, 'noopener noreferrer');
 check(
     'the download points at the file route',
@@ -248,6 +260,18 @@ check(
     true
 );
 check('a row with no words needs no handle', find(bare.element, 'detail-handle'), null);
+
+// A row with no links would leave an empty action row, and that row carries a
+// margin. So the row stays away.
+check('a row with no links draws no action row', find(bare.element, 'modal-actions'), null);
+check('a row with no links still closes', Boolean(find(bare.element, 'detail-close')), true);
+// The frame holds the view and the cross side by side. So an open words
+// panel widens the view and pushes the cross further right.
+const frame = bare.element.children[0];
+check('the backdrop holds one frame', frame.classList.contains('modal-frame'), true);
+check('the frame holds the view, then the cross', frame.children.length, 2);
+check('the view comes first', frame.children[0].classList.contains('modal-content'), true);
+check('the cross stands beside it', frame.children[1].classList.contains('detail-close'), true);
 bare.close();
 
 const named = openDetail({ id: 'untitled-7', panelColor: 4 });

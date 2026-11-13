@@ -54,6 +54,7 @@
        possible photo still gives white text 5.2 to 1. */
     --color-scrim: rgba(25, 42, 81, 0.72);
     --color-scrim-flat: #5e6b86; /* the scrim over a white photo */
+    --color-overlay-flat: #757f97; /* the overlay over a white photo */
 
     /* A code tile. Dark indigo, so the text reads at any tile size. */
     --color-code-bg: #121c33; /* space indigo, darkened */

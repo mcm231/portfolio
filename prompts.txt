@@ -279,3 +279,11 @@ I want a max images slider on homepage, sitting above the - + RECENTER buttons. 
 the central card shoudl always stay the same size.
 remove "pieces" from the slider. the left edge of the slider should align with the left edge of the - button, and the right edge with the right edge of the RECENTER button
 I want the slider button to be a circle. No background box for the slider, just the number on the right.
+in the item detail view: make the borders significantly thinner. Remove the CLOSE button, replace it with an x button in a circle with a transparent background, sitting to the top right of the image.
+Color the x close button white and move it to the top right of the screen
+Changed mind: instead of it being at the top right of the screen, have its top be aligned with the top of the image container and to the right
+Add the word "SHOW DETAIL" rotated vertically to the detail caret button when closed, and "HIDE DETAIL" when open
+Change to "Show Detail" and "Hide Detail"
+Make it "Description" no change
+Rotate it back 180 degrees
+The white background box is too large for some images until description is opened. Why is this happening?'/Users/mayamalavasi/Desktop/Screenshot 2026-11-13 at 1.25.57 PM.png'

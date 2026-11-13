@@ -13,11 +13,11 @@ Corners are sharp. `border-radius` stays at `0`.
 
 Three exceptions exist, and each one is named here:
 
-| Exception        | Token             | Where                                      |
-| ---------------- | ----------------- | ------------------------------------------ |
-| A circle         | `--radius-circle` | The loading spinner, the wall slider thumb |
-| A pill           | `--radius-pill`   | None at present                            |
-| A hairline round | `--radius-soft`   | None at present                            |
+| Exception        | Token             | Where                                                               |
+| ---------------- | ----------------- | ------------------------------------------------------------------- |
+| A circle         | `--radius-circle` | The loading spinner, the wall slider thumb, the detail close button |
+| A pill           | `--radius-pill`   | None at present                                                     |
+| A hairline round | `--radius-soft`   | None at present                                                     |
 
 To add an exception, add the element to this table first.
 
@@ -119,6 +119,9 @@ Sizes come from the scale. Do not invent a size between two steps.
 | `--text-display` | `clamp(1.9rem, 5.2vw, 3.9rem)` | The name on the home page |
 
 A heading and a button use uppercase with `letter-spacing: 0.06em`.
+
+One button is the exception, and it is named here: the Description handle of a
+detail view reads in title case. It keeps the letter spacing.
 
 ## Space
 

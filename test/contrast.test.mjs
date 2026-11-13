@@ -87,6 +87,7 @@ const PAIRS = [
     ['a medium outline on its fill', '--pill-medium-line', '--pill-medium-fill', 'decor'],
     ['a tag outline on its fill', '--pill-tag-line', '--pill-tag-fill', 'decor'],
     ['a caption on the palest photo', '--color-on-brand', '--color-scrim-flat', 'normal'],
+    ['the detail close ring', '--color-on-brand', '--color-overlay-flat', 'ui'],
     ['code text on a code tile', '--color-code-text', '--color-code-bg', 'normal'],
     ['a keyword on a code tile', '--color-code-keyword', '--color-code-bg', 'normal'],
     ['a string on a code tile', '--color-code-string', '--color-code-bg', 'normal'],

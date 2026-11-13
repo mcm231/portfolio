@@ -447,10 +447,24 @@ body.is-loading {
     cursor: pointer;
 }
 
+/* The view and its cross, as one block the backdrop centers. The cross starts
+   at the top edge of the view and stands to its right, so an open words panel
+   pushes it further right instead of sitting under it. */
+.modal-frame {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: 100%;
+    max-height: 100%;
+}
+
 .modal-content {
-    max-width: 92vw;
+    position: relative;
+    /* The frame owns the fit now, so the view takes what the cross leaves. */
+    min-width: 0;
+    max-width: 100%;
     max-height: 92vh;
-    padding: var(--space-5);
+    padding: var(--space-3);
     background: var(--color-surface);
     text-align: center;
     cursor: default;
@@ -560,7 +574,7 @@ body.is-loading {
 
 /* A code project reads as a document. */
 .detail-document {
-    width: min(760px, 92vw);
+    width: min(760px, 100%);
     text-align: left;
 }
 
@@ -587,39 +601,95 @@ body.is-loading {
     display: flex;
     align-items: stretch;
     padding: 0;
-    max-width: 94vw;
+    max-width: 100%;
     background: none;
 }
 
+/* The frame around the picture stays thin, so the work carries the view. */
 .detail-stage-image {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-    padding: var(--space-5);
+    padding: var(--space-2);
     background: var(--color-surface);
+}
+
+/* The way out, beside the view. A ring and a cross on the backdrop, with
+   nothing behind them. White carries over the backdrop whatever the picture
+   under it shows. STYLE_GUIDE.md names this circle. */
+.detail-close {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--color-on-brand);
+    border-radius: var(--radius-circle); /* named exception */
+    background: none;
+    color: var(--color-on-brand);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.detail-close:hover,
+.detail-close:focus-visible {
+    background: var(--color-on-brand);
+    color: var(--color-ink);
 }
 
 /* The button that pulls the words out, and pushes them back. */
 .detail-handle {
     align-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
     width: 26px;
-    height: 72px;
-    padding: 0;
+    min-height: 72px;
+    padding: var(--space-3) 0;
     border: none;
     background: var(--color-brand-dark);
     color: var(--color-on-brand);
-    font-size: var(--text-lg);
     line-height: 1;
     cursor: pointer;
     transition: background 0.2s ease;
+}
+
+.detail-handle-caret {
+    font-size: var(--text-lg);
+}
+
+/* The word stands on its side, so it reads down the edge of the picture. It
+   keeps its title case, and STYLE_GUIDE.md names it as the one button that
+   does not go uppercase. */
+.detail-handle-word {
+    writing-mode: vertical-rl;
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
 }
 
 .detail-handle:hover {
     background: var(--color-brand-deep);
 }
 
+/* A closed panel must take no height. The row stretches its items to the
+   tallest one, and at zero width this text wraps to one word per line. That
+   tower of words, not the picture, would then set the height of the view. */
 .detail-panel {
     width: 0;
+    height: 0;
     overflow: hidden;
     background: var(--color-surface);
     text-align: left;
@@ -628,8 +698,10 @@ body.is-loading {
         padding 0.28s ease;
 }
 
+/* An open panel takes the height of the row, which the picture sets. */
 .detail-stage.is-open .detail-panel {
     width: min(340px, 42vw);
+    height: auto;
     padding: var(--space-5);
     overflow-y: auto;
 }
@@ -640,10 +712,17 @@ body.is-loading {
         flex-direction: column;
     }
 
+    /* Under the picture the handle lies flat, and so does its word. */
     .detail-handle {
+        flex-direction: row;
         align-self: stretch;
         width: auto;
-        height: 26px;
+        min-height: 26px;
+        padding: var(--space-2) 0;
+    }
+
+    .detail-handle-word {
+        writing-mode: horizontal-tb;
     }
 
     .detail-stage.is-open .detail-panel {

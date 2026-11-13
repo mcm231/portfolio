@@ -132,7 +132,7 @@ function hasWords(entry) {
     );
 }
 
-function buildActions(entry, close) {
+function buildActions(entry) {
     const actions = element('div', 'modal-actions');
 
     if (entry.repoUrl) actions.appendChild(outLink('button', entry.repoUrl, 'Repo'));
@@ -144,11 +144,17 @@ function buildActions(entry, close) {
         actions.appendChild(file);
     }
 
-    const shut = button('button button-quiet', 'Close');
-    shut.addEventListener('click', close);
-    actions.appendChild(shut);
+    // An empty row would still take its margin, so it stays away.
+    return actions.children.length > 0 ? actions : null;
+}
 
-    return actions;
+// The way out, beside the view rather than on it. The frame below stands it
+// at the top right, so its top meets the top of the picture and the picture
+// keeps its whole frame. The backdrop and the Escape key also close the view.
+function buildClose(close) {
+    const shut = button('detail-close', '\u00d7', 'Close');
+    shut.addEventListener('click', close);
+    return shut;
 }
 
 // A link off the site opens in a new tab, and tells that tab nothing about
@@ -178,7 +184,7 @@ function buildCodeDetail(entry, images, close) {
         content.appendChild(code);
     }
 
-    content.appendChild(buildActions(entry, close));
+    add(content, buildActions(entry));
 
     return content;
 }
@@ -190,7 +196,7 @@ function buildPieceDetail(entry, images, close) {
 
     const stage = element('div', 'detail-stage-image');
     stage.appendChild(images.length > 0 ? buildSlides(images, entry.name) : buildPanel(entry));
-    stage.appendChild(buildActions(entry, close));
+    add(stage, buildActions(entry));
     content.appendChild(stage);
 
     // A piece with nothing written about it needs no handle.
@@ -202,14 +208,24 @@ function buildPieceDetail(entry, images, close) {
     buildMeta(entry).forEach(part => words.appendChild(part));
     add(words, buildParagraphs(entry.description));
 
-    const handle = button('detail-handle', '‹', 'Show the description');
+    // The handle carries a caret and a word. The word stands on its side
+    // beside the picture, and css/components.css turns it. The word names the
+    // panel and stays put, so only the caret reports the state. The button
+    // needs no label of its own: the word and aria-expanded say it.
+    const handle = button('detail-handle');
     handle.setAttribute('aria-expanded', 'false');
     handle.setAttribute('aria-controls', 'detail-panel');
+
+    const caret = element('span', 'detail-handle-caret', '‹');
+    caret.setAttribute('aria-hidden', 'true');
+
+    const word = element('span', 'detail-handle-word', 'Description');
+    handle.append(caret, word);
+
     handle.addEventListener('click', () => {
         const open = content.classList.toggle('is-open');
-        handle.textContent = open ? '›' : '‹';
+        caret.textContent = open ? '›' : '‹';
         handle.setAttribute('aria-expanded', String(open));
-        handle.setAttribute('aria-label', open ? 'Hide the description' : 'Show the description');
     });
 
     content.append(handle, words);
@@ -252,7 +268,13 @@ export function openDetail(entry) {
     content.addEventListener('click', event => event.stopPropagation());
     overlay.addEventListener('click', close);
 
-    overlay.appendChild(content);
+    // The view and its cross travel as one block, and the backdrop centers
+    // that block. The cross starts at the top edge of the view, so a click on
+    // the gap between them still reaches the backdrop and closes.
+    const frame = element('div', 'modal-frame');
+    frame.append(content, buildClose(close));
+
+    overlay.appendChild(frame);
     document.body.appendChild(overlay);
     document.addEventListener('keydown', onKeyDown);
 
