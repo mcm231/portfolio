@@ -207,8 +207,8 @@ click(backdrop.element);
 check('the backdrop closes the view', openCount(), 0);
 
 const shut = openDetail(PIECE);
-check('the cross rides the backdrop', Boolean(find(shut.element, 'detail-close')), true);
-click(find(shut.element, 'detail-close'));
+check('the cross rides the backdrop', Boolean(find(shut.element, 'close-button')), true);
+click(find(shut.element, 'close-button'));
 check('the cross closes the view', openCount(), 0);
 
 // Two views must never stack.
@@ -241,7 +241,7 @@ check(
 
 const actions = find(code.element, 'modal-actions');
 check('the actions hold repo, live and download', actions.children.length, 3);
-check('a code document shows the same cross', Boolean(find(code.element, 'detail-close')), true);
+check('a code document shows the same cross', Boolean(find(code.element, 'close-button')), true);
 check('an outside link tells the new tab nothing', actions.children[0].rel, 'noopener noreferrer');
 check(
     'the download points at the file route',
@@ -264,14 +264,16 @@ check('a row with no words needs no handle', find(bare.element, 'detail-handle')
 // A row with no links would leave an empty action row, and that row carries a
 // margin. So the row stays away.
 check('a row with no links draws no action row', find(bare.element, 'modal-actions'), null);
-check('a row with no links still closes', Boolean(find(bare.element, 'detail-close')), true);
-// The frame holds the view and the cross side by side. So an open words
-// panel widens the view and pushes the cross further right.
-const frame = bare.element.children[0];
-check('the backdrop holds one frame', frame.classList.contains('modal-frame'), true);
-check('the frame holds the view, then the cross', frame.children.length, 2);
-check('the view comes first', frame.children[0].classList.contains('modal-content'), true);
-check('the cross stands beside it', frame.children[1].classList.contains('detail-close'), true);
+check('a row with no links still closes', Boolean(find(bare.element, 'close-button')), true);
+// The cross pins to the window, so it is a child of the backdrop and never
+// of the view. An open words panel cannot move it.
+check('the backdrop holds the view and the cross', bare.element.children.length, 2);
+check('the view comes first', bare.element.children[0].classList.contains('modal-content'), true);
+check(
+    'the cross stands beside it',
+    bare.element.children[1].classList.contains('close-button'),
+    true
+);
 bare.close();
 
 const named = openDetail({ id: 'untitled-7', panelColor: 4 });

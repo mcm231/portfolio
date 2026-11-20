@@ -293,6 +293,36 @@ body.about {
     font-size: 13px;
 }
 
+/* An icon inside a control. It takes the ink of that control, and it never
+   shrinks when the word beside it is long. */
+.icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+}
+
+/* A step that cannot be undone. The outline and the word carry the red, and
+   the fill stays with the page until the pointer lands. */
+.button-danger {
+    background: var(--color-surface);
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+}
+
+.button-danger:hover,
+.button-danger.is-armed {
+    background: var(--color-error);
+    color: var(--color-on-brand);
+}
+
+/* Half the size of a button, and nothing else. The color comes from the
+   variant beside it: button-quiet for a note, button-danger for a step that
+   cannot be undone. */
+.button-small {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-xs);
+}
+
 .modal-actions {
     display: flex;
     flex-wrap: wrap;
@@ -447,20 +477,9 @@ body.is-loading {
     cursor: pointer;
 }
 
-/* The view and its cross, as one block the backdrop centers. The cross starts
-   at the top edge of the view and stands to its right, so an open words panel
-   pushes it further right instead of sitting under it. */
-.modal-frame {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-3);
-    max-width: 100%;
-    max-height: 100%;
-}
-
 .modal-content {
     position: relative;
-    /* The frame owns the fit now, so the view takes what the cross leaves. */
+    /* The backdrop pads itself, so the view fills what is left of it. */
     min-width: 0;
     max-width: 100%;
     max-height: 92vh;
@@ -615,34 +634,52 @@ body.is-loading {
     background: var(--color-surface);
 }
 
-/* The way out, beside the view. A ring and a cross on the backdrop, with
-   nothing behind them. White carries over the backdrop whatever the picture
-   under it shows. STYLE_GUIDE.md names this circle. */
-.detail-close {
-    flex: none;
+/* The one way out of anything that opens. A large cross, no border and no
+   fill, at the top right of the thing it closes. STYLE_GUIDE.md holds the
+   rule, and js/components/close-button.js builds it.
+   
+   It is not a .button. A button carries a fill and a word, and this carries
+   neither. */
+.close-button {
+    position: absolute;
+    right: var(--space-3);
+    top: var(--space-3);
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    border: 1px solid var(--color-on-brand);
-    border-radius: var(--radius-circle); /* named exception */
+    border: none;
     background: none;
-    color: var(--color-on-brand);
+    color: var(--color-ink);
     font-family: var(--font-display);
-    font-size: var(--text-lg);
+    font-size: var(--text-xl);
+    font-weight: 300;
     line-height: 1;
     cursor: pointer;
-    transition:
-        background 0.2s ease,
-        color 0.2s ease;
+    transition: color 0.2s ease;
 }
 
-.detail-close:hover,
-.detail-close:focus-visible {
-    background: var(--color-on-brand);
-    color: var(--color-ink);
+.close-button:hover,
+.close-button:focus-visible {
+    color: var(--color-brand-dark);
+}
+
+/* The detail view pins its cross to the corner of the window, because the
+   view itself moves when the words panel slides out. */
+.modal-overlay > .close-button {
+    position: fixed;
+    right: var(--space-5);
+    top: var(--space-5);
+    z-index: 2001; /* over the view, which sits at 2000 */
+    color: var(--color-on-brand);
+}
+
+.modal-overlay > .close-button:hover,
+.modal-overlay > .close-button:focus-visible {
+    color: var(--color-brand-soft);
 }
 
 /* The button that pulls the words out, and pushes them back. */

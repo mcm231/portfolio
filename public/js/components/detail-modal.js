@@ -10,6 +10,7 @@
 // out beside it. css/components.css holds both layouts.
 import { buildCodeBlock } from './code-tile.js';
 import { buildTermPill } from './term-pill.js';
+import { buildCloseButton } from './close-button.js';
 import { readImages, readParagraphs, panelColor } from '../shared/row.js';
 import { api } from '../api.js';
 
@@ -148,15 +149,6 @@ function buildActions(entry) {
     return actions.children.length > 0 ? actions : null;
 }
 
-// The way out, beside the view rather than on it. The frame below stands it
-// at the top right, so its top meets the top of the picture and the picture
-// keeps its whole frame. The backdrop and the Escape key also close the view.
-function buildClose(close) {
-    const shut = button('detail-close', '\u00d7', 'Close');
-    shut.addEventListener('click', close);
-    return shut;
-}
-
 // A link off the site opens in a new tab, and tells that tab nothing about
 // this one.
 function outLink(className, href, text) {
@@ -268,13 +260,10 @@ export function openDetail(entry) {
     content.addEventListener('click', event => event.stopPropagation());
     overlay.addEventListener('click', close);
 
-    // The view and its cross travel as one block, and the backdrop centers
-    // that block. The cross starts at the top edge of the view, so a click on
-    // the gap between them still reaches the backdrop and closes.
-    const frame = element('div', 'modal-frame');
-    frame.append(content, buildClose(close));
-
-    overlay.appendChild(frame);
+    // The cross pins to the corner of the window, not to the view, so it
+    // stands in one place whatever the layout shows. STYLE_GUIDE.md sets that
+    // for a detail view.
+    overlay.append(content, buildCloseButton(close, 'Close the detail view'));
     document.body.appendChild(overlay);
     document.addEventListener('keydown', onKeyDown);
 

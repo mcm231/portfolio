@@ -36,8 +36,13 @@ input,
     font-family: var(--font-display);
 }
 
+/* A button may carry an icon beside its word, so it lays out as a row. A
+   button with no icon looks the same as it did. */
 .button {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
     padding: var(--space-4) var(--space-6);
     border: none;
     background: var(--color-accent);

@@ -29,14 +29,14 @@
         </nav>
         <a class="button button-quiet forward-link" href="/pages/edit">Edit images</a>
 
-        <main class="page page-narrow">
+        <main class="page page-inbox">
             <div class="page-header">
                 <h1 class="page-title">Messages</h1>
                 <p class="page-count" id="message-count">Loading…</p>
             </div>
 
-            <!-- js/messages.js fills the rows. A click opens the message in
-                 the reader under the table. -->
+            <!-- js/messages.js fills the rows. A click opens the message as
+                 one more row, right under the row it belongs to. -->
             <table class="inbox">
                 <thead>
                     <tr>
@@ -50,8 +50,6 @@
             </table>
 
             <p id="message-status" class="form-status" role="status"></p>
-
-            <section id="message-reader" class="reader" hidden></section>
         </main>
 
         <script type="module" src="../js/messages.js"></script>

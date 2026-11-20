@@ -13,11 +13,11 @@ Corners are sharp. `border-radius` stays at `0`.
 
 Three exceptions exist, and each one is named here:
 
-| Exception        | Token             | Where                                                                               |
-| ---------------- | ----------------- | ----------------------------------------------------------------------------------- |
-| A circle         | `--radius-circle` | The loading spinner, the wall slider thumb, the detail close button, the unread dot |
-| A pill           | `--radius-pill`   | None at present                                                                     |
-| A hairline round | `--radius-soft`   | None at present                                                                     |
+| Exception        | Token             | Where                                                      |
+| ---------------- | ----------------- | ---------------------------------------------------------- |
+| A circle         | `--radius-circle` | The loading spinner, the wall slider thumb, the unread dot |
+| A pill           | `--radius-pill`   | None at present                                            |
+| A hairline round | `--radius-soft`   | None at present                                            |
 
 To add an exception, add the element to this table first.
 
@@ -132,6 +132,36 @@ One 4px scale. Every margin, padding, and gap uses a step.
 
 The photo wall is the one place with a fixed pixel gutter. It is 3px, and
 `js/components/mosaic.js` owns it.
+
+## Close
+
+Everything that opens closes the same way. One control, one look, one place.
+
+1. The control is a large cross, never the word Close.
+2. It carries no border and no fill. The glyph alone.
+3. It is 44px square, and the glyph is `--text-xl` at weight 300.
+4. It sits at the top right of the thing it closes.
+5. A detail view is the exception to rule 4. Its cross pins to the top right
+   of the window, because the view itself moves when the words panel opens.
+
+`js/components/close-button.js` builds every one of them, and
+`css/components.css` holds the look. The class is `.close-button`. It is not a
+`.button`: a button carries a fill and a word, and this carries neither.
+
+The glyph takes the ink of what it sits on, because a cross nobody can see is
+not a way out:
+
+| Where it sits          | At rest            | Hovered              |
+| ---------------------- | ------------------ | -------------------- |
+| A card or a panel      | `--color-ink`      | `--color-brand-dark` |
+| The backdrop of a view | `--color-on-brand` | `--color-brand-soft` |
+
+The glyph says nothing out loud, so the button carries an `aria-label` that
+names what closes.
+
+A view may offer other ways out beside the cross. The detail view also closes
+on a click on the backdrop, and on Escape. The cross is the obvious one, never
+the only one.
 
 ## Side menu
 

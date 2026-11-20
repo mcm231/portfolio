@@ -1,4 +1,11 @@
-/* The contact inbox: the table of messages, and the reader under it. */
+/* The contact inbox: the table of messages, and the reader inside it. */
+
+/* The inbox runs wider than a form, because the reader opens inside the
+   table and needs room for a message. It matches the gallery grid. */
+.page-inbox {
+    max-width: 900px;
+    margin: 0 auto;
+}
 
 .inbox {
     width: 100%;
@@ -94,21 +101,43 @@ th.inbox-when {
     white-space: nowrap;
 }
 
-/* The message itself, under the table. */
-.reader {
-    width: 100%;
-    margin-top: var(--space-6);
-    padding: var(--space-5);
-    border: 1px solid var(--color-line-strong);
+/* The message itself, as one row of the table. Its top meets the bottom of
+   the row it belongs to, so the cell carries no padding of its own. */
+.inbox .reader-cell {
+    padding: 0;
+    /* The mark of the open row runs on down the reader. */
+    border-left: 3px solid var(--color-mark-line);
     background: var(--color-surface);
+}
+
+/* The cross sits in the top right corner, so the box holds the position. */
+.reader {
+    position: relative;
+    padding: var(--space-5);
+    font-weight: 400;
     text-align: left;
 }
 
-.reader-head {
+/* The two small controls of the message sit together at the top right. The
+   cross is the last of them, as STYLE_GUIDE.md asks. */
+.reader-tools {
+    position: absolute;
+    right: var(--space-3);
+    top: var(--space-3);
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--space-4);
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* Inside the row the cross takes its place in order, not a corner of its
+   own. The row already holds that corner. */
+.reader-tools .close-button {
+    position: static;
+}
+
+/* The subject stops short of the controls. */
+.reader-head {
+    padding-right: calc(var(--space-8) + var(--space-7));
 }
 
 .reader-subject {
@@ -172,13 +201,36 @@ th.inbox-when {
     color: var(--color-ink);
 }
 
-.reader-form {
+/* The answer and the step that cannot be undone, on one row. The reply box
+   sits above this row, so opening it pushes the row down. */
+.reader-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+}
+
+/* The reply box, closed until the Reply button opens it. A row of 0fr holds
+   no height, and the move to 1fr is what slides. */
+.reader-slide {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.28s ease;
+}
+
+.reader-slide.is-open {
+    grid-template-rows: 1fr;
+}
+
+/* The words of the reply. The box clips them while it is closed, and the
+   button that sends them stands below the box. */
+.reader-slide-inner {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    margin-top: var(--space-5);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-line);
+    padding-top: var(--space-5);
+    overflow: hidden;
 }
 
 .reader-text {
@@ -187,18 +239,9 @@ th.inbox-when {
 }
 
 .reader-note {
-    margin: var(--space-5) 0 0;
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-line);
+    margin: 0;
     color: var(--color-ink-muted);
     font-size: var(--text-sm);
-}
-
-.reader-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-top: var(--space-4);
 }
 
 @media (max-width: 760px) {

@@ -215,6 +215,8 @@ returns a value or a handle.
 | `components/detail-modal.js`   | `openDetail`                  |
 | `components/menu.js`           | `mountMenu`, `linkOf`         |
 | `components/term-pill.js`      | `buildTermPill`, `termUrl`    |
+| `components/close-button.js`   | `buildCloseButton`            |
+| `components/icon.js`           | `buildIcon`                   |
 
 A behavior that two pages use becomes a component. A behavior that one page uses
 stays in the page script until a second page needs it.

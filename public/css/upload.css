@@ -54,18 +54,6 @@
     gap: var(--space-4);
 }
 
-.button-danger {
-    background: none;
-    border: 1px solid var(--color-error);
-    color: var(--color-error);
-}
-
-.button-danger:hover,
-.button-danger.is-armed {
-    background: var(--color-error);
-    color: var(--color-on-brand);
-}
-
 .form-hint.is-warning {
     color: var(--color-error);
     font-weight: 600;
