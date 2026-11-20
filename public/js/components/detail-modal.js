@@ -97,6 +97,12 @@ function buildMeta(entry) {
 
     if (entry.dateCreated) parts.push(element('p', 'detail-date', entry.dateCreated));
 
+    // A commission is a fact about the work, so it reads as a line of its own
+    // and never as a term beside the mediums.
+    if (entry.commission) {
+        parts.push(element('p', 'detail-note', 'This item is a commission.'));
+    }
+
     if (mediums.length > 0 || tags.length > 0) {
         const terms = element('ul', 'detail-terms');
         const carry = (kind, term) => {

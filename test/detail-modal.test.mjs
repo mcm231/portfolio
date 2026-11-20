@@ -138,6 +138,7 @@ check('the panel starts closed', stage.classList.contains('is-open'), false);
 check('the name shows', find(piece.element, 'detail-name').textContent, 'Blue Hour');
 check('the date shows', find(piece.element, 'detail-date').textContent, '2026-04-02');
 check('a blank line starts a paragraph', find(piece.element, 'detail-text').children.length, 2);
+check('an unmarked row shows no note', find(piece.element, 'detail-note'), null);
 check('a medium takes a pill', Boolean(find(piece.element, 'pill-medium')), true);
 check('a tag takes its own pill', Boolean(find(piece.element, 'pill-tag')), true);
 
@@ -275,6 +276,20 @@ check(
     true
 );
 bare.close();
+
+// A commission reads as a line under the date, never as a term.
+const paid = openDetail({ ...PIECE, commission: true });
+check(
+    'a commission says so',
+    find(paid.element, 'detail-note').textContent,
+    'This item is a commission.'
+);
+check(
+    'the note sits under the date',
+    find(paid.element, 'detail-panel').children[2].className,
+    'detail-note'
+);
+paid.close();
 
 const named = openDetail({ id: 'untitled-7', panelColor: 4 });
 check(

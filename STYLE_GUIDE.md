@@ -133,6 +133,24 @@ One 4px scale. Every margin, padding, and gap uses a step.
 The photo wall is the one place with a fixed pixel gutter. It is 3px, and
 `js/components/mosaic.js` owns it.
 
+## A small header
+
+A sub-heading inside a section carries `--color-brand-dark`. It reads at
+`--text-sm`, in the display family, uppercase with `letter-spacing: 0.06em`.
+
+Teal and not amethyst. Amethyst stays with the eyebrow at the top of a page
+and with the one Add button, so a page never has two colors competing for a
+small mark. `test/contrast.test.mjs` already holds this pair.
+
+| Class           | Where                                                       |
+| --------------- | ----------------------------------------------------------- |
+| `.note-heading` | I do not accept, and Other details, on the commissions page |
+| `.menu-group`   | One kind of work in the price table                         |
+
+`.reader-fold` on the inbox page looks like one of these, but it is a button.
+It rests on `--color-ink` and turns teal under the pointer, so the teal still
+means the same thing: a press is about to happen.
+
 ## Close
 
 Everything that opens closes the same way. One control, one look, one place.

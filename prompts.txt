@@ -297,3 +297,36 @@ Remove the separator in the messages box. Make the dropdown happen above the del
 Clicking again on a message entry in the list will close the open message module. Clicking on a different message will close the open message module and open that message's module.
 remove the heading "your replies"
 Add a close button on the same line as "Your Reply" to cancel the draft. Add back the Your Replies heading, but make it "Replies" and a dropdown of the subsequent messages, defaulting to open.
+I want another publicly accessible page: Commissions. Locaed in the menu under Gallery Search. The top will have my commissions information and a button to contact me, which will take you to the contacts page with a pre-filled-out message template for the commission (I will specify exact text later). I have an image of a commission "menu" that details items and prices, will upload later -- note that I want this to be screen-reader friendly, so I will upload the text in the image later as well. At the bottom of the page, I want a gallery component, filtered to only show the elements with the commission tag (you cannot set filters for this gallery).
+I want to change how commissions are tagged: add a checkbox in the edit/upload pages that reads "this work is a commission". If true, mark them as commissions in the database -- give me options for how best to do so, I will choose. Items marked as commissions will have small text under the date in detail view saying "This item is a commission."
+continue with previous process for the commissions page.
+Remove commissions section 01 (and the section numbers)
+The image and the price text are long, so prompt me when you are ready to upload them and I will do so one at a time.
+Price text: Line Art:
+Bust: 15
+Halfbody: 25
+Full body: 35
+Flat colors:
+Bust: 30
+Halfbody: 40
+Full body: 50
+Render (full lighting, no/patterned background)
+ Bust: 60
+Halfbody: 80
+Full body: 100
+Full Scene (detailed background)
+Render price +30
+Toppings! (these are free to add): dramatic lighting, special effects, explosions, jewelry, action pose, fancy garments, gratuitous sparkles
+Specials
+Landscape: 50
+Realism
+Bust: 80
+Halfbody: 100
+Full body: 125
+'/Users/mayamalavasi/Desktop/commission_menu_by_mangotosleep_dnaur5o-fullview.jpg'
+Change Commissions: OPEN!~ to Contact me if interested. Remove "DM me if interested." Change the buttons in that section: contact me stays, but now just serves as a link to the Contact page. A second button next to it, "Request Commission", has the template message text.
+Credit me (my DeviantArt page) --> Credit me (link to this site)
+Remove Furry art (sorry I'm just not very practiced in this area) bullet point
+Small headers like "I do not accept" in an accent color -- update style guide
+Offer suggestions as to how to make the General Information section less text-heavy. Are there layout or styling options that would make it easier to read? Any way to cut down on the text while still conserving the original meaning? Ask for feedback and give implementation suggestions
+Remove [Section heading] text from commissions page.

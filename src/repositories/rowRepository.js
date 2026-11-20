@@ -49,6 +49,9 @@ function promote(id, stored) {
         tags: readTags(stored),
         mediums: readMediums(stored),
         images: readImages(stored),
+        // A row written before the mark carries no field, and that reads as
+        // no. Every row reports a yes or a no, so no page guesses.
+        commission: stored.commission === true,
     };
 
     delete row.medium;

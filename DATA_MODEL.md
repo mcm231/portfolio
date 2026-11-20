@@ -65,6 +65,11 @@ stays readable.
     ],
     "sizeVersion": 2,
 
+    // A fact about the work, not a word describing it. The checkbox on the
+    // upload page is the only thing that sets it. A row written before the
+    // mark carries no field, and a reader sees false.
+    "commission": true,
+
     // Code fields. Every one is optional, and an image row leaves them empty.
     "repoUrl": "https://github.com/you/project",
     "liveUrl": "https://project.example",
@@ -85,6 +90,11 @@ stays readable.
 
 A url must start with `http:` or `https:`. The server drops anything else on
 save.
+
+`commission` is a field and not a tag, for three reasons. A tag would show as
+a pill beside the mediums and repeat the line the detail view already draws.
+A tag can also be typed by hand, so two paths would set one fact. And the tag
+list caps at 24, so a reserved term could push a real one out.
 
 ### Limits
 

@@ -143,6 +143,8 @@ function scrimAfter(before) {
 // One page the menu names must stay reachable. Home is the one this change
 // added, and the home page itself no longer shows a Back to home button.
 check('the menu names the home page first', MENU_LINKS[0].href, '/');
+check('commissions sits under gallery search', MENU_LINKS[2].href, '/pages/commissions');
+check('commissions is public', MENU_LINKS[2].isPrivate, undefined);
 check(
     'the menu names every page once',
     MENU_LINKS.length,

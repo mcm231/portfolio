@@ -53,6 +53,7 @@ const mediumField = createTermField({
     onChange: refreshPreview,
 });
 const dateInput = document.getElementById('dateCreated');
+const commissionInput = document.getElementById('commission');
 
 let previewUrls = [];
 let idEdited = false;
@@ -128,6 +129,7 @@ function currentEntry() {
             tags: tagField.values(),
             dateCreated: dateInput.value,
             galleries: splitList(document.getElementById('galleries').value),
+            commission: commissionInput.checked,
             repoUrl: isCode ? document.getElementById('repoUrl').value.trim() : '',
             liveUrl: isCode ? document.getElementById('liveUrl').value.trim() : '',
             language: isCode ? document.getElementById('language').value.trim() : '',
@@ -367,6 +369,7 @@ async function enterEditMode(id) {
         mediumField.set(entry.mediums || []);
         dateInput.value = entry.dateCreated || '';
         document.getElementById('galleries').value = (entry.galleries || []).join(', ');
+        commissionInput.checked = entry.commission === true;
 
         editingImages = readImages(entry);
         drawPreview(editingImages.map(image => ({ src: api.imageUrl(image.key) })));

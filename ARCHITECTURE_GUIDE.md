@@ -167,11 +167,12 @@ A reading page splits into numbered sections:
 </body>
 ```
 
-Three pages do not split that way, and each one is named here:
+Some pages do not split that way, and each one is named here:
 
 | Page                     | Pattern                          |
 | ------------------------ | -------------------------------- |
 | `about`, `contact`       | Numbered sections                |
+| `commissions`            | Sections with no number          |
 | `index`                  | An exception. The pannable plane |
 | `upload`, `edit`         | An exception. One form           |
 | `messages`, `thumbnails` | An exception. One tool           |
@@ -183,13 +184,14 @@ To add an exception, add the page to this table first.
 A page loads one page script, named for the page. The script imports the
 components it needs. It never reads a module off `window`.
 
-| Page                 | Script          |
-| -------------------- | --------------- |
-| `index.html`         | `js/home.js`    |
-| `pages/about.html`   | `js/about.js`   |
-| `pages/gallery.html` | `js/gallery.js` |
-| `pages/edit.html`    | `js/edit.js`    |
-| `pages/upload.html`  | `js/upload.js`  |
+| Page                     | Script              |
+| ------------------------ | ------------------- |
+| `index.html`             | `js/home.js`        |
+| `pages/about.html`       | `js/about.js`       |
+| `pages/commissions.html` | `js/commissions.js` |
+| `pages/gallery.html`     | `js/gallery.js`     |
+| `pages/edit.html`        | `js/edit.js`        |
+| `pages/upload.html`      | `js/upload.js`      |
 
 `index.html` is the home page, so its script is `home.js`. Every other page
 takes the name of its file.
@@ -250,25 +252,26 @@ Never copy one of these rules into a second file.
 The site ships no runtime dependency. One exception exists, and it is named
 here:
 
-| Exception            | Where                       | Why                                   |
-| -------------------- | --------------------------- | ------------------------------------- |
-| React 18, from unpkg | `public/pages/gallery.html` | A filter list that redraws from state |
+| Exception            | Where                                                             | Why                                   |
+| -------------------- | ----------------------------------------------------------------- | ------------------------------------- |
+| React 18, from unpkg | `pages/gallery.html`, `pages/edit.html`, `pages/commissions.html` | A filter list that redraws from state |
 
 To add a library, add a row to this table first.
 
 ### CSS files
 
-| File                 | Holds                                                                                     |
-| -------------------- | ----------------------------------------------------------------------------------------- |
-| `css/tokens.css`     | `:root`. The only file with a raw value                                                   |
-| `css/base.css`       | Reset, buttons, the page shell, the forms, the menu                                       |
-| `css/components.css` | A chip, a code tile, a caption, a placeholder, a hero, the loading cover, the detail view |
-| `css/home.css`       | The pannable plane and the photo wall                                                     |
-| `css/gallery.css`    | The grid and its filters                                                                  |
-| `css/upload.css`     | The upload form                                                                           |
-| `css/about.css`      | The about page                                                                            |
-| `css/contact.css`    | The contact page                                                                          |
-| `css/messages.css`   | The contact inbox                                                                         |
+| File                  | Holds                                                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `css/tokens.css`      | `:root`. The only file with a raw value                                                   |
+| `css/base.css`        | Reset, buttons, the page shell, the forms, the menu                                       |
+| `css/components.css`  | A chip, a code tile, a caption, a placeholder, a hero, the loading cover, the detail view |
+| `css/home.css`        | The pannable plane and the photo wall                                                     |
+| `css/gallery.css`     | The grid and its filters                                                                  |
+| `css/commissions.css` | The price menu of the commissions page                                                    |
+| `css/upload.css`      | The upload form                                                                           |
+| `css/about.css`       | The about page                                                                            |
+| `css/contact.css`     | The contact page                                                                          |
+| `css/messages.css`    | The contact inbox                                                                         |
 
 A page links tokens, base, and components, then its own file. A rule used by
 two pages belongs in base or components, never in two page files.

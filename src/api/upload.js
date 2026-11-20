@@ -190,6 +190,9 @@ export async function saveRow(request, env) {
         tags,
         dateCreated,
         galleries: splitList(String(form.get('galleries') || '')),
+        // A fact about the work, not a word describing it. The checkbox on
+        // the upload page is the only thing that sets it.
+        commission: String(form.get('commission')) === 'true',
         sizeVersion: SIZE_VERSION,
 
         // Code fields. Every one is optional, and an image row leaves them

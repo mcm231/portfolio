@@ -14,6 +14,7 @@ import { api } from '../api.js';
 export const MENU_LINKS = [
     { href: '/', label: 'Home' },
     { href: '/pages/gallery', label: 'Gallery Search' },
+    { href: '/pages/commissions', label: 'Commissions' },
     { href: '/pages/about', label: 'About' },
     { href: '/pages/contact', label: 'Contact' },
     { href: '/pages/upload', label: 'Upload', isPrivate: true },

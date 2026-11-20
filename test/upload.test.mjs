@@ -114,6 +114,19 @@ check('five ids exist', [...kv.keys()].sort(), [
 // Each row writes two objects: the picture, and its small copy.
 check('r2 holds two per row', r2.size, kv.size * 2);
 
+// The checkbox is the only thing that marks a commission. These rows carry
+// their own ids, so the count above stays true.
+const plain = await upload({ id: 'mark-none' });
+check('a row is no commission by default', plain.json.entry.commission, false);
+
+const paid = await upload({ id: 'mark-yes', commission: 'true' });
+check('the checkbox marks the row', paid.json.entry.commission, true);
+
+const cleared = await upload({ id: 'mark-no', commission: 'false' });
+check('a clear box leaves it unmarked', cleared.json.entry.commission, false);
+
+check('the mark survives the write', JSON.parse(kv.get('mark-yes')).commission, true);
+
 // The name is optional. The id then comes from the file name.
 const noName = await upload({ name: '', fileName: 'quiet-study.png' });
 check('an upload needs no name', noName.status, 201);

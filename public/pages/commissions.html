@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Commissions - Maya Malavasi</title>
+        <link rel="stylesheet" href="../css/tokens.css" />
+        <link rel="stylesheet" href="../css/base.css" />
+        <link rel="stylesheet" href="../css/components.css" />
+        <link rel="stylesheet" href="../css/about.css" />
+        <link rel="stylesheet" href="../css/gallery.css" />
+        <link rel="stylesheet" href="../css/commissions.css" />
+    </head>
+    <body class="about">
+        <!-- The drawer shell, so the button paints with the document.
+             js/components/menu.js fills the panel and marks this page. -->
+        <nav id="menu" class="menu">
+            <button
+                id="menu-toggle"
+                class="menu-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="menu-panel"
+                aria-label="Open menu"
+            >
+                <span class="menu-bars" aria-hidden="true"></span>
+            </button>
+
+            <div id="menu-panel" class="menu-panel"></div>
+        </nav>
+
+        <main class="about-page">
+            <!-- Hero: a heading, a short intro, and the way to ask. -->
+            <header class="hero">
+                <div class="hero-text">
+                    <p class="eyebrow">Contact me if interested.</p>
+                    <h1 class="hero-heading">Commissions</h1>
+
+                    <!-- Two ways in. The first opens a plain form, and the
+                         second opens one already filled with the template
+                         js/contact.js holds. -->
+                    <div class="hero-actions">
+                        <a class="button button-quiet" href="/pages/contact">Contact me</a>
+                        <a class="button" href="/pages/contact?topic=commission"
+                            >Request Commission</a
+                        >
+                    </div>
+                </div>
+
+                <figure class="hero-media">
+                    <div class="placeholder placeholder-portrait">Image</div>
+                    <figcaption class="caption">[ Caption ]</figcaption>
+                </figure>
+            </header>
+
+            <section class="section">
+                <h2 class="section-heading">General information</h2>
+
+                <!-- A label on each line, so a reader finds one answer
+                     without reading the rest. -->
+                <dl class="note-pairs">
+                    <dt>Fit</dt>
+                    <dd>
+                        I will decline your request if I do not feel it is within my capabilities.
+                    </dd>
+
+                    <dt>References</dt>
+                    <dd>
+                        Bring clear references and any lore. I ask questions as I go, so be ready to
+                        talk it through.
+                    </dd>
+
+                    <dt>Timeline</dt>
+                    <dd>Usually 1 to 3 weeks. Open to negotiation.</dd>
+
+                    <dt>Process</dt>
+                    <dd>
+                        Let me know if you would like me to send sketches for feedback as I work. Up
+                        to 3 minor edits after I finish.
+                    </dd>
+
+                    <dt>Posting</dt>
+                    <dd>
+                        I will likely post the work on my socials. Tell me if you want me to wait.
+                    </dd>
+                </dl>
+
+                <!-- The two conditions of use. They sit apart, so a reader
+                     who only skims still meets them. -->
+                <div class="rule-block">
+                    <p class="rule-line">
+                        <strong>DO NOT USE MY ART FOR AI IN ANY CAPACITY.</strong>
+                    </p>
+                    <p class="rule-line">
+                        Credit me (<a href="/">link to this site</a>) any time you post or use this
+                        art.
+                    </p>
+                </div>
+
+                <h3 class="note-heading">I do not accept</h3>
+                <ul class="note-list">
+                    <li>NSFW (slight spiciness ok!)</li>
+                    <li>Extreme Gore</li>
+                    <li>Chibi art</li>
+                </ul>
+
+                <h3 class="note-heading">Other details</h3>
+                <ul class="note-list">
+                    <li>All prices in USD</li>
+                    <li>Extra character is +75% of base price, rounded up</li>
+                </ul>
+            </section>
+
+            <!-- The price menu. The picture carries the look, and the table
+                 carries the words. A reader can select, search and copy the
+                 table, and a screen reader reads it. So the picture needs no
+                 alt text of its own. -->
+            <section class="section">
+                <div class="menu-board">
+                    <figure class="menu-figure">
+                        <!-- The table beside this says everything the picture
+                             says, so the picture carries an empty alt and a
+                             reader hears it once. The link opens it at full
+                             size, 1280 by 4311. -->
+                        <a href="/images/commission-menu.jpg">
+                            <img
+                                class="menu-image"
+                                src="/images/commission-menu.jpg"
+                                alt=""
+                                width="1280"
+                                height="4311"
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </a>
+                        <figcaption class="caption">Open the menu at full size.</figcaption>
+                    </figure>
+
+                    <details class="menu-text">
+                        <summary class="menu-summary">Prices as text</summary>
+
+                        <table class="menu-table">
+                            <caption class="menu-caption">
+                                Every price the menu image lists. Prices may vary depending on
+                                complexity. All prices in USD.
+                            </caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Item</th>
+                                    <th class="menu-price" scope="col">Price</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <th class="menu-group" colspan="2" scope="colgroup">
+                                        Line Art
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Bust</th>
+                                    <td class="menu-price">15</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Halfbody</th>
+                                    <td class="menu-price">25</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Full body</th>
+                                    <td class="menu-price">35</td>
+                                </tr>
+                            </tbody>
+
+                            <tbody>
+                                <tr>
+                                    <th class="menu-group" colspan="2" scope="colgroup">
+                                        Flat colors
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Bust</th>
+                                    <td class="menu-price">30</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Halfbody</th>
+                                    <td class="menu-price">40</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Full body</th>
+                                    <td class="menu-price">50</td>
+                                </tr>
+                            </tbody>
+
+                            <tbody>
+                                <tr>
+                                    <th class="menu-group" colspan="2" scope="colgroup">
+                                        Render
+                                        <span class="menu-aside"
+                                            >full lighting, no or patterned background</span
+                                        >
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Bust</th>
+                                    <td class="menu-price">60</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Halfbody</th>
+                                    <td class="menu-price">80</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Full body</th>
+                                    <td class="menu-price">100</td>
+                                </tr>
+                            </tbody>
+
+                            <tbody>
+                                <tr>
+                                    <th class="menu-group" colspan="2" scope="colgroup">
+                                        Full Scene
+                                        <span class="menu-aside">detailed background</span>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Any size</th>
+                                    <td class="menu-price">Render price, plus 30</td>
+                                </tr>
+                            </tbody>
+
+                            <tbody>
+                                <tr>
+                                    <th class="menu-group" colspan="2" scope="colgroup">
+                                        Specials
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Landscape</th>
+                                    <td class="menu-price">50</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Realism, bust</th>
+                                    <td class="menu-price">80</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Realism, halfbody</th>
+                                    <td class="menu-price">100</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Realism, full body</th>
+                                    <td class="menu-price">125</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p class="menu-extras">
+                            <strong>Toppings!</strong> (these are free to add): dramatic lighting,
+                            special effects, explosions, jewelry, action pose, fancy garments,
+                            gratuitous sparkles
+                        </p>
+                    </details>
+                </div>
+            </section>
+
+            <!-- Every piece marked as a commission. The grid takes no filter
+                 here, so js/commissions.js locks it. -->
+            <section class="section">
+                <h2 class="section-heading">Past commissions</h2>
+                <div id="commission-gallery"></div>
+            </section>
+        </main>
+
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+        ></script>
+
+        <!-- React is the one library here, and ARCHITECTURE_GUIDE.md names the
+         exception. A module is deferred, so the page script runs after it. -->
+        <script type="module" src="../js/commissions.js"></script>
+    </body>
+</html>

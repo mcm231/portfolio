@@ -36,7 +36,38 @@ const status = document.getElementById('contact-status');
 
 const nameInput = document.getElementById('name');
 const emailInput = document.getElementById('email');
+const subjectInput = document.getElementById('subject');
 const messageInput = document.getElementById('message');
+
+// A page may open this form on a subject, with /pages/contact?topic=NAME.
+// The wording lives here, so one file holds every template. The field stays
+// editable, because it is a start and not a form.
+const TOPICS = {
+    commission: {
+        subject: 'Commission enquiry',
+        message: `[ The commission template goes here. ]
+
+What I would like:
+
+The size I want:
+
+When I need it by:
+`,
+    },
+};
+
+// Fills the form from the address bar, once, on arrival. An unknown topic
+// fills nothing, so a bad link still shows a plain form.
+function applyTopic() {
+    const name = new URLSearchParams(window.location.search).get('topic');
+    const template = TOPICS[String(name || '').toLowerCase()];
+    if (!template) return;
+
+    subjectInput.value = template.subject;
+    messageInput.value = template.message;
+}
+
+applyTopic();
 
 function setStatus(text, kind) {
     status.textContent = text;

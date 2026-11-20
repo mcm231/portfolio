@@ -1,0 +1,225 @@
+/* The commissions page. The hero and the sections come from css/about.css,
+   and the grid from css/gallery.css. This file holds the price menu. */
+
+/* The two ways in, side by side. */
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+/* A small header inside a section. STYLE_GUIDE.md gives it the teal. */
+.note-heading {
+    margin: var(--space-6) 0 var(--space-3);
+    color: var(--color-brand-dark);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* A label beside one line. A reader finds one answer without reading the
+   rest, and the labels line up down the left edge. */
+.note-pairs {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: var(--space-3) var(--space-5);
+    max-width: 68ch;
+    margin: 0 0 var(--space-6);
+}
+
+.note-pairs dt {
+    color: var(--color-brand-dark);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.note-pairs dd {
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* The two conditions of use. They stand apart, so a reader who only skims
+   still meets them. */
+.rule-block {
+    max-width: 68ch;
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-mark-line);
+    background: var(--color-surface);
+}
+
+.rule-line {
+    margin: 0 0 var(--space-3);
+    line-height: 1.6;
+}
+
+.rule-line:last-child {
+    margin-bottom: 0;
+}
+
+.note-list {
+    max-width: 68ch;
+    margin: 0;
+    padding-left: var(--space-5);
+}
+
+.note-list li {
+    margin-bottom: var(--space-3);
+    line-height: 1.6;
+}
+
+.note-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* The picture of the menu, and the words of it. */
+/* The poster on the left, the words on the right. The poster runs long, so
+   the words stay in view while a reader scrolls past it. */
+.menu-board {
+    display: grid;
+    grid-template-columns: minmax(0, 480px) 1fr;
+    gap: var(--space-7);
+    align-items: start;
+}
+
+.menu-text {
+    position: sticky;
+    top: var(--space-5);
+}
+
+.menu-figure {
+    margin: 0;
+}
+
+/* The menu is a tall poster, about one across to three and a half down. It
+   fills its column, and the link opens it at full size. */
+.menu-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--color-line);
+}
+
+/* The words of the menu, folded away until someone wants them. The picture
+   says the same thing, so neither one is the only copy. */
+.menu-summary {
+    padding: var(--space-3) 0;
+    color: var(--color-mark-text);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.menu-summary:hover,
+.menu-summary:focus-visible {
+    color: var(--color-brand-dark);
+}
+
+.menu-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.menu-caption {
+    margin-bottom: var(--space-3);
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+    text-align: left;
+}
+
+.menu-table thead th {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--color-line-strong);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* One kind of work. The rows under it are its sizes. */
+.menu-group {
+    padding: var(--space-4) var(--space-3) var(--space-2);
+    color: var(--color-brand-dark);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+
+/* What the group covers, beside its name. */
+.menu-aside {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.menu-table tbody th {
+    padding: var(--space-2) var(--space-3);
+    font-weight: 400;
+}
+
+.menu-table td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--color-line);
+}
+
+.menu-table tbody th {
+    border-bottom: 1px solid var(--color-line);
+}
+
+.menu-table tbody tr:last-child th,
+.menu-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* A price reads as a number, so the column lines up on the right. */
+.menu-price {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* The free extras. They carry no price, so they sit under the table. */
+.menu-extras {
+    margin: var(--space-4) 0 0;
+    line-height: 1.6;
+}
+
+/* The grid of past commissions runs the width of the section. */
+#commission-gallery .page {
+    min-height: 0;
+    padding: 0;
+}
+
+#commission-gallery .grid {
+    max-width: none;
+}
+
+@media (max-width: 760px) {
+    /* No room for a label beside its line, so the label sits over it. */
+    .note-pairs {
+        grid-template-columns: 1fr;
+        gap: var(--space-1) 0;
+    }
+
+    .note-pairs dd {
+        margin-bottom: var(--space-3);
+    }
+
+    /* No room for the words beside the picture, so they go under it. */
+    .menu-board {
+        grid-template-columns: 1fr;
+        gap: var(--space-5);
+    }
+}

@@ -59,13 +59,25 @@ function cardKind(entry) {
 const EAGER_CARDS = 18;
 
 // Props:
-//   title     heading text, default "Gallery Search"
+//   title     heading text, default "Gallery Search". A null draws no header
+//             at all, for a page that writes its own heading.
 //   onSelect  what a click on a tile does, default: open the modal
 //   action    an optional top right link, { label, href }
 //   loader    an optional loading cover from components/loading-screen.js.
 //             The page hands it every card picture, and seals it after the
 //             first grid.
-export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader } = {}) {
+//   search    whether the filter bar shows, default true. A page that locks
+//             the rows turns it off, and the address bar sets no filter.
+//   only      an optional rule the rows must pass, as a function of one row.
+//             The commissions page locks the grid to its own work this way.
+export function GalleryPage({
+    title = 'Gallery Search',
+    onSelect,
+    action,
+    loader,
+    search = true,
+    only = null,
+} = {}) {
     const { useState, useEffect, useMemo, useCallback } = React;
 
     const [entries, setEntries] = useState([]);
@@ -75,7 +87,11 @@ export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader
 
     const [filterType, setFilterType] = useState(DEFAULT_FILTER_TYPE);
     const [inputValue, setInputValue] = useState('');
-    const [activeFilters, setActiveFilters] = useState(() => filtersFromQuery(location.search));
+    // A locked grid reads no filter out of the address bar, because nobody
+    // can take one off again.
+    const [activeFilters, setActiveFilters] = useState(() =>
+        search ? filtersFromQuery(location.search) : []
+    );
     // A card shows nothing until its own picture arrives, so a tile never
     // snaps from the surface color to the photo. css/gallery.css holds the
     // fade. A broken picture also counts as ready, or its alt text would
@@ -160,6 +176,7 @@ export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader
     const filteredEntries = useMemo(
         () =>
             entries
+                .filter(entry => (only ? only(entry) : true))
                 .filter(entry =>
                     activeFilters.every(filter => {
                         if (filter.type === 'title') {
@@ -183,7 +200,7 @@ export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader
                     })
                 )
                 .sort(byNewest),
-        [entries, activeFilters]
+        [entries, activeFilters, only]
     );
 
     function renderValueField() {
@@ -328,36 +345,45 @@ export function GalleryPage({ title = 'Gallery Search', onSelect, action, loader
               )
             : null,
 
-        h('div', { key: 'header', className: 'page-header' }, [
-            h('h1', { key: 'title', className: 'page-title' }, title),
-            h(
-                'p',
-                { key: 'count', className: 'page-count' },
-                `${filteredEntries.length} of ${entries.length} pieces`
-            ),
-        ]),
+        // A page that writes its own heading passes no title, and the grid
+        // then draws no header of its own.
+        title
+            ? h('div', { key: 'header', className: 'page-header' }, [
+                  h('h1', { key: 'title', className: 'page-title' }, title),
+                  h(
+                      'p',
+                      { key: 'count', className: 'page-count' },
+                      `${filteredEntries.length} of ${entries.length} pieces`
+                  ),
+              ])
+            : null,
 
-        h('div', { key: 'search', className: 'search-bar' }, [
-            h(
-                'select',
-                {
-                    key: 'type',
-                    className: 'field',
-                    value: filterType,
-                    onChange: e => {
-                        setFilterType(e.target.value);
-                        setInputValue('');
+        search &&
+            h('div', { key: 'search', className: 'search-bar' }, [
+                h(
+                    'select',
+                    {
+                        key: 'type',
+                        className: 'field',
+                        value: filterType,
+                        onChange: e => {
+                            setFilterType(e.target.value);
+                            setInputValue('');
+                        },
                     },
-                },
-                FILTER_TYPES.map(f => h('option', { key: f.value, value: f.value }, f.label))
-            ),
+                    FILTER_TYPES.map(f => h('option', { key: f.value, value: f.value }, f.label))
+                ),
 
-            renderValueField(),
+                renderValueField(),
 
-            h('button', { key: 'add', className: 'button button-mark', onClick: addFilter }, 'Add'),
-        ]),
+                h(
+                    'button',
+                    { key: 'add', className: 'button button-mark', onClick: addFilter },
+                    'Add'
+                ),
+            ]),
 
-        activeFilters.length > 0
+        search && activeFilters.length > 0
             ? h(
                   'div',
                   { key: 'chips', className: 'chips' },
