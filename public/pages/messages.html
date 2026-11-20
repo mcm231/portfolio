@@ -35,7 +35,23 @@
                 <p class="page-count" id="message-count">Loading…</p>
             </div>
 
-            <div id="message-list"></div>
+            <!-- js/messages.js fills the rows. A click opens the message in
+                 the reader under the table. -->
+            <table class="inbox">
+                <thead>
+                    <tr>
+                        <th class="inbox-state" scope="col" aria-label="Read state"></th>
+                        <th scope="col">From</th>
+                        <th scope="col">Subject</th>
+                        <th class="inbox-when" scope="col">Received</th>
+                    </tr>
+                </thead>
+                <tbody id="message-rows"></tbody>
+            </table>
+
+            <p id="message-status" class="form-status" role="status"></p>
+
+            <section id="message-reader" class="reader" hidden></section>
         </main>
 
         <script type="module" src="../js/messages.js"></script>

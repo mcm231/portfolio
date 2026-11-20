@@ -64,6 +64,7 @@ const PAIRS = [
     ['body text on a quiet block', '--color-ink', '--color-surface-alt', 'normal'],
     ['a caption on the page', '--color-ink-muted', '--color-bg', 'normal'],
     ['a caption on a card', '--color-ink-muted', '--color-surface', 'normal'],
+    ['the unread dot on a row', '--color-brand-dark', '--color-surface', 'ui'],
 
     ['button text on teal', '--color-on-accent', '--color-accent', 'normal'],
     ['button text, hovered', '--color-on-brand', '--color-accent-hover', 'normal'],

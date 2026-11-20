@@ -101,8 +101,27 @@ export const api = {
         return request('/api/contact', { method: 'POST', body: form });
     },
 
+    // Every message, newest first, and whether the site can send a reply.
     messages() {
         return request('/api/messages', { cache: 'no-store' });
+    },
+
+    // Marks one message read or unread.
+    markMessage(key, read) {
+        return request('/api/messages', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, read }),
+        });
+    },
+
+    // Answers one message. The reply reaches the visitor and is stored.
+    replyToMessage(key, reply) {
+        return request('/api/messages/reply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, reply }),
+        });
     },
 
     deleteMessage(key) {

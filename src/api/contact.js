@@ -1,9 +1,10 @@
 // The contact form endpoint.
 //
-// Every message is stored, so nothing is ever lost. When the send_email
-// binding exists, the message is also mailed on. The visitor sees the same
-// answer either way.
+// Every message is stored, so nothing is ever lost. When the site can send,
+// the whole message also reaches the owner. The visitor sees the same answer
+// either way.
 import { messageRepository } from '../repositories/messageRepository.js';
+import { sendMail } from './_mail.js';
 import { badRequest, json, serverError } from './_reply.js';
 
 const MAX_NAME = 120;
@@ -36,37 +37,28 @@ function underLimit(ip, now) {
     return hits.length <= RATE_LIMIT;
 }
 
-function escapeHtml(text) {
-    return text.replace(
-        /[<>&]/g,
-        character => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[character]
-    );
-}
+// The page that reads the inbox. The notice links to it.
+const INBOX = '/pages/messages';
 
-// Mails the message on, when the site is set up to send. A failure here never
-// loses the message, because it already sits in the bucket.
-async function mailOn(env, record) {
-    if (!env.EMAIL || !env.CONTACT_TO || !env.CONTACT_FROM) return false;
+// Tells the owner, with the whole message in the mail. A failure here never
+// loses anything, because the message already sits in the bucket.
+//
+// The answer address is the visitor, so one press of Reply in any mail client
+// writes back to them.
+async function tellTheOwner(request, env, record) {
+    if (!env.CONTACT_TO) return false;
 
     const { name, email, subject, message } = record;
+    const inbox = new URL(INBOX, request.url).toString();
 
-    try {
-        await env.EMAIL.send({
-            to: env.CONTACT_TO,
-            from: { email: env.CONTACT_FROM, name: 'Portfolio contact form' },
-            replyTo: { email, name },
-            subject: subject || `A message from ${name}`,
-            text: `${name} <${email}>\n\n${message}\n`,
-            html: `<p><strong>${name}</strong> &lt;${email}&gt;</p><p>${escapeHtml(message).replace(
-                /\n/g,
-                '<br>'
-            )}</p>`,
-        });
-        return true;
-    } catch (error) {
-        console.error('Could not mail the message on:', error);
-        return false;
-    }
+    const result = await sendMail(env, {
+        to: env.CONTACT_TO,
+        replyTo: email,
+        subject: subject ? `${name} wrote: ${subject}` : `${name} wrote through the site`,
+        text: `${name} <${email}>\n\n${message}\n\nOpen the inbox:\n${inbox}\n`,
+    });
+
+    return result.sent;
 }
 
 export async function sendMessage(request, env) {
@@ -104,7 +96,16 @@ export async function sendMessage(request, env) {
         return badRequest('That is a lot of messages. Try again in a minute.', 429);
     }
 
-    const record = { name, email, subject, message, sentAt: new Date(now).toISOString(), ip };
+    const record = {
+        name,
+        email,
+        subject,
+        message,
+        sentAt: new Date(now).toISOString(),
+        ip,
+        read: false,
+        replies: [],
+    };
 
     try {
         await messageRepository.put(env, record);
@@ -113,5 +114,5 @@ export async function sendMessage(request, env) {
         return serverError('The message did not go through. Try again.');
     }
 
-    return json({ sent: true, mailed: await mailOn(env, record) }, 201);
+    return json({ sent: true, mailed: await tellTheOwner(request, env, record) }, 201);
 }

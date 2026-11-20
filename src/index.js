@@ -9,7 +9,7 @@ import { readVocabulary } from './api/vocabulary.js';
 import { saveRow, deleteRow } from './api/upload.js';
 import { readSession } from './api/session.js';
 import { sendMessage } from './api/contact.js';
-import { listMessages, deleteMessage } from './api/messages.js';
+import { listMessages, markMessage, replyToMessage, deleteMessage } from './api/messages.js';
 import { saveThumbnail } from './api/thumbnail.js';
 
 // One path, one method, one handler. A handler takes (request, env, ctx) and
@@ -22,7 +22,8 @@ const ROUTES = {
     '/api/upload': { POST: saveRow, DELETE: deleteRow },
     '/api/session': { GET: readSession },
     '/api/contact': { POST: sendMessage },
-    '/api/messages': { GET: listMessages, DELETE: deleteMessage },
+    '/api/messages': { GET: listMessages, PATCH: markMessage, DELETE: deleteMessage },
+    '/api/messages/reply': { POST: replyToMessage },
     '/api/thumbnail': { POST: saveThumbnail },
 };
 

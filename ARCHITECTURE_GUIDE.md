@@ -119,7 +119,7 @@ exactly one file, the repository that owns it.
 ### A helper in src/api
 
 A file in `src/api/` that is not a route starts with an underscore: `_reply.js`,
-`_access.js`, `_image-size.js`.
+`_access.js`, `_mail.js`.
 
 ### The gate
 

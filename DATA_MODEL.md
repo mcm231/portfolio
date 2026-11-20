@@ -190,7 +190,15 @@ artwork, so the gallery never sees it.
     "subject": "A commission",
     "message": "The body text.",
     "sentAt": "2026-11-06T18:20:00.000Z",
-    "ip": "203.0.113.7"
+    "ip": "203.0.113.7",
+    "read": false,
+    "replies": [
+        {
+            "text": "The answer that went out.",
+            "subject": "Re: A commission",
+            "sentAt": "2026-11-06T19:05:00.000Z"
+        }
+    ]
 }
 ```
 
@@ -200,6 +208,15 @@ artwork, so the gallery never sees it.
 | `email`   | 254 characters  |
 | `subject` | 160 characters  |
 | `message` | 5000 characters |
+| `reply`   | 5000 characters |
+
+The read flag and the answers live inside the message, so one delete takes
+everything about it away. A message written before these fields carries
+neither, and the inbox reads a missing `read` as unread and a missing
+`replies` as none.
+
+An answer is stored only after it leaves the site. So the page never shows a
+reply the visitor did not get.
 
 Three guards sit in front of the form:
 
@@ -217,20 +234,22 @@ messages at `/pages/messages`, behind the Access gate.
 
 ## The routes
 
-| Route                              | Method       | Answers with                                           |
-| ---------------------------------- | ------------ | ------------------------------------------------------ |
-| `/api/image-metadata`              | GET          | Every row, or one row with `?id=`                      |
-| `/api/image-metadata?tag=&medium=` | GET          | The rows matching both filters                         |
-| `/api/vocabulary`                  | GET          | Every term in use, with a count                        |
-| `/api/images?id=`                  | GET          | The bytes of a picture or a small copy                 |
-| `/api/files?key=files/...`         | GET          | The bytes of a project download                        |
-| `/api/upload`                      | POST, DELETE | Writes or removes a row and its objects                |
-| `/api/thumbnail`                   | POST         | Stores one small copy                                  |
-| `/api/messages`                    | GET, DELETE  | Lists or removes a contact message                     |
-| `/api/contact`                     | POST         | Stores a message, and mails it on when email is set up |
-| `/api/session`                     | GET          | Whether this visitor holds the upload permission       |
+| Route                              | Method             | Answers with                                           |
+| ---------------------------------- | ------------------ | ------------------------------------------------------ |
+| `/api/image-metadata`              | GET                | Every row, or one row with `?id=`                      |
+| `/api/image-metadata?tag=&medium=` | GET                | The rows matching both filters                         |
+| `/api/vocabulary`                  | GET                | Every term in use, with a count                        |
+| `/api/images?id=`                  | GET                | The bytes of a picture or a small copy                 |
+| `/api/files?key=files/...`         | GET                | The bytes of a project download                        |
+| `/api/upload`                      | POST, DELETE       | Writes or removes a row and its objects                |
+| `/api/thumbnail`                   | POST               | Stores one small copy                                  |
+| `/api/messages`                    | GET, PATCH, DELETE | Lists a message, sets its read flag, or removes it     |
+| `/api/messages/reply`              | POST               | Answers one message, and stores the answer             |
+| `/api/contact`                     | POST               | Stores a message, and mails it on when email is set up |
+| `/api/session`                     | GET                | Whether this visitor holds the upload permission       |
 
-`/api/upload`, `/api/messages` and `/api/thumbnail` sit behind the Access gate.
+`/api/upload`, `/api/messages`, `/api/messages/reply` and `/api/thumbnail` sit
+behind the Access gate.
 Every other route is public. `src/gate.js` holds the list.
 
 ## Write a row by hand

@@ -226,6 +226,11 @@ const cases = [
         r => r.status === 503,
     ],
     ['edit page is gated', await hit('/pages/edit'), r => r.status === 503],
+    [
+        'the reply route is gated',
+        await hit('/api/messages/reply', { method: 'POST' }),
+        r => r.status === 503,
+    ],
 ];
 
 let failed = 0;

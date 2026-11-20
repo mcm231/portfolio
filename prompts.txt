@@ -287,3 +287,7 @@ Change to "Show Detail" and "Hide Detail"
 Make it "Description" no change
 Rotate it back 180 degrees
 The white background box is too large for some images until description is opened. Why is this happening?'/Users/mayamalavasi/Desktop/Screenshot 2026-11-13 at 1.25.57 PM.png'
+Why is my connection between the published domain and my api constantly going out?
+I want to revamp the messages page. Messages should route through site to personal email. On the page, I should see an inbox table with read/unread messages, ability to mark as read or unread (white + bold for unread). I would click on a message to read it, then also see a button to reply to the message. Send me a notification to my personal email when I get a message on the site. Emails sent from the site would use a nondescript site email. Ask me questions, don't make assumptions
+continue
+why can't I access the permissions gated pages in localhost?

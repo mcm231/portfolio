@@ -56,6 +56,11 @@ ACCESS_LOCAL_BYPASS=true
 The bypass needs two conditions: the flag and a localhost hostname. The flag
 alone cannot open a route on a deployed site. Keep `.dev.vars` out of git.
 
+`wrangler.jsonc` names a route on `mayamalavasi.com`, and `wrangler dev` hands
+that hostname to the Worker instead of the real one. The gate then reads the
+request as the live site and sends you to the Access login. So `npm run dev`
+carries `--infer-origin-from-routes=false`, which keeps the real local origin.
+
 Then open `http://localhost:8787/pages/upload`.
 
 ## The bindings
@@ -170,15 +175,36 @@ Sign in with an email from the list.
 Email needs a domain. A `workers.dev` subdomain cannot send, so this waits until
 you point a domain at the site.
 
-1. Run `npx wrangler email sending enable yourdomain.com`.
-2. Add the binding to `wrangler.jsonc`: `"send_email": [{ "name": "EMAIL" }]`.
-3. Add two variables: `CONTACT_TO`, your own address, and `CONTACT_FROM`, an
-   address on the onboarded domain.
+The site sends through Resend, not through Cloudflare Email Routing. Routing can
+only send to an address the account verified, so it cannot answer a visitor. The
+inbox page needs that, so one provider carries both the notice and the reply.
+
+### Sending
+
+1. Open a Resend account. Add your domain, and put the DKIM and SPF records it
+   gives you into Cloudflare DNS.
+2. Make an API key. Run `npx wrangler secret put RESEND_API_KEY` and paste it.
+   The key is a secret, so it never enters `wrangler.jsonc`.
+3. Add two variables to the `vars` block of `wrangler.jsonc`: `CONTACT_TO`, your
+   own address, and `CONTACT_FROM`, an address on your domain.
 4. Run `npm run deploy`.
 
-With all three in place, each contact message is also mailed to you, with the
-sender set as the reply address. Without them the message is still stored in the
-bucket, and the visitor sees the same answer.
+### Receiving
+
+A visitor answers `CONTACT_FROM`, so that address needs somewhere to land.
+
+1. Turn on Email Routing for the domain in the Cloudflare dashboard.
+2. Add your own address as a destination, and click the link Cloudflare mails
+   you.
+3. Route `CONTACT_FROM` to that destination.
+
+Resend puts MX on a `send.` subdomain and Email Routing puts MX on the apex, so
+the two do not collide.
+
+With the key and the two variables in place, each contact message is also mailed
+to you in full, and `/pages/messages` can answer one. Without them the message is
+still stored in the bucket, the visitor sees the same answer, and the inbox page
+hides the reply form.
 
 ## Tests
 
