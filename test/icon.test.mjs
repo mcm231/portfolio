@@ -45,6 +45,9 @@ const send = buildIcon('send');
 check('send is its own shape', send.children[0].attrs.d === line.attrs.d, false);
 check('send draws a plane', send.children[0].attrs.d.includes('14.5 1.5'), true);
 
+const chevron = buildIcon('chevron');
+check('the chevron points down', chevron.children[0].attrs.d.endsWith('L12.5 6'), true);
+
 // An unknown name must not make an empty box that looks like a bug.
 check('an unknown icon is nothing', buildIcon('banana'), null);
 

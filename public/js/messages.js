@@ -139,9 +139,22 @@ function drawReplies(message) {
     if (stored.length === 0) return null;
 
     const box = element('div', 'reader-replies');
-    box.appendChild(
-        element('h3', 'reader-sub', stored.length === 1 ? 'Your reply' : 'Your replies')
-    );
+
+    const slide = element('div', 'reader-slide is-open');
+    const list = element('div', 'reader-slide-inner');
+    slide.appendChild(list);
+    slide.id = 'reader-replies-list';
+
+    // The heading folds the answers away. It opens on arrival, because the
+    // last thing you wrote is the thing you want to see.
+    const head = button('reader-fold', 'Replies', () => {
+        const open = slide.classList.toggle('is-open');
+        head.classList.toggle('is-shut', !open);
+        head.setAttribute('aria-expanded', String(open));
+    });
+    head.prepend(buildIcon('chevron'));
+    head.setAttribute('aria-expanded', 'true');
+    head.setAttribute('aria-controls', 'reader-replies-list');
 
     for (const reply of stored) {
         const one = element('article', 'reader-reply');
@@ -149,8 +162,10 @@ function drawReplies(message) {
             element('p', 'reader-when', `You wrote ${when(reply.sentAt)}`),
             element('p', 'reader-body', reply.text)
         );
-        box.appendChild(one);
+        list.appendChild(one);
     }
+
+    box.append(head, slide);
 
     return box;
 }
@@ -160,7 +175,7 @@ function drawReplies(message) {
 //
 // The box carries no button. The one in the row below sends it, and that row
 // moves down as the box grows.
-function drawReplyBox(message) {
+function drawReplyBox(message, onCancel) {
     const box = element('div', 'reader-slide');
     const inner = element('div', 'reader-slide-inner');
     box.appendChild(inner);
@@ -168,12 +183,19 @@ function drawReplyBox(message) {
     const label = element('label', 'form-label', 'Your reply');
     label.htmlFor = 'reply-text';
 
+    // The cross throws the draft away and folds the box back.
+    const drop = buildCloseButton(onCancel, 'Cancel the reply');
+    drop.classList.add('is-inline');
+
+    const head = element('div', 'reader-draft-head');
+    head.append(label, drop);
+
     const field = element('textarea', 'field reader-text');
     field.id = 'reply-text';
     field.rows = 6;
     field.placeholder = `Write to ${message.name}…`;
 
-    inner.append(label, field);
+    inner.append(head, field);
 
     return box;
 }
@@ -196,15 +218,29 @@ function buildReaderRow(message) {
     // The two small controls of the message, at the top right. The cross is
     // the last thing in the row, as STYLE_GUIDE.md asks.
     const tools = element('div', 'reader-tools');
+    const shut = buildCloseButton(() => open(null), 'Close the message');
+    shut.classList.add('is-inline');
+
     tools.append(
         button('button button-quiet button-small', message.read ? 'Mark unread' : 'Mark read', () =>
             mark(message, !message.read)
         ),
-        buildCloseButton(() => open(null), 'Close the message')
+        shut
     );
 
-    const box = drawReplyBox(message);
+    const box = drawReplyBox(message, () => cancelDraft());
     box.classList.toggle('is-open', replyOpen);
+
+    // Folds the box away and empties it, so nothing half written waits for
+    // the next message.
+    function cancelDraft() {
+        replyOpen = false;
+        box.classList.remove('is-open');
+        box.querySelector('.reader-text').value = '';
+        setFace(answer, 'reply', 'Reply');
+        setStatus('');
+        answer.focus();
+    }
 
     // One button carries the whole answer. Closed it reads Reply, and the
     // first press opens the box above it. Open it reads Send.

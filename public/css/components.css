@@ -667,6 +667,12 @@ body.is-loading {
     color: var(--color-brand-dark);
 }
 
+/* A cross inside a row of its own. The row already holds the corner this
+   would otherwise claim, so it takes its place in order instead. */
+.close-button.is-inline {
+    position: static;
+}
+
 /* The detail view pins its cross to the corner of the window, because the
    view itself moves when the words panel slides out. */
 .modal-overlay > .close-button {

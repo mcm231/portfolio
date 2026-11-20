@@ -129,12 +129,6 @@ th.inbox-when {
     gap: var(--space-2);
 }
 
-/* Inside the row the cross takes its place in order, not a corner of its
-   own. The row already holds that corner. */
-.reader-tools .close-button {
-    position: static;
-}
-
 /* The subject stops short of the controls. */
 .reader-head {
     padding-right: calc(var(--space-8) + var(--space-7));
@@ -169,20 +163,48 @@ th.inbox-when {
     white-space: pre-wrap;
 }
 
-/* Every answer already sent, oldest first. */
+/* Every answer already sent, oldest first, under a heading that folds them
+   away. The heading opens on arrival. */
 .reader-replies {
     margin-top: var(--space-5);
     padding-top: var(--space-4);
     border-top: 1px solid var(--color-line);
 }
 
-.reader-sub {
-    margin: 0 0 var(--space-3);
+.reader-fold {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-ink);
     font-family: var(--font-display);
     font-size: var(--text-sm);
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    cursor: pointer;
+}
+
+.reader-fold:hover,
+.reader-fold:focus-visible {
+    color: var(--color-brand-dark);
+}
+
+/* The chevron points down while the answers show, and across when they are
+   folded away. */
+.reader-fold .icon {
+    transition: transform 0.28s ease;
+}
+
+.reader-fold.is-shut .icon {
+    transform: rotate(-90deg);
+}
+
+/* The answers need room under their heading, but only while they show. */
+.reader-replies .reader-slide-inner {
+    padding-top: var(--space-3);
 }
 
 .reader-reply {
@@ -221,6 +243,19 @@ th.inbox-when {
 
 .reader-slide.is-open {
     grid-template-rows: 1fr;
+}
+
+/* The label of the draft, and the cross that throws it away. */
+.reader-draft-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+/* The label already carries its own gap under it. */
+.reader-draft-head .form-label {
+    margin-bottom: 0;
 }
 
 /* The words of the reply. The box clips them while it is closed, and the

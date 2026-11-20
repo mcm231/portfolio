@@ -17,6 +17,9 @@ const PATHS = {
     // An arrow back to the left, with the tail that curves away. The shape a
     // mail client uses for a reply.
     reply: 'M6.5 3.5 2 8l4.5 4.5M2 8h6.5a5.5 5.5 0 0 1 5.5 5.5v1',
+    // A chevron pointing down. css/messages.css turns it a quarter when the
+    // thing it opens is closed.
+    chevron: 'm3.5 6 4.5 4.5L12.5 6',
 };
 
 // One icon, ready to sit inside a button. It carries no label, because the
